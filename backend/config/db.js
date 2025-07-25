@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const sequelize = new Sequelize(
-    process.env.DB_NAME,     
+export const sequelize = new Sequelize(
+  process.env.DB_NAME,     
   process.env.DB_USER,     
   process.env.DB_PASSWORD, 
   {
@@ -15,7 +15,7 @@ const sequelize = new Sequelize(
 );
 
 // Test connection
-const connectDB = async () => {
+export const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ PostgreSQL connected successfully.');
@@ -25,4 +25,3 @@ const connectDB = async () => {
   }
 };
 
-export { sequelize, connectDB };

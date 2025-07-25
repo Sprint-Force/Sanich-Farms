@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
+import { authRoutes } from "./routes/authRoutes.js";
 
 
 
@@ -15,6 +16,8 @@ const app = express();
 // JSON Parser
 app.use(express.json());
 
+//Routes
+app.use('/api/auth', authRoutes)
 
 //Middlewares
 app.use(cors());
