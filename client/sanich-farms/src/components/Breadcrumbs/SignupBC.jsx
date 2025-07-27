@@ -1,23 +1,21 @@
-import React from 'react'
+// Signup Breadcrumbs Component
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { FiHome, FiChevronRight } from 'react-icons/fi';
 
 const SignupBC = () => {
   return (
-    <div className="w-full h-[117px] flex items-center px-7 py-12 bg-gradient-to-r from-[#232323] to-[#808080]">
-      <div className="flex items-center gap-2">
-        {/* Home Icon */}
-        <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 8.5L9 1.5L17 8.5V18.5H12V14.5C12 13.7044 11.6839 12.9413 11.1213 12.3787C10.5587 11.8161 9.79565 11.5 9 11.5C8.20435 11.5 7.44129 11.8161 6.87868 12.3787C6.31607 12.9413 6 13.7044 6 14.5V18.5H1V8.5Z" stroke="#999999" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        {/* Chevron */}
-        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-        {/* Sign Up Text */}
-        <span className="text-[#00B207] text-lg font-normal">Sign Up</span>
+    <div className="w-full py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600 font-poppins">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-1 text-gray-300 hover:text-white transition-colors duration-200" aria-label="Go to Home page">
+          <FiHome className="w-5 h-5" />
+          <span className="text-base font-medium hidden sm:inline">Home</span>
+        </Link>
+        <FiChevronRight className="w-4 h-4 text-gray-400" />
+        <span className="text-green-400 text-base font-semibold">Sign Up</span>
       </div>
     </div>
+  );
+};
 
-  )
-}
-
-export default SignupBC
+export default SignupBC;

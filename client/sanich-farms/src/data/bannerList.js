@@ -1,4 +1,5 @@
-import { image1, image2, image3, image4, image5, tsetimage, test2} from "../../assets"
+// banner List
+import { image1, image2, image3, image4, image5, tsetimage, test2 } from "../assets";
 
 export const bannerList = [
     {
@@ -9,7 +10,6 @@ export const bannerList = [
         buttonText: "Shop Now",
         link: "/shop"
     },
-
     {
         id: 2,
         title: "From Our Farm to Your Table",
@@ -18,7 +18,6 @@ export const bannerList = [
         buttonText: "Shop Now",
         link: "/shop"
     },
-
     {
         id: 3,
         title: "Farm-Fresh Eggs & Chicken",
@@ -27,7 +26,6 @@ export const bannerList = [
         buttonText: "Shop Now",
         link: "/shop"
     },
-
     {
         id: 4,
         title: "Happy Hens, Healthy Harvest",
@@ -36,7 +34,6 @@ export const bannerList = [
         buttonText: "Shop Now",
         link: "/shop"
     },
-
     {
         id: 5,
         title: "Cluckin Good Quality!",
@@ -45,8 +42,4 @@ export const bannerList = [
         buttonText: "Shop Now",
         link: "/shop"
     },
-
-]
-
-
-
+];
