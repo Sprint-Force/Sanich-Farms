@@ -37,4 +37,3 @@ export {
     sevice3,
     statistic
 };
-
