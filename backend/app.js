@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import { authRoutes } from "./routes/authRoutes.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 
 
@@ -22,6 +23,8 @@ app.use('/api/auth', authRoutes)
 //Middlewares
 app.use(cors());
 app.use(morgan('dev'));
+// Error handler
+app.use(errorHandler);
 
 
 export default app;
