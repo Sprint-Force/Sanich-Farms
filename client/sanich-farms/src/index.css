@@ -29,3 +29,15 @@ body {
 .animate-fade-in-down { animation: fadeAndScaleIn 0.2s ease-out forwards; }
 .animate-bounce-once { animation: bounceOnce 0.8s ease-in-out; }
 .animate-fade-in-left { animation: fadeInLeft 0.8s ease-out forwards; }
+
+/* --- Horizontal Scrollbar Hiding --- */
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}

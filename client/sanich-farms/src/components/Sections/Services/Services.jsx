@@ -19,7 +19,7 @@ const servicesData = [
     ],
     note: "⭐ Register or fill the form",
     price: "GH₵1,000",
-    image: {Service1},
+    image: Service1,
     imageAlt: "Brooding Training Service",
     overlayBg: "bg-blue-600 bg-opacity-85",
     link: "/services/brooding-training",
@@ -30,7 +30,7 @@ const servicesData = [
     title: "OUR SERVICES",
     shortDesc: "Comprehensive poultry solutions:",
     tags: ["CONSULTANCY", "DEBEAKING", "INJECTING", "BROODING", "BUDGET ESTIMATION", "FARM MANAGEMENT"],
-    image: {Service2},
+    image: Service2,
     imageAlt: "Our Services",
     overlayBg: "bg-gradient-to-r from-green-600 to-green-800 bg-opacity-90",
     link: "/services",
@@ -40,7 +40,7 @@ const servicesData = [
     id: 3,
     title: "CONSULTANCY",
     shortDesc: "Our Service you can count on. Results you can see.",
-    image: {Service3},
+    image: Service3,
     imageAlt: "Consultancy Service",
     overlayBg: "bg-green-700 bg-opacity-85",
     link: "/services/consultancy",
@@ -73,12 +73,13 @@ const Services = () => {
             </h2>
             <div className="w-20 h-1.5 bg-green-600 mx-auto rounded-full"></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 md:mb-16">
+          <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 md:mb-16 hide-scrollbar">
             {servicesData.map((service) => (
               <div
-                key={service.id}
-                className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 ease-in-out"
-              >
+                  key={service.id}
+                  className="flex-none w-72 sm:w-80 md:w-auto snap-center
+                            bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 ease-in-out"
+                >
                 <div className="relative h-64 sm:h-56 md:h-64 lg:h-72">
                   <img
                     src={service.image}
@@ -86,7 +87,7 @@ const Services = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/400x300/cccccc/333333?text=Service+Image+Error"; }}
                   />
-                  <div className={`absolute inset-0 ${service.overlayBg} flex items-center justify-center p-4`}>
+                  {/* <div className={`absolute inset-0 ${service.overlayBg} flex items-center justify-center p-4`}>
                     <div className="text-center text-white p-2">
                       <h3 className="text-xl sm:text-2xl font-bold mb-3 leading-tight">{service.title}</h3>
                       {service.shortDesc && (
@@ -118,7 +119,7 @@ const Services = () => {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="p-6 md:p-7">
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">Service Details</h3>
@@ -149,11 +150,12 @@ const Services = () => {
 
       <section className="w-full py-16 md:py-20 bg-gray-900 font-poppins">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 hide-scrollbar">
             {statisticsData.map((stat) => (
               <div
                 key={stat.id}
-                className="bg-gray-800 rounded-xl p-8 text-center shadow-lg hover:bg-gray-700 transform hover:-translate-y-1 transition duration-300 ease-in-out"
+                className="flex-none w-64 sm:w-auto snap-center
+                          bg-gray-800 rounded-xl p-8 text-center shadow-lg hover:bg-gray-700 transform hover:-translate-y-1 transition duration-300 ease-in-out"
               >
                 <div className="text-5xl sm:text-6xl font-extrabold text-green-500 mb-3 animate-pulse-once">
                   {stat.value}
