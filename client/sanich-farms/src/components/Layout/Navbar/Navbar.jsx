@@ -111,9 +111,10 @@ const toggleMobileMenu = () => {
             <FiHeart size={22} />
           </Link>
           <div className="relative">
-            <Link to="/cart" className="hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="Shopping Cart">
+            <Link to="/cart" className="inline-flex items-center justify-center hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="Shopping Cart"> {/* CHANGED: Added inline-flex items-center justify-center */}
               <FiShoppingCart size={22} />
             </Link>
+            {/* Display cart count only if > 0 */}
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-green-700 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce-once">
                 {cartCount}
