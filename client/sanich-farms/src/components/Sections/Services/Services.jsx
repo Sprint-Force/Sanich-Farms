@@ -19,7 +19,7 @@ const servicesData = [
     ],
     note: "⭐ Register or fill the form",
     price: "GH₵1,000",
-    image: {Service1},
+    image: Service1,
     imageAlt: "Brooding Training Service",
     overlayBg: "bg-blue-600 bg-opacity-85",
     link: "/services/brooding-training",
@@ -30,7 +30,7 @@ const servicesData = [
     title: "OUR SERVICES",
     shortDesc: "Comprehensive poultry solutions:",
     tags: ["CONSULTANCY", "DEBEAKING", "INJECTING", "BROODING", "BUDGET ESTIMATION", "FARM MANAGEMENT"],
-    image: {Service2},
+    image: Service2,
     imageAlt: "Our Services",
     overlayBg: "bg-gradient-to-r from-green-600 to-green-800 bg-opacity-90",
     link: "/services",
@@ -40,7 +40,7 @@ const servicesData = [
     id: 3,
     title: "CONSULTANCY",
     shortDesc: "Our Service you can count on. Results you can see.",
-    image: {Service3},
+    image: Service3,
     imageAlt: "Consultancy Service",
     overlayBg: "bg-green-700 bg-opacity-85",
     link: "/services/consultancy",
@@ -87,7 +87,7 @@ const Services = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/400x300/cccccc/333333?text=Service+Image+Error"; }}
                   />
-                  <div className={`absolute inset-0 ${service.overlayBg} flex items-center justify-center p-4`}>
+                  {/* <div className={`absolute inset-0 ${service.overlayBg} flex items-center justify-center p-4`}>
                     <div className="text-center text-white p-2">
                       <h3 className="text-xl sm:text-2xl font-bold mb-3 leading-tight">{service.title}</h3>
                       {service.shortDesc && (
@@ -119,7 +119,7 @@ const Services = () => {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="p-6 md:p-7">
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">Service Details</h3>
