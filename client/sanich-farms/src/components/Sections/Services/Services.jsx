@@ -150,11 +150,12 @@ const Services = () => {
 
       <section className="w-full py-16 md:py-20 bg-gray-900 font-poppins">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 hide-scrollbar">
             {statisticsData.map((stat) => (
               <div
                 key={stat.id}
-                className="bg-gray-800 rounded-xl p-8 text-center shadow-lg hover:bg-gray-700 transform hover:-translate-y-1 transition duration-300 ease-in-out"
+                className="flex-none w-64 sm:w-auto snap-center
+                          bg-gray-800 rounded-xl p-8 text-center shadow-lg hover:bg-gray-700 transform hover:-translate-y-1 transition duration-300 ease-in-out"
               >
                 <div className="text-5xl sm:text-6xl font-extrabold text-green-500 mb-3 animate-pulse-once">
                   {stat.value}
