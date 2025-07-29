@@ -73,12 +73,13 @@ const Services = () => {
             </h2>
             <div className="w-20 h-1.5 bg-green-600 mx-auto rounded-full"></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 md:mb-16">
+          <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 md:mb-16 hide-scrollbar">
             {servicesData.map((service) => (
               <div
-                key={service.id}
-                className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 ease-in-out"
-              >
+                  key={service.id}
+                  className="flex-none w-72 sm:w-80 md:w-auto snap-center
+                            bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 ease-in-out"
+                >
                 <div className="relative h-64 sm:h-56 md:h-64 lg:h-72">
                   <img
                     src={service.image}
