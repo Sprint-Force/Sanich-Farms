@@ -12,14 +12,43 @@ const Navbar = forwardRef((props, ref) => {
   const [cartCount, setCartCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showShopDropdown, setShowShopDropdown] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
   const location = useLocation();
 
-  // Close mobile menu when route changes
+// Close mobile menu and search when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setIsMobileSearchOpen(false);
   }, [location]);
 
-  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    // CHANGED: Close mobile search if menu is opened/closed
+    if (isMobileSearchOpen) setIsMobileSearchOpen(false);
+  };
+
+// NEW FUNCTION: Toggle mobile search input visibility
+  const toggleMobileSearch = () => {
+    setIsMobileSearchOpen(!isMobileSearchOpen);
+    // CHANGED: Close mobile menu if search is opened/closed
+    if (isMobileMenuOpen) setIsMobileMenuOpen(false);
+    // CHANGED: Clear search query when closing the search bar
+    if (isMobileSearchOpen) setMobileSearchQuery('');
+  };
+
+  // Handle mobile search form submission
+  const handleMobileSearchSubmit = (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    if (mobileSearchQuery.trim()) { // Check if query is not just whitespace
+      console.log("Mobile Search submitted:", mobileSearchQuery);
+      // TODO: Implement actual search logic here, e.g., navigate to a search results page
+      // navigate(`/search?query=${encodeURIComponent(mobileSearchQuery)}`);
+
+      setIsMobileSearchOpen(false); // Close search after submission
+      setMobileSearchQuery(''); // Clear search query
+    }
+  };
 
   const handleShopDropdownToggle = () => {
     // Only toggle on click for mobile, hover for desktop is handled by CSS
@@ -104,14 +133,46 @@ const Navbar = forwardRef((props, ref) => {
 
         {/* Mobile Hamburger & Search Icon */}
         <div className="flex items-center md:hidden gap-4">
-          <button className="text-gray-700 hover:text-green-600 transition duration-200" aria-label="Search">
-            <FiSearch size={24} />
+          {/* Mobile Search Icon button */}
+          <button
+            onClick={toggleMobileSearch} // CHANGED: Added onClick handler
+            className="text-gray-700 hover:text-green-600 transition duration-200"
+            aria-label="Toggle mobile search"
+          >
+            {isMobileSearchOpen ? <FiX size={24} /> : <FiSearch size={24} />} {/* CHANGED: Icon changes when search is open */}
           </button>
           <button onClick={toggleMobileMenu} className="text-gray-700 hover:text-green-600 transition duration-200" aria-label="Toggle mobile menu">
             {isMobileMenuOpen ? <FiX size={28} /> : <FiMenu size={28} />}
           </button>
         </div>
       </div>
+
+{/* Mobile Search Input (Conditionally rendered) */}
+      {isMobileSearchOpen && (
+        <div className="md:hidden bg-white border-t border-gray-100 p-4 animate-fade-in-down">
+          <form onSubmit={handleMobileSearchSubmit} className="relative">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={mobileSearchQuery} // Bind input value to state
+              onChange={(e) => setMobileSearchQuery(e.target.value)} // Update state on change
+              className="w-full border border-gray-300 pl-10 pr-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
+              aria-label="Mobile search input"
+              autoFocus // Automatically focus the input when it appears
+            />
+            <button
+              type="submit"
+              className="absolute right-0 top-0 h-full bg-green-600 text-white px-4 rounded-r-full flex items-center justify-center hover:bg-green-700 transition duration-200"
+              aria-label="Submit mobile search"
+            >
+              <FiSearch size={20} />
+            </button>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <FiSearch size={20} />
+            </span>
+          </form>
+        </div>
+      )}
 
       {/* Navigation Links (Desktop) */}
       <nav className="hidden md:flex justify-between items-center bg-gray-800 px-4 md:px-6 lg:px-10 py-3 text-white text-base font-medium">
@@ -155,18 +216,6 @@ const Navbar = forwardRef((props, ref) => {
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 top-[var(--navbar-height)] bg-white z-40 flex flex-col pt-4 pb-8 overflow-y-auto animate-slide-in-right">
           <div className="px-4 py-2">
-            {/* Mobile Search Bar */}
-            <form className="relative mb-6">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="w-full border border-gray-300 pl-10 pr-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
-                aria-label="Search products on mobile"
-              />
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                <FiSearch size={20} />
-              </span>
-            </form>
 
             {/* Mobile Icons */}
             <div className="flex justify-around items-center mb-6 text-gray-700 text-lg border-b pb-4 border-gray-100">
