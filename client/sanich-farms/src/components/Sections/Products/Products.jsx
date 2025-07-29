@@ -97,14 +97,15 @@ const Products = () => {
           </h2>
           <div className="w-20 h-1.5 bg-green-600 mx-auto rounded-full"></div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mb-12 md:mb-16">
+        <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mb-12 md:mb-16 hide-scrollbar">
           {productsData.map((product) => (
             <div
               key={product.id}
-              className={`bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 ease-in-out ${
+               className={`flex-none w-64 sm:w-72 md:w-auto snap-center
+              bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 ease-in-out ${
                 product.isFeatured ? 'border-2 border-green-600 ring-2 ring-green-200' : ''
               }`}
-            >
+              >
               <div className="relative mb-4">
                 <img
                   src={product.image}
