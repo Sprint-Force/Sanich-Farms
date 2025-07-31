@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import {sequelize} from '../config/db.js';
+import { CartItem } from './CartItem.js';
 
 
 // User model
@@ -60,4 +61,6 @@ export const User = sequelize.define('User', {
         updatedAt: 'updated_at'
     }
 );
+User.hasMany(CartItem, { foreignKey: 'user_id' });
+CartItem.belongsTo(User, { foreignKey: 'user_id' });
 

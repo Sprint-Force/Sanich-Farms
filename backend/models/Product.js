@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import {sequelize} from '../config/db.js';
+import { CartItem } from './CartItem.js';
 
 // Product model
 export const Product = sequelize.define ('Product', {
@@ -56,3 +57,6 @@ export const Product = sequelize.define ('Product', {
        deletedAt: 'deleted_at',
     }
 );
+
+Product.hasMany(CartItem, { foreignKey: 'product_id' });
+CartItem.belongsTo(Product, { foreignKey: 'product_id' });
