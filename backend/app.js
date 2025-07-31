@@ -4,6 +4,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { authRoutes } from "./routes/authRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import { productRoutes } from "./routes/productRoutes.js";
 
 
 
@@ -18,7 +19,8 @@ const app = express();
 app.use(express.json());
 
 //Routes
-app.use('/api/auth', authRoutes)
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
 
 //Middlewares
 app.use(cors());
