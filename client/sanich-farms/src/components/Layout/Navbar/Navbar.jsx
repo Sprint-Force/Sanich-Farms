@@ -1,57 +1,60 @@
-// Navigation Bar Component
 import React, { useState, useEffect, forwardRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   FiMenu, FiX, FiPhoneCall, FiSearch,
   FiHeart, FiShoppingCart, FiUser, FiMapPin,
 } from 'react-icons/fi';
-import { logo } from '../../../assets';
+import { logo } from '../../../assets'; // Adjust path to your logo
+import { useCart } from '../../../context/CartContext';
+import { useWishlist } from '../../../context/WishlistContext';
 
-// Allow MainLayout to pass a ref to Navbar
+
+// Use forwardRef to allow MainLayout to pass a ref to Navbar
 const Navbar = forwardRef((props, ref) => {
-  const [cartCount, setCartCount] = useState(0);
+  // Removed local cartCount, now getting from context
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showShopDropdown, setShowShopDropdown] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState('');
+
+  // Use the custom hooks to get cart and wishlist counts from context
+  const { cartCount } = useCart();
+  const { wishlistCount } = useWishlist();
+
   const location = useLocation();
 
-// Close mobile menu and search when route changes
+  // Close mobile menu and search when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsMobileSearchOpen(false);
   }, [location]);
 
-const toggleMobileMenu = () => {
+  const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
-    // CHANGED: Close mobile search if menu is opened/closed
+    // Close mobile search if menu is opened/closed
     if (isMobileSearchOpen) setIsMobileSearchOpen(false);
   };
 
-// NEW FUNCTION: Toggle mobile search input visibility
   const toggleMobileSearch = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
-    // CHANGED: Close mobile menu if search is opened/closed
+    // Close mobile menu if search is opened/closed
     if (isMobileMenuOpen) setIsMobileMenuOpen(false);
-    // CHANGED: Clear search query when closing the search bar
+    // Clear search query when closing
     if (isMobileSearchOpen) setMobileSearchQuery('');
   };
 
-  // Handle mobile search form submission
   const handleMobileSearchSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
-    if (mobileSearchQuery.trim()) { // Check if query is not just whitespace
+    e.preventDefault();
+    if (mobileSearchQuery.trim()) {
       console.log("Mobile Search submitted:", mobileSearchQuery);
-      // TODO: Implement actual search logic here, e.g., navigate to a search results page
+      // Here you would typically navigate to a search results page
       // navigate(`/search?query=${encodeURIComponent(mobileSearchQuery)}`);
-
       setIsMobileSearchOpen(false); // Close search after submission
       setMobileSearchQuery(''); // Clear search query
     }
   };
 
   const handleShopDropdownToggle = () => {
-    // Only toggle on click for mobile, hover for desktop is handled by CSS
     if (window.innerWidth < 768) {
       setShowShopDropdown(prev => !prev);
     }
@@ -67,7 +70,7 @@ const toggleMobileMenu = () => {
         </div>
         <div className="flex items-center gap-4">
           <select className="outline-none cursor-pointer bg-transparent text-gray-700 hover:text-green-700 transition duration-200">
-            <option value="en">Eng</option>
+            <option value="en">English</option>
             <option value="twi">Twi</option>
           </select>
           <select className="outline-none cursor-pointer bg-transparent text-gray-700 hover:text-green-700 transition duration-200">
@@ -85,7 +88,7 @@ const toggleMobileMenu = () => {
           <span className="text-xl md:text-2xl lg:text-3xl font-bold text-[#00B207] whitespace-nowrap">Sanich Farms</span>
         </Link>
 
-        {/* Search Bar */}
+        {/* Search Bar (Desktop) */}
         <form className="hidden md:flex relative flex-grow mx-4 lg:mx-8 max-w-lg">
           <input
             type="text"
@@ -105,22 +108,27 @@ const toggleMobileMenu = () => {
           </span>
         </form>
 
-        {/* Icons & Login/Signup */}
+        {/* Icons & Login/Signup (Desktop) */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6 text-gray-700 text-lg flex-shrink-0">
-          <Link to="/wishlist" className="hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="Wishlist">
+          {/* Wishlist Icon with Badge - FIXED POSITIONING AND HOVER */}
+          <Link to="/wishlist" className="relative inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 hover:text-green-600 transition duration-200" aria-label="Wishlist">
             <FiHeart size={22} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce-once">
+                {wishlistCount}
+              </span>
+            )}
           </Link>
-          <div className="relative">
-            <Link to="/cart" className="inline-flex items-center justify-center hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="Shopping Cart"> {/* CHANGED: Added inline-flex items-center justify-center */}
-              <FiShoppingCart size={22} />
-            </Link>
-            {/* Display cart count only if > 0 */}
+          {/* Cart Icon with Badge - FIXED POSITIONING AND HOVER */}
+          <Link to="/cart" className="relative inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 hover:text-green-600 transition duration-200" aria-label="Shopping Cart">
+            <FiShoppingCart size={22} />
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-green-700 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce-once">
                 {cartCount}
               </span>
             )}
-          </div>
+          </Link>
+          {/* User Profile */}
           <Link to="/profile" className="hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="User Profile">
             <FiUser size={22} />
           </Link>
@@ -132,31 +140,32 @@ const toggleMobileMenu = () => {
           </Link>
         </div>
 
-        {/* Mobile Hamburger & Search Icon */}
+        {/* Mobile Hamburger & Search Icon (visible on mobile) */}
         <div className="flex items-center md:hidden gap-4">
           {/* Mobile Search Icon button */}
           <button
-            onClick={toggleMobileSearch} // CHANGED: Added onClick handler
+            onClick={toggleMobileSearch}
             className="text-gray-700 hover:text-green-600 transition duration-200"
             aria-label="Toggle mobile search"
           >
-            {isMobileSearchOpen ? <FiX size={24} /> : <FiSearch size={24} />} {/* CHANGED: Icon changes when search is open */}
+            {isMobileSearchOpen ? <FiX size={24} /> : <FiSearch size={24} />}
           </button>
+          {/* Hamburger Menu Button */}
           <button onClick={toggleMobileMenu} className="text-gray-700 hover:text-green-600 transition duration-200" aria-label="Toggle mobile menu">
             {isMobileMenuOpen ? <FiX size={28} /> : <FiMenu size={28} />}
           </button>
         </div>
       </div>
 
-{/* Mobile Search Input (Conditionally rendered) */}
+      {/* Mobile Search Input (Conditionally rendered) */}
       {isMobileSearchOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 p-4 animate-fade-in-down">
           <form onSubmit={handleMobileSearchSubmit} className="relative">
             <input
               type="text"
               placeholder="Search products..."
-              value={mobileSearchQuery} // Bind input value to state
-              onChange={(e) => setMobileSearchQuery(e.target.value)} // Update state on change
+              value={mobileSearchQuery}
+              onChange={(e) => setMobileSearchQuery(e.target.value)}
               className="w-full border border-gray-300 pl-10 pr-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 text-base"
               aria-label="Mobile search input"
               autoFocus // Automatically focus the input when it appears
@@ -175,7 +184,7 @@ const toggleMobileMenu = () => {
         </div>
       )}
 
-      {/* Navigation Links (Desktop) */}
+      {/* Navigation Links (Desktop) - Hidden on small screens, shown on md and up */}
       <nav className="hidden md:flex justify-between items-center bg-gray-800 px-4 md:px-6 lg:px-10 py-3 text-white text-base font-medium">
         <div className="flex gap-6 lg:gap-8">
           <Link to="/" className="hover:text-green-400 transition duration-200">Home</Link>
@@ -213,28 +222,33 @@ const toggleMobileMenu = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Shown only when isMobileMenuOpen is true */}
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 top-[var(--navbar-height)] bg-white z-40 flex flex-col pt-4 pb-8 overflow-y-auto animate-slide-in-right">
           <div className="px-4 py-2">
-
-            {/* Mobile Icons */}
+            {/* Mobile Icons - FIXED POSITIONING AND HOVER */}
             <div className="flex justify-around items-center mb-6 text-gray-700 text-lg border-b pb-4 border-gray-100">
-              <Link to="/wishlist" onClick={toggleMobileMenu} className="flex flex-col items-center gap-1 hover:text-green-600 transition duration-200" aria-label="Wishlist">
+              {/* Wishlist Icon with Badge */}
+              <Link to="/wishlist" onClick={toggleMobileMenu} className="relative flex flex-col items-center gap-1 hover:text-green-600 transition duration-200" aria-label="Wishlist">
                 <FiHeart size={24} />
                 <span className="text-xs">Wishlist</span>
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce-once">
+                    {wishlistCount}
+                  </span>
+                )}
               </Link>
-              <div className="relative">
-                <Link to="/cart" onClick={toggleMobileMenu} className="flex flex-col items-center gap-1 hover:text-green-600 transition duration-200" aria-label="Shopping Cart">
-                  <FiShoppingCart size={24} />
-                  <span className="text-xs">Cart</span>
-                </Link>
+              {/* Cart Icon with Badge */}
+              <Link to="/cart" onClick={toggleMobileMenu} className="relative flex flex-col items-center gap-1 hover:text-green-600 transition duration-200" aria-label="Shopping Cart">
+                <FiShoppingCart size={24} />
+                <span className="text-xs">Cart</span>
                 {cartCount > 0 && (
                   <span className="absolute -top-1 right-1 bg-green-700 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce-once">
                     {cartCount}
                   </span>
                 )}
-              </div>
+              </Link>
+              {/* User Profile */}
               <Link to="/profile" onClick={toggleMobileMenu} className="flex flex-col items-center gap-1 hover:text-green-600 transition duration-200" aria-label="User Profile">
                 <FiUser size={24} />
                 <span className="text-xs">Profile</span>
@@ -301,6 +315,6 @@ const toggleMobileMenu = () => {
       )}
     </header>
   );
-});
+}); // End of forwardRef
 
 export default Navbar;

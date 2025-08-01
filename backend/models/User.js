@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import {sequelize} from '../config/db.js';
+import { CartItem } from './CartItem.js';
 
 
 // User model
@@ -41,6 +42,16 @@ export const User = sequelize.define('User', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
+    reset_code: {
+      type: DataTypes.STRING(6), 
+      allowNull: true,
+    },
+
+    reset_code_expires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    }
+
 
 },
     {
@@ -50,30 +61,6 @@ export const User = sequelize.define('User', {
         updatedAt: 'updated_at'
     }
 );
+User.hasMany(CartItem, { foreignKey: 'user_id' });
+CartItem.belongsTo(User, { foreignKey: 'user_id' });
 
-// PasswordReset model 
-export const PasswordReset = sequelize.define('PasswordReset', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'id'
-    }
-  },
-  token: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  expiresAt: {
-    type: DataTypes.DATE,
-    allowNull: false
-  }
-}, {
-  tableName: 'password_resets'
-});
-
-//Associations
-User.hasOne(PasswordReset, { foreignKey: 'id' });
-PasswordReset.belongsTo(User, { foreignKey: 'id' });
