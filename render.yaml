@@ -1,0 +1,40 @@
+# render.yaml (This file MUST be in the root of your Git repository)
+services:
+  - type: web
+    name: sanich-farms-backend # A unique name for your backend service on Render
+    env: node # Specifies the runtime environment as Node.js
+    
+    # CRUCIAL: This tells Render that the actual service code is in the 'backend' folder
+    # Render will change into this directory before running build and start commands.
+    rootDir: ./backend/ 
+    
+    # --- BUILD COMMAND ---
+    # This command will run inside the './backend/' directory.
+    # It tells npm to install all dependencies listed in './backend/package.json'.
+    buildCommand: npm install 
+    
+    # --- START COMMAND ---
+    # This command will also run inside the './backend/' directory.
+    # It tells npm to execute the 'start' script defined in './backend/package.json'.
+    # Ensure you have a "start" script in your backend/package.json (e.g., "start": "node server.js").
+    startCommand: npm start 
+    
+    plan: starter # Choose your desired instance plan (e.g., starter, professional)
+    autoDeploy: true # Automatically deploy new changes when you push to your linked branch
+    
+    envVars:
+      - key: NODE_ENV
+        value: production # Set the environment to production
+      # Add any other environment variables your backend application needs here.
+      # For example, if you have a database connection string:
+      # - key: DATABASE_URL
+      #   value: "postgres://user:password@host:port/your_database"
+      #
+      # Or if you're using a Render-managed PostgreSQL database, you can link to it:
+      # - key: DATABASE_URL
+      #   fromDatabase:
+      #     name: your-render-database-name # Replace with the actual name of your database on Render
+      #     property: connectionString
+      #
+      # - key: API_SECRET_KEY
+      #   generateValue: true # Render will generate a strong random value for this
