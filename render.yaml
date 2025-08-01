@@ -1,18 +1,19 @@
+# render.yaml
 services:
   - type: web
-    name: sanich-farms-web
-    env: node # or python, ruby, go, elixir, rust, etc.
-    buildCommand: yarn install && yarn build # Or pip install -r requirements.txt, bundle install, etc.
-    startCommand: yarn start # Or gunicorn myapp.wsgi, rails s, etc.
-    plan: starter # Or professional, etc.
-    autoDeploy: true # Automatically deploy on new commits to the linked branch
+    name: sanich-farms-backend
+    env: node
+    # Crucially, tell Render where to find the service's root directory relative to the Git repo root
+    rootDir: ./backend/
+    buildCommand: yarn install # This command will now run inside the 'backend' directory
+    startCommand: yarn start   # This command will also run inside the 'backend' directory
+    plan: starter
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
-      # Add other environment variables as needed
-      # - key: DATABASE_URL
-      #   fromDatabase:
-      #     name: my-database # Name of a Render Postgres database
-      #     property: connectionString
-      # - key: SECRET_KEY_BASE
-      #   generateValue: true # Render will generate a strong secret
+      # Add other backend-specific environment variables here
+      # - key: DB_HOST
+      #   value: your_db_host
+      # - key: DB_USER
+      #   value: your_db_user
