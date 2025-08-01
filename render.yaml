@@ -2,8 +2,8 @@ services:
   - type: web
     name: sanich-farms-web
     env: node # or python, ruby, go, elixir, rust, etc.
-    buildCommand: npm install && npm build # Or pip install -r requirements.txt, bundle install, etc.
-    startCommand: npm start # Or gunicorn myapp.wsgi, rails s, etc.
+    buildCommand: yarn install && yarn build # Or pip install -r requirements.txt, bundle install, etc.
+    startCommand: yarn start # Or gunicorn myapp.wsgi, rails s, etc.
     plan: starter # Or professional, etc.
     autoDeploy: true # Automatically deploy on new commits to the linked branch
     envVars:
