@@ -3,15 +3,15 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   FiMenu, FiX, FiPhoneCall, FiSearch,
   FiHeart, FiShoppingCart, FiUser, FiMapPin,
+  FiChevronRight // <--- ADDED THIS IMPORT: Essential for dropdown arrows
 } from 'react-icons/fi';
-import { logo } from '../../../assets'; // Adjust path to your logo
+import logo from '../../../assets/logo.png'; // Corrected path to logo. If your logo is named differently, adjust here.
 import { useCart } from '../../../context/CartContext';
 import { useWishlist } from '../../../context/WishlistContext';
 
 
 // Use forwardRef to allow MainLayout to pass a ref to Navbar
 const Navbar = forwardRef((props, ref) => {
-  // Removed local cartCount, now getting from context
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showShopDropdown, setShowShopDropdown] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -38,7 +38,7 @@ const Navbar = forwardRef((props, ref) => {
   const toggleMobileSearch = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
     // Close mobile menu if search is opened/closed
-    if (isMobileMenuOpen) setIsMobileMenuOpen(false);
+    if (isMobileMenuOpen) setIsMobileSearchOpen(false);
     // Clear search query when closing
     if (isMobileSearchOpen) setMobileSearchQuery('');
   };
@@ -55,9 +55,9 @@ const Navbar = forwardRef((props, ref) => {
   };
 
   const handleShopDropdownToggle = () => {
-    if (window.innerWidth < 768) {
-      setShowShopDropdown(prev => !prev);
-    }
+    // This function is primarily for mobile dropdown behavior
+    // Desktop uses onMouseEnter/onMouseLeave
+    setShowShopDropdown(prev => !prev);
   };
 
   return (
@@ -84,7 +84,7 @@ const Navbar = forwardRef((props, ref) => {
       <div className="flex items-center justify-between px-4 md:px-6 lg:px-10 py-3 md:py-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-          <img src={logo} alt="Sanich Farms Logo" className="h-10 md:h-12" />
+          <img src={logo} alt="Sanich Farms Logo" className="h-10 md:h-12" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/120x48/cccccc/333333?text=Logo"; }}/>
           <span className="text-xl md:text-2xl lg:text-3xl font-bold text-[#00B207] whitespace-nowrap">Sanich Farms</span>
         </Link>
 
@@ -110,7 +110,7 @@ const Navbar = forwardRef((props, ref) => {
 
         {/* Icons & Login/Signup (Desktop) */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6 text-gray-700 text-lg flex-shrink-0">
-          {/* Wishlist Icon with Badge - FIXED POSITIONING AND HOVER */}
+          {/* Wishlist Icon with Badge */}
           <Link to="/wishlist" className="relative inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 hover:text-green-600 transition duration-200" aria-label="Wishlist">
             <FiHeart size={22} />
             {wishlistCount > 0 && (
@@ -119,7 +119,7 @@ const Navbar = forwardRef((props, ref) => {
               </span>
             )}
           </Link>
-          {/* Cart Icon with Badge - FIXED POSITIONING AND HOVER */}
+          {/* Cart Icon with Badge */}
           <Link to="/cart" className="relative inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 hover:text-green-600 transition duration-200" aria-label="Shopping Cart">
             <FiShoppingCart size={22} />
             {cartCount > 0 && (
@@ -128,8 +128,8 @@ const Navbar = forwardRef((props, ref) => {
               </span>
             )}
           </Link>
-          {/* User Profile */}
-          <Link to="/profile" className="hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="User Profile">
+          {/* User Profile / Dashboard Link */}
+          <Link to="/dashboard" className="hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="User Dashboard">
             <FiUser size={22} />
           </Link>
           <Link
@@ -198,9 +198,8 @@ const Navbar = forwardRef((props, ref) => {
           >
             <button className="hover:text-green-400 transition duration-200 flex items-center gap-1 focus:outline-none">
               Shop
-              <svg className={`w-4 h-4 ml-1 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : 'rotate-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
+              {/* Using FiChevronRight instead of SVG for consistency */}
+              <FiChevronRight className={`inline-block ml-1 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-90' : 'rotate-0'}`} />
             </button>
             {showShopDropdown && (
               <div className="absolute top-full left-0 bg-white text-gray-800 shadow-lg rounded-md py-2 w-48 z-10 border border-gray-100 animate-fade-in-down">
@@ -248,10 +247,10 @@ const Navbar = forwardRef((props, ref) => {
                   </span>
                 )}
               </Link>
-              {/* User Profile */}
-              <Link to="/profile" onClick={toggleMobileMenu} className="flex flex-col items-center gap-1 hover:text-green-600 transition duration-200" aria-label="User Profile">
+              {/* User Profile / Dashboard Link */}
+              <Link to="/dashboard" onClick={toggleMobileMenu} className="flex flex-col items-center gap-1 hover:text-green-600 transition duration-200" aria-label="User Dashboard">
                 <FiUser size={24} />
-                <span className="text-xs">Profile</span>
+                <span className="text-xs">Dashboard</span>
               </Link>
             </div>
 
@@ -267,9 +266,8 @@ const Navbar = forwardRef((props, ref) => {
                   className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200 flex items-center justify-between focus:outline-none"
                 >
                   Shop
-                  <svg className={`w-5 h-5 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : 'rotate-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
+                  {/* Using FiChevronRight instead of SVG for consistency */}
+                  <FiChevronRight className={`w-5 h-5 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : 'rotate-0'}`} />
                 </button>
                 {showShopDropdown && (
                   <div className="flex flex-col pl-8 mt-2 space-y-2 animate-fade-in-down">

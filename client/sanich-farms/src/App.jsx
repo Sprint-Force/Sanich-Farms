@@ -14,9 +14,20 @@ import AboutUsPage from './pages/AboutUsPage';
 import ContactUsPage from './pages/ContactUsPage';
 import AllServicesPage from './pages/AllServicesPage';
 import ServiceDetailPage from './pages/ServiceDetailPage';
-import ServiceBookingPage from './pages/ServiceBookingPage'; // NEW: Import ServiceBookingPage
-import BookingConfirmationPage from './pages/BookingConfirmationPage'; // NEW: Import BookingConfirmationPage
+import ServiceBookingPage from './pages/ServiceBookingPage';
+import BookingConfirmationPage from './pages/BookingConfirmationPage';
+import UserDashboardPage from './pages/UserDashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
+
+// Import dashboard section components for nested routes
+import DashboardOverview from './components/Dashboard/DashboardOverview';
+import MyOrders from './components/Dashboard/MyOrders';
+import MyBookings from './components/Dashboard/MyBookings';
+import MyProfile from './components/Dashboard/MyProfile';
+// NEW IMPORTS for detail pages
+import OrderDetailPage from './components/Dashboard/OrderDetailPage';
+import BookingDetailPage from './components/Dashboard/BookingDetailPage';
+
 
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -40,10 +51,22 @@ function App() {
             <Route path='/contact' element={<ContactUsPage />} />
             <Route path='/services' element={<AllServicesPage />} />
             <Route path='/services/:serviceId' element={<ServiceDetailPage />} />
-            {/* NEW ROUTES FOR SERVICE BOOKING */}
             <Route path='/book-service/:serviceId' element={<ServiceBookingPage />} />
             <Route path='/booking-confirmation' element={<BookingConfirmationPage />} />
-            {/* Add any other routes that should have the Navbar/Footer here */}
+
+            {/* User Dashboard Routes */}
+            <Route path='/dashboard' element={<UserDashboardPage />}>
+              {/* Nested routes for dashboard sections */}
+              <Route index element={<DashboardOverview />} /> {/* Default child route for /dashboard */}
+              <Route path='orders' element={<MyOrders />} />
+              <Route path='bookings' element={<MyBookings />} />
+              <Route path='profile' element={<MyProfile />} />
+              <Route path='wishlist' element={<WishlistPage />} /> {/* Reusing existing WishlistPage */}
+              {/* NEW NESTED ROUTES for detail pages */}
+              <Route path='orders/:orderId' element={<OrderDetailPage />} />
+              <Route path='bookings/:bookingId' element={<BookingDetailPage />} />
+            </Route>
+
           </Route>
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
