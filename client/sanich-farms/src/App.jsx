@@ -11,7 +11,11 @@ import WishlistPage from './pages/WishlistPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import AboutUsPage from './pages/AboutUsPage';
-import ContactUsPage from './pages/ContactUsPage'; // NEW: Import ContactUsPage
+import ContactUsPage from './pages/ContactUsPage';
+import AllServicesPage from './pages/AllServicesPage';
+import ServiceDetailPage from './pages/ServiceDetailPage';
+import ServiceBookingPage from './pages/ServiceBookingPage'; // NEW: Import ServiceBookingPage
+import BookingConfirmationPage from './pages/BookingConfirmationPage'; // NEW: Import BookingConfirmationPage
 import NotFoundPage from './pages/NotFoundPage';
 
 import { CartProvider } from './context/CartContext';
@@ -25,7 +29,7 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path='/' element={<Home />} />
             <Route path='/login' element={<Login />} />
-            <Route path='/signup' element={<Signup/>} />
+            <Route path='/signup' element='/signup' />
             <Route path='/shop' element={<ShopPage />} />
             <Route path='/products/:productId' element={<ProductDetailPage />} />
             <Route path='/cart' element={<CartPage />} />
@@ -33,7 +37,12 @@ function App() {
             <Route path='/checkout' element={<CheckoutPage />} />
             <Route path='/order-confirmation' element={<OrderConfirmationPage />} />
             <Route path='/about' element={<AboutUsPage />} />
-            <Route path='/contact' element={<ContactUsPage />} /> {/* NEW: Contact Us Page Route */}
+            <Route path='/contact' element={<ContactUsPage />} />
+            <Route path='/services' element={<AllServicesPage />} />
+            <Route path='/services/:serviceId' element={<ServiceDetailPage />} />
+            {/* NEW ROUTES FOR SERVICE BOOKING */}
+            <Route path='/book-service/:serviceId' element={<ServiceBookingPage />} />
+            <Route path='/booking-confirmation' element={<BookingConfirmationPage />} />
             {/* Add any other routes that should have the Navbar/Footer here */}
           </Route>
           <Route path='*' element={<NotFoundPage />} />
