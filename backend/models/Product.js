@@ -1,9 +1,9 @@
 import { DataTypes } from 'sequelize';
-import {sequelize} from '../config/db.js';
-import { CartItem } from './CartItem.js';
+import {sequelize} from '../config/sequelize.js';
+
 
 // Product model
-export const Product = sequelize.define ('Product', {
+ export const Product = sequelize.define ('Product', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -18,16 +18,24 @@ export const Product = sequelize.define ('Product', {
         allowNull: true,
     },
     category: {
-        type: DataTypes.STRING(150),
+        type: DataTypes.ENUM('chicks', 'feeds', 'eggs', 'vitamins'),
         allowNull: false,
     },
     price: {
         type: DataTypes.DECIMAL(10, 2),
-        allowNull: false, 
+        allowNull: false,
+        validate: {
+        isDecimal: true,
+        min: 0,
+    } 
     },
     stock_quantity: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        validate: {
+        min: 0,
+        isInt: true,
+    }
     },
     rating: {
         type:  DataTypes.DOUBLE,
@@ -58,5 +66,4 @@ export const Product = sequelize.define ('Product', {
     }
 );
 
-Product.hasMany(CartItem, { foreignKey: 'product_id' });
-CartItem.belongsTo(Product, { foreignKey: 'product_id' });
+

@@ -27,9 +27,10 @@ services:
         value: production # Set the environment to production
       # Add any other environment variables your backend application needs here.
       # For example, if you have a database connection string:
-      # - key: DATABASE_URL
-      #   value: "postgres://user:password@host:port/your_database"
-      #
+      - key: DATABASE_URL
+        value:
+      - key: JWT_SECRET
+        value: 
       # Or if you're using a Render-managed PostgreSQL database, you can link to it:
       # - key: DATABASE_URL
       #   fromDatabase:
