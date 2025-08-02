@@ -28,9 +28,9 @@ services:
       # Add any other environment variables your backend application needs here.
       # For example, if you have a database connection string:
       - key: DATABASE_URL
-        value: postgresql://neondb_owner:npg_HepfOUq3kZ5y@ep-aged-waterfall-afas9os5-pooler.c-2.us-west-2.aws.neon.tech/sanichfarms_db?sslmode=require&channel_binding=require
+        value:
       - key: JWT_SECRET
-        value: db914c3c0eb179f10cfbb562ddd1945d
+        value: 
       # Or if you're using a Render-managed PostgreSQL database, you can link to it:
       # - key: DATABASE_URL
       #   fromDatabase:
