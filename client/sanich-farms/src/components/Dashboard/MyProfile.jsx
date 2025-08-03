@@ -1,4 +1,3 @@
-// src/components/Dashboard/MyProfile.jsx
 import React, { useState } from 'react';
 
 const MyProfile = () => {

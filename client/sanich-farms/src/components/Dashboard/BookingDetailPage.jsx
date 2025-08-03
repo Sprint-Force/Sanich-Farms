@@ -1,4 +1,3 @@
-// src/components/Dashboard/BookingDetailPage.jsx
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiCalendar, FiUser, FiMail, FiPhone, FiMapPin, FiInfo } from 'react-icons/fi';

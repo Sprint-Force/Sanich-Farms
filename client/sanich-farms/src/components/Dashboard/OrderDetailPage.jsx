@@ -1,4 +1,3 @@
-// src/components/Dashboard/OrderDetailPage.jsx
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiCheckCircle, FiPackage, FiMapPin, FiCreditCard } from 'react-icons/fi';
