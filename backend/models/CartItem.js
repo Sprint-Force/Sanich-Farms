@@ -1,5 +1,8 @@
-import { DataTypes } from 'sequelize';
-import {sequelize} from '../config/db.js';
+import { DataTypes, Sequelize } from 'sequelize';
+import { sequelize } from '../config/sequelize.js';
+
+
+
 
 export const CartItem = sequelize.define('CartItem', {
     id: {
@@ -31,3 +34,6 @@ export const CartItem = sequelize.define('CartItem', {
         updatedAt: 'updated_at'
     }
 ); 
+
+ 
+ //

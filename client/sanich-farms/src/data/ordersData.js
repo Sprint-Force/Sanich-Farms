@@ -1,0 +1,62 @@
+export const ordersData = [
+  {
+    id: 'ORD001',
+    date: '2025-07-28',
+    total: 'GH₵150.00',
+    status: 'Delivered',
+    items: [
+      { id: 1, name: 'Broiler Chicks (1 Week Old)', quantity: 10, price: 'GH₵10.00', subtotal: 'GH₵100.00', image: 'https://placehold.co/50x50/cccccc/333333?text=Chick' },
+      { id: 2, name: 'Poultry Feed (25kg)', quantity: 1, price: 'GH₵50.00', subtotal: 'GH₵50.00', image: 'https://placehold.co/50x50/cccccc/333333?text=Feed' },
+    ],
+    shippingAddress: {
+      name: 'Sanich User',
+      street: '123 Farm Road',
+      city: 'Kumasi',
+      region: 'Ashanti',
+      zip: '00233',
+      country: 'Ghana',
+    },
+    paymentMethod: 'Cash on Delivery',
+    notes: 'Leave package at the gate.',
+  },
+  {
+    id: 'ORD002',
+    date: '2025-07-25',
+    total: 'GH₵85.50',
+    status: 'Processing',
+    items: [
+      { id: 3, name: 'Layer Chicks (Day Old)', quantity: 5, price: 'GH₵12.00', subtotal: 'GH₵60.00', image: 'https://placehold.co/50x50/cccccc/333333?text=Layer' },
+      { id: 4, name: 'Vitamins (1L)', quantity: 1, price: 'GH₵25.50', subtotal: 'GH₵25.50', image: 'https://placehold.co/50x50/cccccc/333333?text=Vitamins' },
+    ],
+    shippingAddress: {
+      name: 'Sanich User',
+      street: '456 Poultry Lane',
+      city: 'Accra',
+      region: 'Greater Accra',
+      zip: '00233',
+      country: 'Ghana',
+    },
+    paymentMethod: 'Mobile Money',
+    notes: '',
+  },
+  {
+    id: 'ORD003',
+    date: '2025-07-20',
+    total: 'GH₵220.00',
+    status: 'Cancelled',
+    items: [
+      { id: 5, name: 'Broiler Chicks (1 Week Old)', quantity: 20, price: 'GH₵10.00', subtotal: 'GH₵200.00', image: 'https://placehold.co/50x50/cccccc/333333?text=Chick' },
+      { id: 6, name: 'Waterer (10L)', quantity: 1, price: 'GH₵20.00', subtotal: 'GH₵20.00', image: 'https://placehold.co/50x50/cccccc/333333?text=Waterer' },
+    ],
+    shippingAddress: {
+      name: 'Sanich User',
+      street: '789 Chicken Road',
+      city: 'Tema',
+      region: 'Greater Accra',
+      zip: '00233',
+      country: 'Ghana',
+    },
+    paymentMethod: 'Bank Transfer',
+    notes: 'Order cancelled by customer.',
+  },
+];

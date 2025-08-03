@@ -1,67 +1,26 @@
-// Services Component
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowRight, FiCheckCircle } from 'react-icons/fi';
+import { FiArrowRight } from 'react-icons/fi';
 
-
-//images
-import Service1 from '../../../assets/sevice1.jpg';
-import Service2 from '../../../assets/sevice2.jpg';
-import Service3 from '../../../assets/sevice3.jpg';
-const servicesData = [
-  {
-    id: 1,
-    title: "BROODING TRAINING",
-    shortDesc: "Practical intensive brooding training with",
-    details: [
-      "Poultry experts and knowledgeable professionals",
-      "Certificate will be awarded",
-    ],
-    note: "⭐ Register or fill the form",
-    price: "GH₵1,000",
-    image: Service1,
-    imageAlt: "Brooding Training Service",
-    overlayBg: "bg-blue-600 bg-opacity-85",
-    link: "/services/brooding-training",
-    cardDesc: "Nulla libero lorem, euismod venenatis nibh sed, sodales dictum ex. Etiam nisl quam, malesuada et pulvinar at, posuere eu neque.",
-  },
-  {
-    id: 2,
-    title: "OUR SERVICES",
-    shortDesc: "Comprehensive poultry solutions:",
-    tags: ["CONSULTANCY", "DEBEAKING", "INJECTING", "BROODING", "BUDGET ESTIMATION", "FARM MANAGEMENT"],
-    image: Service2,
-    imageAlt: "Our Services",
-    overlayBg: "bg-gradient-to-r from-green-600 to-green-800 bg-opacity-90",
-    link: "/services",
-    cardDesc: "Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit.",
-  },
-  {
-    id: 3,
-    title: "CONSULTANCY",
-    shortDesc: "Our Service you can count on. Results you can see.",
-    image: Service3,
-    imageAlt: "Consultancy Service",
-    overlayBg: "bg-green-700 bg-opacity-85",
-    link: "/services/consultancy",
-    cardDesc: "Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint. Velit officia consequat duis enim velit mollit.",
-  },
-];
-
-const statisticsData = [
-  { id: 1, value: "5+", label: "Years of Hard Work" },
-  { id: 2, value: "500k+", label: "Happy Customers" },
-  { id: 3, value: "28", label: "Qualified Team Members" },
-  { id: 4, value: "750k+", label: "Monthly Orders" },
-];
+// CORRECTED IMPORT PATH: Ensure this points to your new servicesData.js file
+import { servicesData } from '../../../data/servicesData';
 
 const Services = () => {
   const navigate = useNavigate();
 
-
-  const handleNavigate = (link) => {
-    navigate(link);
+  const handleNavigate = (serviceId) => {
+    navigate(`/services/${serviceId}`);
   };
+
+  const statisticsData = [
+    { id: 1, value: "5+", label: "Years of Hard Work" },
+    { id: 2, value: "500k+", label: "Happy Customers" },
+    { id: 3, value: "28", label: "Qualified Team Members" },
+    { id: 4, value: "750k+", label: "Monthly Orders" },
+  ];
+
+  // Filter to show only a subset of services for the homepage section (e.g., first 3)
+  const featuredServices = servicesData.slice(0, 3);
 
   return (
     <>
@@ -74,7 +33,7 @@ const Services = () => {
             <div className="w-20 h-1.5 bg-green-600 mx-auto rounded-full"></div>
           </div>
           <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 md:mb-16 hide-scrollbar">
-            {servicesData.map((service) => (
+            {featuredServices.map((service) => (
               <div
                   key={service.id}
                   className="flex-none w-72 sm:w-80 md:w-auto snap-center
@@ -87,47 +46,14 @@ const Services = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/400x300/cccccc/333333?text=Service+Image+Error"; }}
                   />
-                  {/* <div className={`absolute inset-0 ${service.overlayBg} flex items-center justify-center p-4`}>
-                    <div className="text-center text-white p-2">
-                      <h3 className="text-xl sm:text-2xl font-bold mb-3 leading-tight">{service.title}</h3>
-                      {service.shortDesc && (
-                        <p className="text-sm sm:text-base mb-4 opacity-90">{service.shortDesc}</p>
-                      )}
-                      {service.details && (
-                        <div className="space-y-2 text-sm text-left inline-block">
-                          {service.details.map((detail, i) => (
-                            <div key={i} className="flex items-center gap-2">
-                              <FiCheckCircle className="w-4 h-4 text-yellow-300 flex-shrink-0" />
-                              <span className="opacity-90">{detail}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {service.note && (
-                        <p className="text-xs sm:text-sm mt-4 opacity-80">{service.note}</p>
-                      )}
-                      {service.price && (
-                        <p className="text-yellow-300 font-bold text-lg sm:text-xl mt-2">{service.price}</p>
-                      )}
-                      {service.tags && (
-                        <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm mt-4">
-                          {service.tags.map((tag, i) => (
-                            <span key={i} className={`px-3 py-1 rounded-md font-medium ${i % 2 === 0 ? 'bg-green-700' : 'bg-gray-700'} `}>
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div> */}
                 </div>
                 <div className="p-6 md:p-7">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Service Details</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">{service.title}</h3>
                   <p className="text-gray-600 mb-4 leading-relaxed text-base">
                     {service.cardDesc}
                   </p>
                   <button
-                    onClick={() => handleNavigate(service.link)}
+                    onClick={() => handleNavigate(service.id)}
                     className="inline-flex items-center gap-2 text-green-600 font-semibold hover:gap-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-md p-2 -ml-2"
                   >
                     Read More
@@ -139,7 +65,7 @@ const Services = () => {
           </div>
           <div className="text-center mt-8">
             <button
-              onClick={() => handleNavigate('/services')}
+              onClick={() => navigate('/services')}
               className="bg-gray-200 text-gray-800 px-10 py-4 rounded-full font-bold text-lg shadow-md hover:bg-gray-300 hover:shadow-lg transform hover:-translate-y-0.5 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-gray-300 focus:ring-opacity-50"
             >
               View All Services
