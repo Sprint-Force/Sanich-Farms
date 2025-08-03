@@ -1491,15 +1491,24 @@ const Navbar = forwardRef((props, ref) => {
       className={`sticky top-0 z-50 w-full bg-white shadow-md font-poppins transition-transform duration-300
                  ${isNavbarHidden ? '-translate-y-full' : 'translate-y-0'}`}
     >
+
       {/* Top Bar */}
       <div className="hidden md:flex justify-between items-center px-4 md:px-6 lg:px-10 py-2 border-b border-gray-100 text-sm text-gray-600">
-        <span>Need help? Call Us: +233 243 826 137</span>
-        <div className="flex items-center gap-4">
-          <Link to="/login" className="hover:text-green-400 transition duration-200">Login</Link>
-          <Link to="/signup" className="hover:text-green-400 transition duration-200">Sign Up</Link>
-          {/* Language/Currency Dropdowns can go here */}
+        <div className="flex items-center gap-2">
+          <FiMapPin className="text-green-700 text-lg" />
+          <p className="text-gray-700">Ejisu, Okese Avenue Fillet street, Kumasi Ghana</p>
         </div>
-      </div>
+        <div className="flex items-center gap-4">
+           <select className="outline-none cursor-pointer bg-transparent text-gray-700 hover:text-green-700 transition duration-200">
+             <option value="en">English</option>
+             <option value="twi">Twi</option>
+           </select>
+           <select className="outline-none cursor-pointer bg-transparent text-gray-700 hover:text-green-700 transition duration-200">
+             <option value="GHS">GHS</option>
+             <option value="USD">USD</option>
+           </select>
+         </div>
+       </div>
 
       {/* Main Navigation */}
       <div className="flex items-center justify-between px-4 md:px-6 lg:px-10 py-3 md:py-4">
