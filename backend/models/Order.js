@@ -11,7 +11,7 @@ export const Order = sequelize.define('Order', {
   },
   user_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: false
   },
   first_name: {
     type: DataTypes.STRING,
