@@ -33,7 +33,7 @@ export const addToCart = async (req, res) => {
             });
         };
 
-        res.status(400).json({
+        res.status(200).json({
             status: "success",
             message: "Item added to cart"
         });
