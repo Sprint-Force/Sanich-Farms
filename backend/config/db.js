@@ -5,6 +5,7 @@ import { CartItem } from '../models/CartItem.js';
 import { Order } from '../models/Order.js';
 import { OrderItem } from '../models/OrderItem.js';
 import { Wishlist } from '../models/Wishlist.js';
+import { Service } from '../models/Service.js';
 
 // User -> CartItem
 User.hasMany(CartItem, { foreignKey: 'user_id', });
