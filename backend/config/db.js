@@ -6,34 +6,35 @@ import { Order } from '../models/Order.js';
 import { OrderItem } from '../models/OrderItem.js';
 import { Wishlist } from '../models/Wishlist.js';
 import { Service } from '../models/Service.js';
+import { Booking } from '../models/Booking.js';
 
-// User -> CartItem
-User.hasMany(CartItem, { foreignKey: 'user_id', });
-CartItem.belongsTo(User, { foreignKey: 'user_id', });
 
-// Product -> CartItem
-Product.hasMany(CartItem, { foreignKey: 'product_id', });
-CartItem.belongsTo(Product, { foreignKey: 'product_id', });
+User.hasMany(CartItem, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+CartItem.belongsTo(User, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
-// User -> Order
-User.hasMany(Order, { foreignKey: 'user_id', });
-Order.belongsTo(User, { foreignKey: 'user_id',});
+Product.hasMany(CartItem, { foreignKey: 'product_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+CartItem.belongsTo(Product, { foreignKey: 'product_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
-// Order -> OrderItem
-Order.hasMany(OrderItem, { foreignKey: 'order_id',});
-OrderItem.belongsTo(Order, { foreignKey: 'order_id',});
+User.hasMany(Order, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+Order.belongsTo(User, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
-// Product -> OrderItem
-Product.hasMany(OrderItem, { foreignKey: 'product_id', });
-OrderItem.belongsTo(Product, { foreignKey: 'product_id',});
+Order.hasMany(OrderItem, { foreignKey: 'order_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+OrderItem.belongsTo(Order, { foreignKey: 'order_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
-// Wishlist -> User
-User.hasMany(Wishlist, { foreignKey: 'user_id' });
-Wishlist.belongsTo(User, { foreignKey: 'user_id' });
+Product.hasMany(OrderItem, { foreignKey: 'product_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+OrderItem.belongsTo(Product, { foreignKey: 'product_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
-// Wishlist -> Product
-Wishlist.belongsTo(Product, { foreignKey: 'product_id' });
-Product.hasMany(Wishlist, { foreignKey: 'product_id' });
+User.hasMany(Wishlist, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+Wishlist.belongsTo(User, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+
+Product.hasMany(Wishlist, { foreignKey: 'product_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+Wishlist.belongsTo(Product, { foreignKey: 'product_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+
+User.hasMany(Booking, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Booking.belongsTo(User, { foreignKey: 'user_id' });
+
+Service.hasMany(Booking, { foreignKey: 'service_id', onDelete: 'CASCADE' });
+Booking.belongsTo(Service, { foreignKey: 'service_id' });
 
 
 
