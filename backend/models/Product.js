@@ -18,7 +18,7 @@ import {sequelize} from '../config/sequelize.js';
         allowNull: true,
     },
     category: {
-        type: DataTypes.ENUM('chicks', 'feeds', 'eggs', 'vitamins'),
+        type: DataTypes.ENUM('chicks', 'feeds', 'eggs', 'vitamins', 'equipment'),
         allowNull: false,
     },
     price: {

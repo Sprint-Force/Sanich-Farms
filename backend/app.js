@@ -6,6 +6,8 @@ import { authRoutes } from "./routes/authRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { productRoutes } from "./routes/productRoutes.js";
 import { cartRoutes } from "./routes/cartRoutes.js";
+import { orderRoutes } from "./routes/orderRoutes.js";
+import { wishlistRoutes } from "./routes/wishlistRoutes.js";
 
 
 
@@ -23,6 +25,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 //Middlewares
 app.use(cors());

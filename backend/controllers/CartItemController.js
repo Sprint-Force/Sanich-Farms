@@ -1,6 +1,5 @@
 import { CartItem } from "../models/CartItem.js";
 import { Product } from "../models/Product.js";
-import { User } from "../models/User.js";
 
 // Add item to cart
 export const addToCart = async (req, res) => {
@@ -33,7 +32,7 @@ export const addToCart = async (req, res) => {
             });
         };
 
-        res.status(400).json({
+        res.status(200).json({
             status: "success",
             message: "Item added to cart"
         });

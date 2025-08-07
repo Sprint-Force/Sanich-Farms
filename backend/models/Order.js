@@ -4,40 +4,76 @@ import {sequelize} from '../config/sequelize.js';
 
 
 export const Order = sequelize.define('Order', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
-    user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    total_amount: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false, 
-        validate: {
-            min: 0
-        }
-    },
-    status: {
-        type: DataTypes.ENUM('pending', 'paid', 'processing', 'delivered', 'cancelled'),
-        defaultValue: 'pending',
-        allowNull: false,
-    },
-     payment_method: {
-    type: DataTypes.ENUM('cash', 'mobile_money', 'card'),
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  user_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  first_name: {
+    type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      notEmpty: true,
     },
-    payment_status: {
-    type: DataTypes.ENUM('unpaid', 'paid', 'failed', 'refunded'),
+  },
+  last_name: {
+    type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: 'unpaid',
+    validate: {
+      notEmpty: true,
     },
-  delivery_address: {
+  },
+  company_name: {
+    type: DataTypes.STRING,
+    allowNull: true, 
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      isEmail: true,
+    },
+  },
+  phone_number: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+      len: [8, 20],
+    },
+  },
+    delivery_address: {
     type: DataTypes.TEXT,
     allowNull: false,
+    validate: {
+      notEmpty: true,
     },
+  },
+  country: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
+  },
+  state: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
+  },
+  zipcode: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
+  },
   delivery_fee: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: true,
@@ -46,6 +82,28 @@ export const Order = sequelize.define('Order', {
       min: 0,
     },
   },
+  total_amount: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    validate: {
+      min: 0,
+    },
+  },
+  status: {
+    type: DataTypes.ENUM('pending', 'paid', 'processing', 'delivered', 'cancelled'),
+    allowNull: false,
+    defaultValue: 'pending',
+  },
+  payment_method: {
+    type: DataTypes.ENUM('cash', 'mobile_money', 'bank_transfer'),
+    allowNull: false,
+  },
+  payment_status: {
+    type: DataTypes.ENUM('unpaid', 'paid', 'failed', 'refunded'),
+    allowNull: false,
+    defaultValue: 'unpaid',
+  },
+
   ordered_at: {
     type: DataTypes.DATE,
     allowNull: false,
@@ -62,8 +120,4 @@ export const Order = sequelize.define('Order', {
 }, {
   tableName: 'orders',
   timestamps: false,
-    
 });
-
-
-
