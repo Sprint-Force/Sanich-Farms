@@ -18,6 +18,13 @@ dotenv.config();
 //Run express app
 const app = express();
 
+
+//Middlewares
+app.use(cors({
+    origin: "https://sanich-farms.vercel.app/",
+    credentials: true
+}));
+app.use(morgan('dev'));
 // JSON Parser
 app.use(express.json());
 
@@ -28,9 +35,6 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 
-//Middlewares
-app.use(cors());
-app.use(morgan('dev'));
 // Error handler
 app.use(errorHandler);
 

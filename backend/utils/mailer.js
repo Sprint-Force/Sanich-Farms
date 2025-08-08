@@ -4,8 +4,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    host: process.env.MAIL_HOST,
-    port: process.env.MAIL_PORT,
+    host: 'smtp.sendgrid.net',
+    port: 587,
     secure: false,
     auth: {
         user: process.env.MAIL_USER,
@@ -30,7 +30,8 @@ export const sendEmail = async ({ to, subject, html }) => {
     console.error("Failed to send email:", error);
     throw new Error("Email sending failed");
   }
-};
+}; 
+
 
 
 // Welcome email
