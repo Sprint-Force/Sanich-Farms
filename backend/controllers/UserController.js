@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { User } from '../models/User.js';
 import { generateToken } from '../utils/jwtToken.js';
-import { sendEmail, welcomeEmailTemplate } from '../utils/emailSender.js';
+import { sendEmail, welcomeEmailTemplate } from '../utils/mailer.js';
 
 // Register a User
 export const registerUser = async (req, res) => {
@@ -110,7 +110,6 @@ export const loginUser = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
