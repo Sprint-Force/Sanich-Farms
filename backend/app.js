@@ -21,9 +21,12 @@ const app = express();
 
 //Middlewares
 app.use(cors({
-    origin: "https://sanich-farms.vercel.app/",
-    credentials: true
+    origin: "https://sanich-farms.vercel.app",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 app.use(morgan('dev'));
 // JSON Parser
 app.use(express.json());
