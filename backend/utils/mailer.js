@@ -1,8 +1,35 @@
 import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+export const sendEmail = async ({to, subject, html}) => {
+  const msg = {
+    to,
+    from: `"Sanich Farms" <${process.env.SENDGRID_FROM_EMAIL}>`,
+    subject,
+    html,
+  };
+
+  try {
+    await sgMail.send(msg);
+    console.log("Email send successfully")
+  } catch (error) {
+    console.error( "Error sending email", error);
+    if (error.response) {
+      console.error(error.response.body);
+    }
+  };
+};
+
+
+
+
+
+/*
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -28,7 +55,7 @@ export const sendEmail = async ({ to, subject, html }) => {
     console.error("Failed to send email:", error);
     throw new Error("Email sending failed");
   }
-}; 
+}; */
 
 
 

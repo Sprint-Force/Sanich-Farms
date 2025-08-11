@@ -8,6 +8,35 @@ export const Booking = sequelize.define('Booking', {
     primaryKey: true,
     autoIncrement: true,
   },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      isEmail: true,
+    },
+  },
+  phone_number: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+      len: [8, 20],
+    },
+  },
+  location: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
+  },
   user_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -35,7 +64,7 @@ export const Booking = sequelize.define('Booking', {
     allowNull: false,
     defaultValue: 'pending'
   },
-  notes: {
+  note: {
     type: DataTypes.TEXT,
     allowNull: true,
     validate: {

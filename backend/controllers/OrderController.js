@@ -18,7 +18,8 @@ export const createOrder = async (req, res) => {
     state,
     zipcode,
     delivery_fee,
-    payment_method
+    payment_method,
+    note
   } = req.body;
 
   // Basic validation
@@ -71,6 +72,7 @@ export const createOrder = async (req, res) => {
         payment_method,
         status: 'pending',
         payment_status: 'unpaid',
+        note: note || null,
         ordered_at: new Date()
       }, { transaction: t });
 
