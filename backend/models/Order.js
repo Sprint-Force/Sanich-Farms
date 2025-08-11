@@ -46,7 +46,7 @@ export const Order = sequelize.define('Order', {
       len: [8, 20],
     },
   },
-    delivery_address: {
+  delivery_address: {
     type: DataTypes.TEXT,
     allowNull: false,
     validate: {
@@ -103,7 +103,13 @@ export const Order = sequelize.define('Order', {
     allowNull: false,
     defaultValue: 'unpaid',
   },
-
+  note: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    validate: {
+      len: [0, 1000]
+    }
+  },
   ordered_at: {
     type: DataTypes.DATE,
     allowNull: false,

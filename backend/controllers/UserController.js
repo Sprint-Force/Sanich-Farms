@@ -39,7 +39,7 @@ export const registerUser = async (req, res) => {
     return res.status(400).json({
         field: 'confirm_password', message: 'Passwords do not match.' });
     }
-
+    try {
     // Check if a user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
@@ -61,18 +61,22 @@ export const registerUser = async (req, res) => {
     // Remove password from response
     const { password: _, ...userData } = user.toJSON();
 
-    // Send a welcome email
-    await sendEmail({
-      to: user.email,
-      subject: "Welcome to Sanich Farms!",
-      html: welcomeEmailTemplate(user.name),
-    });
-
     res.status(201).json({
         status: "success",
         message: 'Account created successfully.',
         user: userData
     });
+
+    // Send a welcome email
+    sendEmail({
+      to: user.email,
+      subject: "Welcome to Sanich Farms!",
+      html: welcomeEmailTemplate(user.name),
+    });
+   } catch (error) {
+    return res.status(500).json({ message: "Internal server error"})
+  }
+
 }
 
 
