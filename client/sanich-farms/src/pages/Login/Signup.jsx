@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiUser, FiMail, FiLock, FiPhone, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useToast } from '../../context/ToastContext';
+import { authAPI } from '../../services/api';
 
 // User registration functionality.
 const Signup = () => {
@@ -17,6 +18,7 @@ const Signup = () => {
 
   // State to manage the visibility of the password fields.
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // The useNavigate hook allows for programmatic navigation after a successful signup.
   const navigate = useNavigate();
@@ -37,7 +39,10 @@ const Signup = () => {
   // This asynchronous function handles the form submission.
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Signup attempt:', formData);
+    
+    if (loading) return;
+    
+    setLoading(true);
 
     // --- Enhanced client-side validations ---
 
@@ -45,6 +50,7 @@ const Signup = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       addToast('Please enter a valid email address.', 'error');
+      setLoading(false);
       return;
     }
 
@@ -54,6 +60,7 @@ const Signup = () => {
     const cleanedPhoneNumber = formData.phone_number.replace(/\D/g, '');
     if (!phoneRegex.test(cleanedPhoneNumber)) {
       addToast('Please enter a valid phone number with at least 9 digits.', 'error');
+      setLoading(false);
       return;
     }
     
@@ -65,6 +72,7 @@ const Signup = () => {
         'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one symbol.',
         'error'
       );
+      setLoading(false);
       return;
     }
 
@@ -72,48 +80,26 @@ const Signup = () => {
     // Check against the new state property name 'confirm_password'.
     if (formData.password !== formData.confirm_password) {
       addToast('Passwords do not match. Please try again.', 'error');
+      setLoading(false);
       return;
     }
 
-    // --- INTEGRATION POINT: Call to your Render backend API ---
     try {
-      // 1. Define the full URL of your Render backend's signup endpoint.
-      const backendUrl = 'https://sanich-farms-tnac.onrender.com/api/auth/register';
-
-      // 2. Make an API call using the browser's built-in fetch API.
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // The formData object is sent as a JSON string. The keys now match the backend.
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone_number: formData.phone_number,
-          password: formData.password,
-          confirm_password: formData.confirm_password,
-        }),
-      });
-
-      // 3. Check if the response from the server was successful.
-      if (response.ok) {
-        // Parse the JSON response from the server.
-        const data = await response.json();
-        console.log('Signup successful:', data);
-
-        // Display a success toast and redirect the user to the login page.
-        addToast('Account created successfully! Please log in.', 'success');
-        navigate('/login');
-      } else {
-        // If the response was not successful, handle the error.
-        const errorData = await response.json();
-        addToast(errorData.message || 'Signup failed. Please try again.', 'error');
-      }
+      // Use the new API service
+      await authAPI.register(formData);
+      
+      // Display a success toast and redirect the user to the login page.
+      addToast('Account created successfully! Please log in.', 'success');
+      navigate('/login');
+      
     } catch (error) {
-      // Catch network-related errors.
-      console.error('Signup failed:', error);
-      addToast('An error occurred. Please try again later.', 'error');
+      // Handle different types of errors
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          'Signup failed. Please try again.';
+      addToast(errorMessage, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -131,12 +117,13 @@ const Signup = () => {
               <input
                 type="text"
                 id="name"
-                name="name" // Changed name to 'name'
+                name="name"
                 value={formData.name}
                 onChange={handleChange}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="John Doe"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -155,6 +142,7 @@ const Signup = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="you@example.com"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -167,12 +155,13 @@ const Signup = () => {
               <input
                 type="tel"
                 id="phone_number"
-                name="phone_number" // Changed name to 'phone_number'
+                name="phone_number"
                 value={formData.phone_number}
                 onChange={handleChange}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="e.g., 055 123 4567"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -182,7 +171,6 @@ const Signup = () => {
             </label>
             <div className="relative">
               <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              {/* Dynamic input type based on state */}
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="password"
@@ -192,12 +180,13 @@ const Signup = () => {
                 className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="********"
                 required
+                disabled={loading}
               />
-              {/* Password visibility toggle button */}
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                disabled={loading}
               >
                 {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
@@ -209,22 +198,22 @@ const Signup = () => {
             </label>
             <div className="relative">
               <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              {/* Dynamic input type based on state */}
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="confirm_password"
-                name="confirm_password" // Changed name to 'confirm_password'
+                name="confirm_password"
                 value={formData.confirm_password}
                 onChange={handleChange}
                 className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="********"
                 required
+                disabled={loading}
               />
-              {/* Password visibility toggle button */}
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                disabled={loading}
               >
                 {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
@@ -232,9 +221,10 @@ const Signup = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign Up
+            {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-600">
@@ -249,4 +239,3 @@ const Signup = () => {
 };
 
 export default Signup;
-

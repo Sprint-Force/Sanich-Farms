@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import { FiMail } from 'react-icons/fi';
 import { useToast } from '../../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/api';
 
 // This component handles the "Forgot Password" functionality,
 // allowing a user to request a password reset code via email.
 const ForgotPassword = () => {
   // State to hold the email address the user enters.
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
   const navigate = useNavigate();
 
@@ -20,7 +22,8 @@ const ForgotPassword = () => {
   // This asynchronous function handles the form submission.
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Forgot password request for:', email);
+    
+    if (loading) return;
 
     // Frontend validation to ensure an email is provided.
     if (!email) {
@@ -28,34 +31,28 @@ const ForgotPassword = () => {
       return;
     }
 
-    try {
-      // API call to the backend's forgot password endpoint.
-      // The URL is consistent with the other authentication endpoints.
-      const backendUrl = 'https://sanich-farms-tnac.onrender.com/api/auth/forgot-password';
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      addToast('Please enter a valid email address.', 'error');
+      return;
+    }
 
-      // Handle the server's response.
-      if (response.ok) {
-        // If the request was successful, display a success message and
-        // navigate the user to the reset password page.
-        const data = await response.json();
-        addToast(data.message || 'Password reset code sent to your email.', 'success');
-        navigate('/reset-password');
-      } else {
-        // If there was a server-side error, display the error message.
-        const errorData = await response.json();
-        addToast(errorData.error || 'Failed to send reset code. Please try again.', 'error');
-      }
+    setLoading(true);
+
+    try {
+      // Use the new API service
+      const data = await authAPI.forgotPassword(email);
+      addToast(data.message || 'Password reset code sent to your email.', 'success');
+      navigate('/reset-password');
     } catch (error) {
-      // Catch network-related errors.
-      console.error('Forgot password failed:', error);
-      addToast('An error occurred. Please try again later.', 'error');
+      // Handle different types of errors
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          'Failed to send reset code. Please try again.';
+      addToast(errorMessage, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,14 +79,16 @@ const ForgotPassword = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="you@example.com"
                 required
+                disabled={loading}
               />
             </div>
           </div>
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send Reset Code
+            {loading ? 'Sending Code...' : 'Send Reset Code'}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-600">

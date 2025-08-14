@@ -104,7 +104,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowRight } from 'react-icons/fi';
-import axios from 'axios'; // Import axios for API calls
+import { servicesAPI } from '../../../services/api';
 
 const Services = () => {
   const navigate = useNavigate();
@@ -114,17 +114,14 @@ const Services = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Define API URL
-  const BASE_URL = 'https://sanich-farms-tnac.onrender.com/api/services';
-
   // Function to fetch services from the API
   const fetchServices = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(BASE_URL);
+      const response = await servicesAPI.getAll();
       // Assuming the API returns an array of service objects
-      setServices(response.data);
+      setServices(response);
     } catch (err) {
       console.error("Failed to fetch services:", err);
       setError("Failed to load services. Please try again later.");
