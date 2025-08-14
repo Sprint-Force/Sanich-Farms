@@ -347,11 +347,13 @@ import { FiHome, FiChevronRight } from 'react-icons/fi';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext'; // Import useToast context
+import { useAuthContext } from '../hooks/useAuthContext';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cartItems, cartTotal, clearCart } = useCart();
   const { addToast } = useToast();
+  const { isAuthenticated } = useAuthContext();
 
   const [loading, setLoading] = useState(false);
   const [billingInfo, setBillingInfo] = useState({
@@ -377,6 +379,51 @@ const CheckoutPage = () => {
   const subtotal = parseFloat(cartTotal);
   const shipping = subtotal > 0 ? 5.00 : 0.00; // Example shipping fee
   const total = (subtotal + shipping).toFixed(2);
+
+  // If user is not authenticated, show login prompt
+  if (!isAuthenticated) {
+    return (
+      <div className="font-poppins bg-gray-50 min-h-screen pt-16">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
+            <div className="mb-6">
+              <svg className="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Login Required</h2>
+              <p className="text-gray-600 mb-6">
+                Please log in to your account to proceed with checkout. 
+                Don't worry, your cart items will be saved!
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <button
+                onClick={() => navigate('/login', { state: { from: { pathname: '/checkout' } } })}
+                className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                Login to Continue
+              </button>
+              
+              <button
+                onClick={() => navigate('/signup', { state: { from: { pathname: '/checkout' } } })}
+                className="w-full bg-white text-green-600 py-3 px-6 rounded-lg border border-green-600 hover:bg-green-50 transition-colors font-medium"
+              >
+                Create New Account
+              </button>
+              
+              <button
+                onClick={() => navigate('/cart')}
+                className="w-full text-gray-600 py-2 px-4 hover:text-gray-800 transition-colors"
+              >
+                Back to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleBillingInfoChange = (e) => {
     const { name, value, type, checked } = e.target;

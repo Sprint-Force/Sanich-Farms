@@ -372,52 +372,99 @@ import SearchPage from './pages/SearchPage';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ToastProvider } from './context/ToastContext';
+import AuthProvider from './context/AuthContext';
 import ScrollToTop from './components/utils/ScrollToTop';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
   return (
-    <ToastProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <ScrollToTop />
-          <Routes>
-            <Route element={<MainLayout />}>
-              <Route path='/' element={<Home />} />
-              <Route path='/login' element={<Login />} />
-              <Route path='/signup' element={<Signup />} />
-              {/* New routes for password recovery */}
-              <Route path='/forgot-password' element={<ForgotPassword />} />
-              <Route path='/reset-password' element={<ResetPassword />} />
-              <Route path='/shop' element={<ShopPage />} />
-              <Route path='/products/:productId' element={<ProductDetailPage />} />
-              <Route path='/cart' element={<CartPage />} />
-              <Route path='/wishlist' element={<WishlistPage />} />
-              <Route path='/checkout' element={<CheckoutPage />} />
-              <Route path='/order-confirmation' element={<OrderConfirmationPage />} />
-              <Route path='/about' element={<AboutUsPage />} />
-              <Route path='/contact' element={<ContactUsPage />} />
-              <Route path='/services' element={<AllServicesPage />} />
-              <Route path='/services/:serviceId' element={<ServiceDetailPage />} />
-              <Route path='/book-service/:serviceId' element={<ServiceBookingPage />} />
-              <Route path='/booking-confirmation' element={<BookingConfirmationPage />} />
-              <Route path='/search' element={<SearchPage />} />
+    <AuthProvider>
+      <ToastProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <ScrollToTop />
+            <Routes>
+              <Route element={<MainLayout />}>
+                <Route path='/' element={<Home />} />
+                
+                {/* Public authentication routes */}
+                <Route path='/login' element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Login />
+                  </ProtectedRoute>
+                } />
+                <Route path='/signup' element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Signup />
+                  </ProtectedRoute>
+                } />
+                <Route path='/forgot-password' element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ForgotPassword />
+                  </ProtectedRoute>
+                } />
+                <Route path='/reset-password' element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ResetPassword />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Public pages */}
+                <Route path='/shop' element={<ShopPage />} />
+                <Route path='/products/:productId' element={<ProductDetailPage />} />
+                <Route path='/about' element={<AboutUsPage />} />
+                <Route path='/contact' element={<ContactUsPage />} />
+                <Route path='/services' element={<AllServicesPage />} />
+                <Route path='/services/:serviceId' element={<ServiceDetailPage />} />
+                <Route path='/search' element={<SearchPage />} />
 
-              {/* User Dashboard Routes */}
-              <Route path='/dashboard' element={<UserDashboardPage />}>
-                <Route index element={<DashboardOverview />} />
-                <Route path='orders' element={<MyOrders />} />
-                <Route path='bookings' element={<MyBookings />} />
-                <Route path='profile' element={<MyProfile />} />
-                <Route path='wishlist' element={<WishlistPage />} />
-                <Route path='orders/:orderId' element={<OrderDetailPage />} />
-                <Route path='bookings/:bookingId' element={<BookingDetailPage />} />
+                {/* Public cart and wishlist - accessible to both guest and authenticated users */}
+                <Route path='/cart' element={<CartPage />} />
+                <Route path='/wishlist' element={<WishlistPage />} />
+
+                {/* Protected routes that require authentication */}
+                <Route path='/checkout' element={
+                  <ProtectedRoute>
+                    <CheckoutPage />
+                  </ProtectedRoute>
+                } />
+                <Route path='/order-confirmation' element={
+                  <ProtectedRoute>
+                    <OrderConfirmationPage />
+                  </ProtectedRoute>
+                } />
+                <Route path='/book-service/:serviceId' element={
+                  <ProtectedRoute>
+                    <ServiceBookingPage />
+                  </ProtectedRoute>
+                } />
+                <Route path='/booking-confirmation' element={
+                  <ProtectedRoute>
+                    <BookingConfirmationPage />
+                  </ProtectedRoute>
+                } />
+
+                {/* User Dashboard Routes - All protected */}
+                <Route path='/dashboard' element={
+                  <ProtectedRoute>
+                    <UserDashboardPage />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<DashboardOverview />} />
+                  <Route path='orders' element={<MyOrders />} />
+                  <Route path='bookings' element={<MyBookings />} />
+                  <Route path='profile' element={<MyProfile />} />
+                  <Route path='wishlist' element={<WishlistPage />} />
+                  <Route path='orders/:orderId' element={<OrderDetailPage />} />
+                  <Route path='bookings/:bookingId' element={<BookingDetailPage />} />
+                </Route>
               </Route>
-            </Route>
-            <Route path='*' element={<NotFoundPage />} />
-          </Routes>
-        </WishlistProvider>
-      </CartProvider>
-    </ToastProvider>
+              <Route path='*' element={<NotFoundPage />} />
+            </Routes>
+          </WishlistProvider>
+        </CartProvider>
+      </ToastProvider>
+    </AuthProvider>
   );
 }
 

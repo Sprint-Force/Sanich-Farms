@@ -1,0 +1,192 @@
+import axios from 'axios';
+
+// Base URL from environment variables or fallback
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://sanich-farms-tnac.onrender.com/api';
+
+// Create axios instance with default configuration
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 30000, // 30 seconds timeout
+});
+
+// Request interceptor to add auth token
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle errors
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid, clear auth data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Authentication API methods
+export const authAPI = {
+  register: async (userData) => {
+    const response = await apiClient.post('/auth/register', userData);
+    return response.data;
+  },
+
+  login: async (credentials) => {
+    const response = await apiClient.post('/auth/login', credentials);
+    return response.data;
+  },
+
+  forgotPassword: async (email) => {
+    const response = await apiClient.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  resetPassword: async (resetData) => {
+    const response = await apiClient.post('/auth/reset-password', resetData);
+    return response.data;
+  },
+};
+
+// Products API methods
+export const productsAPI = {
+  getAll: async (params = {}) => {
+    const response = await apiClient.get('/products', { params });
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await apiClient.get(`/products/${id}`);
+    return response.data;
+  },
+};
+
+// Services API methods
+export const servicesAPI = {
+  getAll: async () => {
+    const response = await apiClient.get('/services');
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await apiClient.get(`/services/${id}`);
+    return response.data;
+  },
+};
+
+// Orders API methods
+export const ordersAPI = {
+  create: async (orderData) => {
+    const response = await apiClient.post('/orders', orderData);
+    return response.data;
+  },
+
+  getAll: async () => {
+    const response = await apiClient.get('/orders');
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await apiClient.get(`/orders/${id}`);
+    return response.data;
+  },
+};
+
+// Bookings API methods
+export const bookingsAPI = {
+  create: async (bookingData) => {
+    const response = await apiClient.post('/bookings', bookingData);
+    return response.data;
+  },
+
+  getAll: async () => {
+    const response = await apiClient.get('/bookings');
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await apiClient.get(`/bookings/${id}`);
+    return response.data;
+  },
+};
+
+// User API methods
+export const userAPI = {
+  getProfile: async () => {
+    const response = await apiClient.get('/user/profile');
+    return response.data;
+  },
+
+  updateProfile: async (userData) => {
+    const response = await apiClient.put('/user/profile', userData);
+    return response.data;
+  },
+};
+
+// Cart API methods
+export const cartAPI = {
+  getCart: async () => {
+    const response = await apiClient.get('/cart');
+    return response.data;
+  },
+
+  addToCart: async (cartData) => {
+    const response = await apiClient.post('/cart', cartData);
+    return response.data;
+  },
+
+  updateCartItem: async (productId, cartData) => {
+    const response = await apiClient.put(`/cart/${productId}`, cartData);
+    return response.data;
+  },
+
+  removeFromCart: async (productId) => {
+    const response = await apiClient.delete(`/cart/${productId}`);
+    return response.data;
+  },
+
+  clearCart: async () => {
+    const response = await apiClient.delete('/cart');
+    return response.data;
+  },
+};
+
+// Wishlist API methods
+export const wishlistAPI = {
+  getWishlist: async () => {
+    const response = await apiClient.get('/wishlist');
+    return response.data;
+  },
+
+  addToWishlist: async (wishlistData) => {
+    const response = await apiClient.post('/wishlist', wishlistData);
+    return response.data;
+  },
+
+  removeFromWishlist: async (productId) => {
+    const response = await apiClient.delete(`/wishlist/${productId}`);
+    return response.data;
+  },
+
+  clearWishlist: async () => {
+    const response = await apiClient.delete('/wishlist');
+    return response.data;
+  },
+};
+
+export default apiClient;
