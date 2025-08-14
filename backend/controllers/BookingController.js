@@ -1,11 +1,12 @@
 import { Booking } from '../models/Booking.js'; 
+import { Service } from '../models/Service.js';
 
 
 // Create booking
 export const createBooking = async (req, res) => {
   try {
-    const userId = req.body.id; 
-    const { name, email, phone_number, location, booking_date, note } = req.body;
+    const userId = req.user.id; 
+    const { serviceId,name, email, phone_number, location, booking_date, note } = req.body;
 
     // Validations
     if (!name || !email || !phone_number || !location || !booking_date) {
@@ -14,6 +15,7 @@ export const createBooking = async (req, res) => {
 
     // Create booking
     const newBooking = await Booking.create({
+      service_id: serviceId,
       user_id: userId,
       name,
       email,
@@ -34,3 +36,134 @@ export const createBooking = async (req, res) => {
     res.status(500).json({ error: 'Failed to create booking' });
   }
 };
+
+
+// Update booking
+export const updateBooking = async (req, res) =>{
+  try {
+    const userId = req.user.id;
+    const bookingId = req.params.id;
+    // Fields to update
+    const { booking_date, location, note } = req.body;
+
+    const booking = await Booking.findOne({
+      where: { id: bookingId, user_id: userId },
+      include: { model: Service }
+    });
+
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found!" });
+    }
+
+    // Prevent update if booking is completed or canceled
+    if (["completed", "cancelled"].includes(booking.status)) {
+        return res.status(400).json({ error: "Cannot update a completed or canceled booking" });
+    }
+
+    // Update provided fields
+    if (booking_date) { booking.booking_date = booking_date}
+    if (location) { booking.location = location}
+    if (note !== undefined) { booking.note = note}
+
+    // Save updated booking
+    await booking.save();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Booking updated successfully",
+      updatedBooking: booking
+    });
+  } catch (error) {
+    console.error("Error updating booking:", error);
+    return res.status(500).json({ error: "Failed to update booking" });
+  }
+}
+// Cancel booking
+export const cancelBooking = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const bookingId = req.params.id;
+
+    const booking = await Booking.findOne({
+      where: { id: bookingId, user_id: userId },
+      include: { model: Service }
+    });
+
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found!" });
+    }
+    
+    
+
+    // Check booking status
+  if (['pending', 'scheduled'].includes(booking.status)) {
+    booking.status = 'cancelled';
+    await booking.save()
+    res.status(200).json({ 
+      message: "Order cancelled successfully", booking});
+  } else {
+    return res.status(400).json({ 
+      message: "You can only cancel booking that is pending or scheduled" });
+  }
+
+  } catch (error) {
+    console.error("Cancel booking Error:", error);
+    res.status(500).json({ message: "Failed to cancel booking" });
+  }  
+}
+
+// View bookings
+export const getUserBookings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const bookings = await Booking.findAll({
+      where: { user_id: userId },
+      include: [
+         {
+          model: Service,
+          attributes: ['id', 'name', 'description', 'price', 'image_url']
+        }
+      ],
+      order: [['created_at', 'DESC']]
+    });
+
+    res.status(200).json({
+      status: "success",
+      bookings
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch bookings" });
+  }
+}
+
+// View a single booking
+export const getSingleBooking = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const bookingId = req.params.id;
+
+    const booking = await Booking.findOne({
+      where: { id: bookingId, user_id: userId },
+      include: [
+         {
+          model: Service,
+          attributes: ['id', 'name', 'description', 'price', 'image_url']
+        }
+      ],
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    res.status(200).json({
+      status: "success",
+      booking
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch booking" });
+  }
+}
