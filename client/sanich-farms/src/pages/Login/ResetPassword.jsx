@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiMail, FiLock } from 'react-icons/fi';
 import { useToast } from '../../context/ToastContext';
+import { authAPI } from '../../services/api';
 
 // This component handles the "Reset Password" functionality,
 // allowing a user to set a new password using a reset code.
@@ -13,6 +14,7 @@ const ResetPassword = () => {
     new_password: '',
     confirm_password: '',
   });
+  const [loading, setLoading] = useState(false);
 
   const { addToast } = useToast();
   const navigate = useNavigate();
@@ -26,7 +28,31 @@ const ResetPassword = () => {
   // This asynchronous function handles the form submission.
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Password reset attempt:', formData);
+    
+    if (loading) return;
+
+    // Basic client-side validation
+    if (!formData.email || !formData.code || !formData.new_password || !formData.confirm_password) {
+      addToast('Please fill in all fields.', 'error');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      addToast('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    // Validate password strength
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$/;
+    if (!passwordRegex.test(formData.new_password)) {
+      addToast(
+        'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one symbol.',
+        'error'
+      );
+      return;
+    }
 
     // Basic client-side validation to ensure passwords match.
     if (formData.new_password !== formData.confirm_password) {
@@ -34,30 +60,22 @@ const ResetPassword = () => {
       return;
     }
 
-    try {
-      // API call to the backend's reset password endpoint.
-      const backendUrl = 'https://sanich-farms-tnac.onrender.com/api/auth/reset-password';
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+    setLoading(true);
 
-      // Handle the server's response.
-      if (response.ok) {
-        const data = await response.json();
-        addToast(data.message || 'Password has been reset successfully.', 'success');
-        // On success, navigate the user back to the login page.
-        navigate('/login');
-      } else {
-        const errorData = await response.json();
-        addToast(errorData.error || 'Failed to reset password. Please check your email and code.', 'error');
-      }
+    try {
+      // Use the new API service
+      const data = await authAPI.resetPassword(formData);
+      addToast(data.message || 'Password has been reset successfully.', 'success');
+      // On success, navigate the user back to the login page.
+      navigate('/login');
     } catch (error) {
-      console.error('Reset password failed:', error);
-      addToast('An error occurred. Please try again later.', 'error');
+      // Handle different types of errors
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          'Failed to reset password. Please check your email and code.';
+      addToast(errorMessage, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,6 +99,7 @@ const ResetPassword = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="you@example.com"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -99,6 +118,7 @@ const ResetPassword = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="6-digit code"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -115,8 +135,9 @@ const ResetPassword = () => {
                 value={formData.new_password}
                 onChange={handleChange}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                placeholder="********"
+                placeholder="New password"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -133,16 +154,18 @@ const ResetPassword = () => {
                 value={formData.confirm_password}
                 onChange={handleChange}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                placeholder="********"
+                placeholder="Confirm new password"
                 required
+                disabled={loading}
               />
             </div>
           </div>
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Reset Password
+            {loading ? 'Resetting Password...' : 'Reset Password'}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-600">

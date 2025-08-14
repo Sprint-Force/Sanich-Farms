@@ -3,12 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   FiMenu, FiX, FiPhoneCall, FiSearch,
   FiHeart, FiShoppingCart, FiUser, FiMapPin,
-  FiChevronRight
+  FiChevronRight, FiLogOut
 } from 'react-icons/fi';
 import logo from '../../../assets/logo.png';
 import { useCart } from '../../../context/CartContext';
 import { useWishlist } from '../../../context/WishlistContext';
 import { useToast } from '../../../context/ToastContext';
+import { useAuthContext } from '../../../hooks/useAuthContext';
 
 // Tailwind CSS for the new animation
 const style = `
@@ -55,6 +56,7 @@ const Navbar = forwardRef((props, ref) => {
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
   const { addToast } = useToast();
+  const { user, isAuthenticated, logout } = useAuthContext();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -145,6 +147,14 @@ const Navbar = forwardRef((props, ref) => {
 
   const handleShopDropdownToggle = () => {
     setShowShopDropdown(prev => !prev);
+  };
+
+  // Handle user logout
+  const handleLogout = () => {
+    logout();
+    addToast('You have been logged out successfully.', 'success');
+    navigate('/');
+    closeMobileMenu();
   };
 
   // Re-calculate navbar height or use a fixed one if possible
@@ -275,7 +285,7 @@ const Navbar = forwardRef((props, ref) => {
             </span>
           </form>
 
-          {/* Icons & Login/Signup (Desktop) */}
+          {/* Icons & User Info/Login (Desktop) */}
           <div className="flex items-center gap-6 text-gray-700 text-lg flex-shrink-0">
             <Link to="/wishlist" className="relative inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 hover:text-green-600 transition duration-200" aria-label="Wishlist">
               <FiHeart size={22} />
@@ -293,15 +303,36 @@ const Navbar = forwardRef((props, ref) => {
                 </span>
               )}
             </Link>
-            <Link to="/dashboard" className="hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="User Dashboard">
-              <FiUser size={22} />
-            </Link>
-            <Link
-              to="/login"
-              className="ml-3 bg-green-600 text-white px-5 py-2 rounded-full text-base font-medium hover:bg-green-700 transition duration-300 shadow-md hover:shadow-lg"
-            >
-              Login / Signup
-            </Link>
+            
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <Link to="/dashboard" className="hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="User Dashboard">
+                  <FiUser size={22} />
+                </Link>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700">Hi! {user?.name || user?.email || 'User'}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="ml-2 text-red-600 hover:text-red-700 transition duration-200 p-2 rounded-full hover:bg-red-50"
+                    aria-label="Logout"
+                  >
+                    <FiLogOut size={20} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Link to="/dashboard" className="hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" aria-label="User Dashboard">
+                  <FiUser size={22} />
+                </Link>
+                <Link
+                  to="/login"
+                  className="ml-3 bg-green-600 text-white px-5 py-2 rounded-full text-base font-medium hover:bg-green-700 transition duration-300 shadow-md hover:shadow-lg"
+                >
+                  Login / Signup
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -384,13 +415,28 @@ const Navbar = forwardRef((props, ref) => {
               <Link to="/services" onClick={closeMobileMenu} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">Services</Link>
               <Link to="/contact" onClick={closeMobileMenu} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">Contact Us</Link>
               <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">My Dashboard</Link>
-              <Link
-                to="/login"
-                onClick={closeMobileMenu}
-                className="block text-center bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-green-700 transition duration-300 mt-4 shadow-md"
-              >
-                Login / Signup
-              </Link>
+              
+              {isAuthenticated ? (
+                <>
+                  <div className="px-4 py-2 mt-4 border-t border-gray-100">
+                    <span className="text-green-600 font-medium">Hi! {user?.name || user?.email || 'User'}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-center bg-red-600 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-red-700 transition duration-300 mt-4 shadow-md"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={closeMobileMenu}
+                  className="block text-center bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-green-700 transition duration-300 mt-4 shadow-md"
+                >
+                  Login / Signup
+                </Link>
+              )}
               <div className="flex justify-around items-center mt-6 pt-4 border-t border-gray-100">
                 <select className="outline-none cursor-pointer bg-transparent text-gray-700 hover:text-green-700 transition duration-200 text-base">
                   <option value="en">English</option>

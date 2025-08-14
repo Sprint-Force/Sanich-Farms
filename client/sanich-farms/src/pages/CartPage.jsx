@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 
 const CartPage = () => {
-  const { cartItems, cartCount, cartTotal, removeFromCart, updateQuantity } = useCart();
+  const { cartItems, removeFromCart, updateCartItemQuantity, getTotalPrice, getTotalItems } = useCart();
   const { addToast } = useToast();
 
   const handleRemoveFromCart = (productId, productName) => {
@@ -18,9 +18,13 @@ const CartPage = () => {
       handleRemoveFromCart(productId, productName);
       return;
     }
-    updateQuantity(productId, newQuantity);
+    updateCartItemQuantity(productId, newQuantity);
     addToast(`Quantity for ${productName} updated to ${newQuantity}.`, 'success');
   };
+
+  // Calculate totals
+  const cartTotal = getTotalPrice();
+  const cartCount = getTotalItems();
 
   return (
     <div className="font-poppins bg-gray-50 min-h-screen">

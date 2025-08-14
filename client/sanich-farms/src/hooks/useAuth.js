@@ -1,0 +1,68 @@
+import { useState, useEffect } from 'react';
+
+export const useAuth = () => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Initialize auth state from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedToken = localStorage.getItem('authToken');
+      const storedUser = localStorage.getItem('user');
+      
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error('Error loading auth state from localStorage:', error);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+    }
+    setLoading(false);
+  }, []);
+
+  // Login function
+  const login = (userData, authToken) => {
+    try {
+      setUser(userData);
+      setToken(authToken);
+      localStorage.setItem('authToken', authToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+    } catch (error) {
+      console.error('Error saving auth state to localStorage:', error);
+    }
+  };
+
+  // Logout function
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+  };
+
+  // Update user data
+  const updateUser = (updatedUser) => {
+    try {
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error('Error updating user data in localStorage:', error);
+    }
+  };
+
+  // Check if user is authenticated
+  const isAuthenticated = !!token && !!user;
+
+  return {
+    user,
+    token,
+    loading,
+    isAuthenticated,
+    login,
+    logout,
+    updateUser,
+  };
+};

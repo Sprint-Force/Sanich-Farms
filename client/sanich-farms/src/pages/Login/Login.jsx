@@ -265,9 +265,11 @@
 
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiMail, FiLock } from 'react-icons/fi';
 import { useToast } from '../../context/ToastContext';
+import { useAuthContext } from '../../hooks/useAuthContext';
+import { authAPI } from '../../services/api';
 
 // This component handles the user login functionality.
 const Login = () => {
@@ -276,10 +278,15 @@ const Login = () => {
     email: '',
     password: '',
   });
+  const [loading, setLoading] = useState(false);
+  
   // The useNavigate hook allows for programmatic navigation after a successful login.
   const navigate = useNavigate();
+  const location = useLocation();
   // The useToast hook provides a consistent way to display success and error messages.
   const { addToast } = useToast();
+  // Auth context for managing authentication state
+  const { login } = useAuthContext();
 
   // This handler updates the state as the user types in the input fields.
   const handleChange = (e) => {
@@ -290,44 +297,47 @@ const Login = () => {
   // This asynchronous function handles the form submission.
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt:', formData);
+    
+    if (loading) return;
+    
+    setLoading(true);
 
-    // --- INTEGRATION POINT
+    // Basic form validation
+    if (!formData.email || !formData.password) {
+      addToast('Please fill in all fields.', 'error');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const backendUrl = 'https://sanich-farms-tnac.onrender.com/api/auth/login';
+      // Use the new API service
+      const data = await authAPI.login(formData);
+      
+      // Extract user data from the token or response
+      // Since we don't have user data in the response, we'll store basic info
+      const userData = {
+        email: formData.email,
+        // Add other user fields as they become available from the API
+      };
 
-      // Make an API call using the browser's built-in fetch API.
-      // The POST method is used for sending data to the server.
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // The formData object is sent as a JSON string in the request body.
-        body: JSON.stringify(formData),
-      });
-
-      // Check if the response from the server was successful (HTTP status code 200-299).
-      if (response.ok) {
-        // Parse the JSON response from the server.
-        const data = await response.json();
-        console.log('Login successful:', data);
-
-        // localStorage.setItem('authToken', data.accessToken);
-
-        // Display a success toast and redirect the user.
-        addToast('Login successful! Welcome back.', 'success');
-        navigate('/');
-      } else {
-        // If the response was not successful, handle the error.
-        // The server's response will often contain a more specific error message.
-        const errorData = await response.json();
-        addToast(errorData.message || 'Invalid email or password. Please try again.', 'error');
-      }
+      // Use the login function from auth context
+      login(userData, data.accessToken);
+      
+      // Display a success toast and redirect the user.
+      addToast('Login successful! Welcome back.', 'success');
+      
+      // Redirect to the intended page or dashboard
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+      
     } catch (error) {
-      // Catch network-related errors (e.g., server is down, no internet).
-      console.error('Login failed:', error);
-      addToast('An error occurred. Please try again later.', 'error');
+      // Handle different types of errors
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          'An error occurred. Please try again later.';
+      addToast(errorMessage, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -351,6 +361,7 @@ const Login = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="you@example.com"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -369,6 +380,7 @@ const Login = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                 placeholder="********"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -379,20 +391,25 @@ const Login = () => {
                 name="remember-me"
                 type="checkbox"
                 className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                disabled={loading}
               />
               <label htmlFor="remember-me" className="ml-2 block text-gray-900">
                 Remember me
               </label>
             </div>
-            <Link to="/forgot-password" className="font-medium text-green-600 hover:text-green-800 transition duration-200">
+            <Link 
+              to="/forgot-password" 
+              className="font-medium text-green-600 hover:text-green-800 transition duration-200"
+            >
               Forgot your password?
             </Link>
           </div>
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? 'Signing In...' : 'Login'}
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-600">
