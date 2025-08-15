@@ -53,7 +53,9 @@ export const CartProvider = ({ children }) => {
     try {
       const response = await cartAPI.getCart();
       console.log("Cart API response:", response);
-      setCartItems(response.data || response || []);
+      // Handle the API response structure: {status: 'success', cart: Array}
+      const cartData = response.cart || response.data || response || [];
+      setCartItems(Array.isArray(cartData) ? cartData : []);
     } catch (err) {
       console.error("Failed to fetch cart:", err);
       setError("Failed to load cart");
@@ -269,6 +271,7 @@ export const CartProvider = ({ children }) => {
 
   // Calculate total price of items in cart
   const getTotalPrice = useCallback(() => {
+    if (!Array.isArray(cartItems)) return 0;
     return cartItems.reduce((total, item) => {
       const price = parseFloat(item.price) || 0;
       const quantity = parseInt(item.quantity) || 0;
@@ -278,6 +281,7 @@ export const CartProvider = ({ children }) => {
 
   // Get total number of items in cart
   const getTotalItems = useCallback(() => {
+    if (!Array.isArray(cartItems)) return 0;
     return cartItems.reduce((total, item) => {
       return total + (parseInt(item.quantity) || 0);
     }, 0);

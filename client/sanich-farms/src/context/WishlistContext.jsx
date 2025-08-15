@@ -53,7 +53,9 @@ export const WishlistProvider = ({ children }) => {
     try {
       const response = await wishlistAPI.getWishlist();
       console.log("Wishlist API response:", response);
-      setWishlistItems(response.data || response || []);
+      // Handle the API response structure: {status: 'success', wishlist: Array}
+      const wishlistData = response.wishlist || response.data || response || [];
+      setWishlistItems(Array.isArray(wishlistData) ? wishlistData : []);
     } catch (err) {
       console.error("Failed to fetch wishlist:", err);
       setError("Failed to load wishlist");
@@ -215,6 +217,7 @@ export const WishlistProvider = ({ children }) => {
 
   // Check if a product is in the wishlist
   const isInWishlist = useCallback((productId) => {
+    if (!Array.isArray(wishlistItems)) return false;
     return wishlistItems.some((item) => item.id === productId);
   }, [wishlistItems]);
 
@@ -229,6 +232,7 @@ export const WishlistProvider = ({ children }) => {
 
   // Get total number of items in wishlist
   const getTotalWishlistItems = useCallback(() => {
+    if (!Array.isArray(wishlistItems)) return 0;
     return wishlistItems.length;
   }, [wishlistItems]);
 
