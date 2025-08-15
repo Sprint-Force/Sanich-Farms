@@ -30,6 +30,17 @@ export const CartProvider = ({ children }) => {
         console.error("Failed to parse cart items from localStorage", error);
         setCartItems([]);
       }
+    } else {
+      // For authenticated users, also try to load from localStorage as backup
+      try {
+        const userCart = localStorage.getItem('userCartItems');
+        if (userCart) {
+          setCartItems(JSON.parse(userCart));
+        }
+      } catch (error) {
+        console.error("Failed to parse user cart items from localStorage", error);
+        setCartItems([]);
+      }
     }
   }, [isAuthenticated]);
 
@@ -41,11 +52,23 @@ export const CartProvider = ({ children }) => {
     setError(null);
     try {
       const response = await cartAPI.getCart();
-      setCartItems(response.data || []);
+      console.log("Cart API response:", response);
+      setCartItems(response.data || response || []);
     } catch (err) {
       console.error("Failed to fetch cart:", err);
       setError("Failed to load cart");
-      setCartItems([]);
+      // Fallback to localStorage for authenticated users if API fails
+      try {
+        const localCart = localStorage.getItem('userCartItems');
+        if (localCart) {
+          setCartItems(JSON.parse(localCart));
+        } else {
+          setCartItems([]);
+        }
+      } catch (localError) {
+        console.error("Failed to load local cart:", localError);
+        setCartItems([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -72,7 +95,7 @@ export const CartProvider = ({ children }) => {
   // Function to add an item to the cart
   const addToCart = useCallback(async (product, quantity = 1) => {
     if (isAuthenticated) {
-      // For authenticated users, use API
+      // For authenticated users, try API first, fallback to localStorage
       setLoading(true);
       try {
         await cartAPI.addToCart({
@@ -82,8 +105,32 @@ export const CartProvider = ({ children }) => {
         // Refresh cart from server
         await fetchCart();
       } catch (err) {
-        console.error("Failed to add to cart:", err);
-        setError("Failed to add item to cart");
+        console.error("Failed to add to cart via API:", err);
+        // Fallback to localStorage for authenticated users
+        setCartItems((prevItems) => {
+          const existingItemIndex = prevItems.findIndex((item) => item.id === product.id);
+          let updatedItems;
+
+          if (existingItemIndex > -1) {
+            updatedItems = [...prevItems];
+            updatedItems[existingItemIndex] = {
+              ...updatedItems[existingItemIndex],
+              quantity: updatedItems[existingItemIndex].quantity + quantity,
+            };
+          } else {
+            updatedItems = [...prevItems, { ...product, quantity }];
+          }
+
+          // Save to localStorage as backup for authenticated users
+          try {
+            localStorage.setItem('userCartItems', JSON.stringify(updatedItems));
+          } catch (localError) {
+            console.error("Failed to save to localStorage:", localError);
+          }
+          
+          return updatedItems;
+        });
+        setError("Added to cart (offline mode)");
       } finally {
         setLoading(false);
       }
