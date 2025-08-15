@@ -376,6 +376,20 @@ import AuthProvider from './context/AuthContext';
 import ScrollToTop from './components/utils/ScrollToTop';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
+import AdminLayout from './pages/Admin/AdminLayout'; // NEW: Import AdminLayout
+import AdminLogin from './pages/Admin/AdminLogin';
+import AdminLogout from './pages/Admin/AdminLogout';
+import AdminProfile from './pages/Admin/AdminProfile';
+import AdminProtectedRoute from './pages/Admin/AdminProtectedRoute';
+import Analytic from './pages/Admin/Analytic';
+import BookingMgmt from './pages/Admin/BookingMgmt';
+import Dashboard from './pages/Admin/Dashboard';
+import OrderMgmt from './pages/Admin/OrderMgmt';
+import ProductMgmt from './pages/Admin/ProductMgmt';
+import Settings from './pages/Admin/Settings';
+import UserMgmt from './pages/Admin/UserMgmt';
+
+
 function App() {
   return (
     <AuthProvider>
@@ -459,6 +473,25 @@ function App() {
                   <Route path='bookings/:bookingId' element={<BookingDetailPage />} />
                 </Route>
               </Route>
+
+              {/* Admin Routes */}
+              <Route path='/admin/login' element={<AdminLogin />} />
+              <Route path='/admin/logout' element={<AdminLogout />} />
+              <Route path='/admin' element={
+                <AdminProtectedRoute>
+                  <AdminLayout />
+                </AdminProtectedRoute>
+              }>
+                <Route index element={<Dashboard />} />
+                <Route path='analytics' element={<Analytic />} />
+                <Route path='orders' element={<OrderMgmt />} />
+                <Route path='bookings' element={<BookingMgmt />} />
+                <Route path='products' element={<ProductMgmt />} />
+                <Route path='users' element={<UserMgmt />} />
+                <Route path='settings' element={<Settings />} />
+                <Route path='profile' element={<AdminProfile />} />
+              </Route>
+
               <Route path='*' element={<NotFoundPage />} />
             </Routes>
           </WishlistProvider>
