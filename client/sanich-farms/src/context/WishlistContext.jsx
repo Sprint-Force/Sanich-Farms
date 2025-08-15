@@ -30,6 +30,17 @@ export const WishlistProvider = ({ children }) => {
         console.error("Failed to parse wishlist items from localStorage", error);
         setWishlistItems([]);
       }
+    } else {
+      // For authenticated users, also try to load from localStorage as backup
+      try {
+        const userWishlist = localStorage.getItem('userWishlistItems');
+        if (userWishlist) {
+          setWishlistItems(JSON.parse(userWishlist));
+        }
+      } catch (error) {
+        console.error("Failed to parse user wishlist items from localStorage", error);
+        setWishlistItems([]);
+      }
     }
   }, [isAuthenticated]);
 
@@ -41,11 +52,23 @@ export const WishlistProvider = ({ children }) => {
     setError(null);
     try {
       const response = await wishlistAPI.getWishlist();
-      setWishlistItems(response.data || []);
+      console.log("Wishlist API response:", response);
+      setWishlistItems(response.data || response || []);
     } catch (err) {
       console.error("Failed to fetch wishlist:", err);
       setError("Failed to load wishlist");
-      setWishlistItems([]);
+      // Fallback to localStorage for authenticated users if API fails
+      try {
+        const localWishlist = localStorage.getItem('userWishlistItems');
+        if (localWishlist) {
+          setWishlistItems(JSON.parse(localWishlist));
+        } else {
+          setWishlistItems([]);
+        }
+      } catch (localError) {
+        console.error("Failed to load local wishlist:", localError);
+        setWishlistItems([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -72,15 +95,31 @@ export const WishlistProvider = ({ children }) => {
   // Function to add an item to the wishlist
   const addToWishlist = useCallback(async (product) => {
     if (isAuthenticated) {
-      // For authenticated users, use API
+      // For authenticated users, try API first, fallback to localStorage
       setLoading(true);
       try {
         await wishlistAPI.addToWishlist({ productId: product.id });
         // Refresh wishlist from server
         await fetchWishlist();
       } catch (err) {
-        console.error("Failed to add to wishlist:", err);
-        setError("Failed to add item to wishlist");
+        console.error("Failed to add to wishlist via API:", err);
+        // Fallback to localStorage for authenticated users
+        setWishlistItems((prevItems) => {
+          // Check if the item already exists in the wishlist to prevent duplicates
+          const exists = prevItems.some((item) => item.id === product.id);
+          if (!exists) {
+            const updatedItems = [...prevItems, product];
+            // Save to localStorage as backup for authenticated users
+            try {
+              localStorage.setItem('userWishlistItems', JSON.stringify(updatedItems));
+            } catch (localError) {
+              console.error("Failed to save to localStorage:", localError);
+            }
+            return updatedItems;
+          }
+          return prevItems; // Return current items if product already exists
+        });
+        setError("Added to wishlist (offline mode)");
       } finally {
         setLoading(false);
       }
