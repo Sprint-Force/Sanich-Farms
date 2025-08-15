@@ -9,6 +9,7 @@ import { cartRoutes } from "./routes/cartRoutes.js";
 import { orderRoutes } from "./routes/orderRoutes.js";
 import { wishlistRoutes } from "./routes/wishlistRoutes.js";
 import { bookingRoutes } from "./routes/bookingRoutes.js";
+import { serviceRoutes } from "./routes/serviceRoutes.js";
 
 
 
@@ -39,6 +40,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/services', serviceRoutes);
 
 // Error handler
 app.use(errorHandler);
