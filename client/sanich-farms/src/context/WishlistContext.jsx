@@ -53,9 +53,21 @@ export const WishlistProvider = ({ children }) => {
     try {
       const response = await wishlistAPI.getWishlist();
       console.log("Wishlist API response:", response);
+      
       // Handle the API response structure: {status: 'success', wishlist: Array}
       const wishlistData = response.wishlist || response.data || response || [];
-      setWishlistItems(Array.isArray(wishlistData) ? wishlistData : []);
+      
+      // Transform backend wishlist data to frontend format
+      const transformedWishlist = Array.isArray(wishlistData) ? wishlistData.map(item => ({
+        id: item.Product?.id || item.product_id,
+        name: item.Product?.name || item.name,
+        price: item.Product?.price || item.price,
+        image: item.Product?.image_url || item.image_url || item.image,
+        category: item.Product?.category || item.category,
+        description: item.Product?.description || item.description
+      })) : [];
+      
+      setWishlistItems(transformedWishlist);
     } catch (err) {
       console.error("Failed to fetch wishlist:", err);
       setError("Failed to load wishlist");
@@ -99,12 +111,31 @@ export const WishlistProvider = ({ children }) => {
     if (isAuthenticated) {
       // For authenticated users, try API first, fallback to localStorage
       setLoading(true);
+      setError(null);
       try {
-        await wishlistAPI.addToWishlist({ productId: product.id });
-        // Refresh wishlist from server
-        await fetchWishlist();
+        const response = await wishlistAPI.addToWishlist({ productId: product.id });
+        console.log("Add to wishlist response:", response);
+        
+        // Handle the response and update wishlist
+        if (response.wishlist) {
+          // Transform and set the updated wishlist from response
+          const transformedWishlist = response.wishlist.map(item => ({
+            id: item.Product?.id || item.product_id,
+            name: item.Product?.name || item.name,
+            price: item.Product?.price || item.price,
+            image: item.Product?.image_url || item.image_url || item.image,
+            category: item.Product?.category || item.category,
+            description: item.Product?.description || item.description
+          }));
+          setWishlistItems(transformedWishlist);
+        } else {
+          // Refresh wishlist from server if no wishlist in response
+          await fetchWishlist();
+        }
       } catch (err) {
         console.error("Failed to add to wishlist via API:", err);
+        setError("Failed to add item to wishlist. Please try again.");
+        
         // Fallback to localStorage for authenticated users
         setWishlistItems((prevItems) => {
           // Check if the item already exists in the wishlist to prevent duplicates
@@ -121,7 +152,6 @@ export const WishlistProvider = ({ children }) => {
           }
           return prevItems; // Return current items if product already exists
         });
-        setError("Added to wishlist (offline mode)");
       } finally {
         setLoading(false);
       }
@@ -145,12 +175,41 @@ export const WishlistProvider = ({ children }) => {
     if (isAuthenticated) {
       // For authenticated users, use API
       setLoading(true);
+      setError(null);
       try {
-        await wishlistAPI.removeFromWishlist(productId);
-        await fetchWishlist();
+        const response = await wishlistAPI.removeFromWishlist(productId);
+        console.log("Remove from wishlist response:", response);
+        
+        // Handle the response and update wishlist
+        if (response.wishlist) {
+          // Transform and set the updated wishlist from response
+          const transformedWishlist = response.wishlist.map(item => ({
+            id: item.Product?.id || item.product_id,
+            name: item.Product?.name || item.name,
+            price: item.Product?.price || item.price,
+            image: item.Product?.image_url || item.image_url || item.image,
+            category: item.Product?.category || item.category,
+            description: item.Product?.description || item.description
+          }));
+          setWishlistItems(transformedWishlist);
+        } else {
+          // Refresh wishlist from server if no wishlist in response
+          await fetchWishlist();
+        }
       } catch (err) {
         console.error("Failed to remove from wishlist:", err);
-        setError("Failed to remove item from wishlist");
+        setError("Failed to remove item from wishlist. Please try again.");
+        
+        // Fallback to local removal for authenticated users
+        setWishlistItems((prevItems) => {
+          const updatedItems = prevItems.filter((item) => item.id !== productId);
+          try {
+            localStorage.setItem('userWishlistItems', JSON.stringify(updatedItems));
+          } catch (localError) {
+            console.error("Failed to save to localStorage:", localError);
+          }
+          return updatedItems;
+        });
       } finally {
         setLoading(false);
       }
@@ -169,12 +228,19 @@ export const WishlistProvider = ({ children }) => {
     if (isAuthenticated) {
       // For authenticated users, use API
       setLoading(true);
+      setError(null);
       try {
         await wishlistAPI.clearWishlist();
         setWishlistItems([]);
+        // Also clear localStorage backup
+        localStorage.removeItem('userWishlistItems');
       } catch (err) {
         console.error("Failed to clear wishlist:", err);
-        setError("Failed to clear wishlist");
+        setError("Failed to clear wishlist. Please try again.");
+        
+        // Fallback to local clear for authenticated users
+        setWishlistItems([]);
+        localStorage.removeItem('userWishlistItems');
       } finally {
         setLoading(false);
       }
