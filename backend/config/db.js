@@ -7,6 +7,7 @@ import { OrderItem } from '../models/OrderItem.js';
 import { Wishlist } from '../models/Wishlist.js';
 import { Service } from '../models/Service.js';
 import { Booking } from '../models/Booking.js';
+import { Payment } from '../models/Payment.js';
 
 
 User.hasMany(CartItem, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
@@ -35,6 +36,10 @@ Booking.belongsTo(User, { foreignKey: 'user_id' });
 
 Service.hasMany(Booking, { foreignKey: 'service_id', onDelete: 'CASCADE' });
 Booking.belongsTo(Service, { foreignKey: 'service_id' });
+
+Payment.belongsTo(Order, { foreignKey: "order_id" });
+Payment.belongsTo(User, { foreignKey: "user_id" });
+
 
 
 
