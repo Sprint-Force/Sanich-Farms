@@ -10,7 +10,7 @@ const Products = () => {
     navigate('/shop');
   };
 
-  const featuredProducts = productsData.slice(0, 6);
+  const featuredProducts = Array.isArray(productsData) ? productsData.slice(0, 6) : [];
 
   return (
     <section className="w-full py-16 md:py-20 bg-gray-50 font-poppins">

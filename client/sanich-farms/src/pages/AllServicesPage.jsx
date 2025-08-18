@@ -180,8 +180,11 @@ const AllServicesPage = () => {
     setError(null);
     try {
       const response = await servicesAPI.getAll();
-      // Assuming the API returns an array of service objects
-      setServices(response);
+      // Ensure the response is an array of service objects
+      const servicesData = Array.isArray(response) ? response : 
+                          Array.isArray(response?.data) ? response.data : 
+                          Array.isArray(response?.services) ? response.services : [];
+      setServices(servicesData);
     } catch (err) {
       console.error("Failed to fetch services:", err);
       setError("Failed to load services. Please try again later.");
