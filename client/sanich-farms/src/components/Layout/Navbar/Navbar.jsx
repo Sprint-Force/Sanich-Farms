@@ -194,12 +194,12 @@ const Navbar = forwardRef((props, ref) => {
           {/* Logo on the left */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
             <img src={logo} alt="Sanich Farms Logo" className="h-10 md:h-12" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/120x48/cccccc/333333?text=Logo"; }}/>
-            <span className="hidden md:block text-xl md:text-2xl font-bold text-[#00B207] whitespace-nowrap ml-2">Sanich Farms</span>
+            <span className="text-lg md:text-xl lg:text-2xl font-bold text-[#00B207] whitespace-nowrap ml-2">Sanich Farms</span>
           </Link>
           
           {/* Icons on the right */}
           <div className="flex items-center gap-2 md:gap-4">
-             <Link to="/wishlist" className="relative text-gray-700 hover:text-green-600 p-2 rounded-full hover:bg-gray-100 transition duration-200" aria-label="Wishlist">
+             <Link to="/wishlist" className="relative hidden lg:flex items-center justify-center p-2 rounded-full hover:bg-gray-100 hover:text-green-600 transition-colors duration-200" aria-label="Wishlist">
                <FiHeart size={24} />
                {wishlistCount > 0 && (
                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -406,6 +406,14 @@ const Navbar = forwardRef((props, ref) => {
               </div>
               <Link to="/services" onClick={closeMobileMenu} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">Services</Link>
               <Link to="/contact" onClick={closeMobileMenu} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">Contact Us</Link>
+              <Link to="/wishlist" onClick={closeMobileMenu} className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">
+                <span>My Wishlist</span>
+                {wishlistCount > 0 && (
+                  <span className="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
               <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">My Dashboard</Link>
               
               {isAuthenticated ? (
