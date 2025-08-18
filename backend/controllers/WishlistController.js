@@ -5,58 +5,40 @@ import { Product } from "../models/Product.js";
 export const addToWishlist = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { product_id, productId } = req.body;
+        const productId = parseInt(req.params.id);
 
-        // Support both product_id and productId for flexibility
-        const actualProductId = product_id || productId;
-
-        if (!actualProductId) {
-            return res.status(400).json({ error: "Product ID is required" });
+        if (isNaN(productId)) {
+            return res.status(400).json({ error: "Invalid product ID" });
         }
 
-        const product = await Product.findByPk(actualProductId);
-        if (!product) {
-            return res.status(404).json({ error: 'Product not found.' });
-        }
+        const product = await Product.findByPk(productId);
+        if (!product) return res.status(404).json({ error: 'Product not found.' });
 
         const existingItem = await Wishlist.findOne({
-            where: {
-                product_id: actualProductId,
-                user_id: userId
-            }
+            where: { product_id: productId, user_id: userId }
         });
 
         if (existingItem) {
             return res.status(400).json({ error: 'Item already exists in wishlist.' });
         }
 
-        const wishlistItem = await Wishlist.create({
-            user_id: userId,
-            product_id: actualProductId
-        });
+        await Wishlist.create({ user_id: userId, product_id: productId });
 
-        // Return the updated wishlist
         const updatedWishlist = await Wishlist.findAll({
             where: { user_id: userId },
             include: [
-                {
-                    model: Product,
-                    attributes: ['id', 'name', 'price', 'image_url', 'category', 'description']
-                }
+                { model: Product, attributes: ['id','name','price','image_url','category','description'] }
             ],
-            order: [['created_at', 'DESC']]
+            order: [['created_at','DESC']]
         });
 
-        res.status(201).json({
-            status: 'success',
-            message: 'Item added to wishlist',
-            wishlist: updatedWishlist,
-        }); 
+        res.status(201).json({ status: 'success', message: 'Item added to wishlist', wishlist: updatedWishlist });
     } catch (error) {
         console.error('Add to wishlist error:', error);
         res.status(500).json({ error: 'Failed to add item to wishlist' });
     }
 };
+
 
 // Remove from wishlist
 export const removeFromWishlist = async (req, res) => {
