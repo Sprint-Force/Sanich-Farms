@@ -174,14 +174,13 @@ const Navbar = forwardRef((props, ref) => {
           <p className="text-gray-700">Ejisu, Okese Avenue Fillet street, Kumasi Ghana</p>
         </div>
         <div className="flex items-center gap-4">
-           <select className="outline-none cursor-pointer bg-transparent text-gray-700 hover:text-green-700 transition duration-200">
-             <option value="en">English</option>
-             <option value="twi">Twi</option>
-           </select>
-           <select className="outline-none cursor-pointer bg-transparent text-gray-700 hover:text-green-700 transition duration-200">
-             <option value="GHS">GHS</option>
-             <option value="USD">USD</option>
-           </select>
+           <div className="flex items-center gap-1 text-gray-700">
+             <span className="text-base">🇬🇧</span>
+             <span className="font-medium">ENG</span>
+           </div>
+           <div className="flex items-center gap-1 text-gray-700">
+             <span className="font-medium">GHS</span>
+           </div>
          </div>
        </div>
 
@@ -431,14 +430,13 @@ const Navbar = forwardRef((props, ref) => {
                 </Link>
               )}
               <div className="flex justify-around items-center mt-6 pt-4 border-t border-gray-100">
-                <select className="outline-none cursor-pointer bg-transparent text-gray-700 hover:text-green-700 transition duration-200 text-base">
-                  <option value="en">English</option>
-                  <option value="twi">Twi</option>
-                </select>
-                <select className="outline-none cursor-pointer bg-transparent text-gray-700 hover:text-green-700 transition duration-200 text-base">
-                  <option value="GHS">GHS</option>
-                  <option value="USD">USD</option>
-                </select>
+                <div className="flex items-center gap-1 text-gray-700">
+                  <span className="text-lg">🇬🇧</span>
+                  <span className="font-medium text-base">ENG</span>
+                </div>
+                <div className="flex items-center gap-1 text-gray-700">
+                  <span className="font-medium text-base">GHS</span>
+                </div>
               </div>
               <div className="flex items-center justify-center gap-2 mt-4 text-gray-700">
                 <FiPhoneCall className="text-green-700 text-xl" />
