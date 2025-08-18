@@ -6,8 +6,10 @@ import { bookingsData } from '../../data/bookingsData'; // Import bookings data
 
 const DashboardOverview = () => {
   // Use actual data for demonstration
-  const recentOrders = ordersData.slice(0, 2); // Show last 2 orders
-  const upcomingBookings = bookingsData.filter(b => b.status === 'Confirmed' || b.status === 'Pending').slice(0, 2); // Show last 2 upcoming
+  const recentOrders = Array.isArray(ordersData) ? ordersData.slice(0, 2) : []; // Show last 2 orders
+  const upcomingBookings = Array.isArray(bookingsData) ? 
+    bookingsData.filter(b => b.status === 'Confirmed' || b.status === 'Pending').slice(0, 2) : 
+    []; // Show last 2 upcoming
 
   const userName = "Sanich User"; // Placeholder for logged-in user's name
 
