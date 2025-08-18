@@ -3,15 +3,18 @@ import { Link } from 'react-router-dom';
 import { FiShoppingBag, FiCalendar, FiUser, FiHeart } from 'react-icons/fi';
 import { ordersData } from '../../data/ordersData'; // Import orders data
 import { bookingsData } from '../../data/bookingsData'; // Import bookings data
+import { useAuthContext } from '../../hooks/useAuthContext';
 
 const DashboardOverview = () => {
+  const { user } = useAuthContext();
+  
   // Use actual data for demonstration
   const recentOrders = Array.isArray(ordersData) ? ordersData.slice(0, 2) : []; // Show last 2 orders
   const upcomingBookings = Array.isArray(bookingsData) ? 
     bookingsData.filter(b => b.status === 'Confirmed' || b.status === 'Pending').slice(0, 2) : 
     []; // Show last 2 upcoming
 
-  const userName = "Sanich User"; // Placeholder for logged-in user's name
+  const userName = user?.name?.split(' ')[0] || 'User'; // Get user's first name from auth context
 
   return (
     <div className="space-y-8">

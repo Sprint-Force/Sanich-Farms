@@ -107,10 +107,20 @@ export const loginUser = async (req, res) => {
     // Generate JWT
     const accessToken = generateToken(getUser);
 
+    // Return user data along with token
+    const userData = {
+      id: getUser.id,
+      name: getUser.name,
+      email: getUser.email,
+      phone_number: getUser.phone_number,
+      role: getUser.role
+    };
+
     return res.status(200).json({
       status: 'success',
       message: 'User logged in successfully',
-      accessToken
+      accessToken,
+      user: userData
     });
 
   } catch (error) {
