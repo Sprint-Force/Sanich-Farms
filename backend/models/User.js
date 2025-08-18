@@ -31,6 +31,17 @@ export const User = sequelize.define('User', {
             is: /^[0-9]{10,15}$/ 
         }
     },
+    address: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    validate: {
+      notEmpty: true,
+    },
+    },
+    company_name: {
+        type: DataTypes.STRING(150),
+        allowNull:true
+    },
     password: {
         type: DataTypes.STRING(255),
         allowNull: false,

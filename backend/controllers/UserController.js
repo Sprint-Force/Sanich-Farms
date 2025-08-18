@@ -201,3 +201,65 @@ export const resetPassword = async (req, res, next) => {
   }
 };
 
+// View a user's profile
+export const getProfile = async (req, res) => {
+  console.log(req.user);
+
+  try {
+    const userId = req.user.id;
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'name', 'email', 'phone_number', 'role', 'created_at']
+    });
+
+    if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.status(200).json({
+      status: 'success',
+      user: user
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Failed to fetch user!'
+    });
+  }
+}
+
+// Edit user's profile
+export const updateProfile = async (req, res) => {
+  const userId = req.user.id;
+  const { name, email, phone_number, address, company_name } = req.body;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update only provided fields
+    if (name) { user.name = name }
+    if(email) { user.email = email } 
+    if(phone_number) { user.phone_number = phone_number }
+    if(address) { user.address = address }
+    if(company_name) { user.company_name = company_name }
+
+    await user.save();
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone_number: user.phone_number,
+        address: user.address,
+        company_name: user.company_name
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update user's profile" });
+  }
+};
+
+
