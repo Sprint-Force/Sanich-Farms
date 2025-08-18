@@ -54,11 +54,10 @@ const Login = () => {
       // Use the new API service
       const data = await authAPI.login(formData);
       
-      // Extract user data from the token or response
-      // Since we don't have user data in the response, we'll store basic info
-      const userData = {
+      // Extract user data from the response
+      const userData = data.user || {
         email: formData.email,
-        // Add other user fields as they become available from the API
+        // Fallback if user data is not available
       };
 
       // Use the login function from auth context

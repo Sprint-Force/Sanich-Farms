@@ -310,7 +310,7 @@ const Navbar = forwardRef((props, ref) => {
                   <FiUser size={22} />
                 </Link>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">Hi! {user?.name || user?.email || 'User'}</span>
+                  <span className="text-sm text-gray-700">Hi! {user?.name?.split(' ')[0] || 'User'}</span>
                   <button
                     onClick={handleLogout}
                     className="ml-2 text-red-600 hover:text-red-700 transition duration-200 p-2 rounded-full hover:bg-red-50"
@@ -419,7 +419,7 @@ const Navbar = forwardRef((props, ref) => {
               {isAuthenticated ? (
                 <>
                   <div className="px-4 py-2 mt-4 border-t border-gray-100">
-                    <span className="text-green-600 font-medium">Hi! {user?.name || user?.email || 'User'}</span>
+                    <span className="text-green-600 font-medium">Hi! {user?.name?.split(' ')[0] || 'User'}</span>
                   </div>
                   <button
                     onClick={handleLogout}
