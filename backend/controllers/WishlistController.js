@@ -5,13 +5,9 @@ import { Product } from "../models/Product.js";
 export const addToWishlist = async (req, res) => {
     try {
         const userId = req.user.id;
-        const productId = parseInt(req.params.id);
+        const productId = req.params.id;
 
-        if (isNaN(productId)) {
-            return res.status(400).json({ error: "Invalid product ID" });
-        }
-
-        const product = await Product.findByPk(productId);
+        const product = await Product.findOne({ where: { id: productId } });
         if (!product) return res.status(404).json({ error: 'Product not found.' });
 
         const existingItem = await Wishlist.findOne({
