@@ -173,8 +173,8 @@ export const wishlistAPI = {
     return response.data;
   },
 
-  addToWishlist: async (wishlistData) => {
-    const response = await apiClient.post('/wishlist', wishlistData);
+  addToWishlist: async (productId, wishlistData) => {
+    const response = await apiClient.post(`/wishlist/${productId}`, wishlistData);
     return response.data;
   },
 
