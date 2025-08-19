@@ -17,9 +17,9 @@ const WhyUs = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-4 tracking-tight">
-            Why Us?
+            Why Choose Us?
           </h2>
-          <div className="w-20 h-1.5 bg-green-600 mx-auto rounded-full"></div>
+          <div className="w-20 h-1.5 bg-green-600 mx-auto rounded-full" aria-hidden="true"></div>
         </div>
         <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
           <div className="flex-1 w-full md:w-auto">
@@ -32,17 +32,18 @@ const WhyUs = () => {
           </div>
           <div className="flex-1 w-full md:w-auto text-center md:text-left">
             <h3 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-6 leading-tight">
-              100% Trusted, Healthy & Natural Poultry Products</h3>
+              100% Trusted, Healthy & Natural Poultry Products
+            </h3>
             <div className="flex items-start gap-4 mb-6">
               <div className="bg-green-600 rounded-full p-2 flex-shrink-0 mt-1 shadow-md">
                 <FaCheckCircle className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h4 className="text-xl font-semibold text-gray-800 mb-2">
-                  Healthy & natural for lovers of healthy food.
+                  Healthy & natural for lovers of healthy food
                 </h4>
                 <p className="text-gray-600 leading-relaxed text-base">
-                  Ut quis tempus erat. Phasellus euismod bibendum magna non tristique. Pellentesque semper vestibulum elit sed condimentum. Nunc pretium fermentum interdum.
+                  Our commitment to natural farming practices ensures that every product meets the highest standards of health and nutrition for your family.
                 </p>
               </div>
             </div>
@@ -52,10 +53,10 @@ const WhyUs = () => {
               </div>
               <div>
                 <h4 className="text-xl font-semibold text-gray-800 mb-2">
-                  Every day fresh and quality products for you.
+                  Every day fresh and quality products for you
                 </h4>
                 <p className="text-gray-600 leading-relaxed text-base">
-                  Maecenas vehicula a justo quis laoreet. Sed in placerat nibh, a posuere ex. Morbi sem neque, aliquam sed orci et, rhoncus lobortis felis. Sed vestibulum nisl sit amet sapien.
+                  We ensure daily freshness through our efficient supply chain and quality control processes, delivering the best products directly to your doorstep.
                 </p>
               </div>
             </div>
