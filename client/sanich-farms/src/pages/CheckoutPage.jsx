@@ -31,11 +31,9 @@ const CheckoutPage = () => {
   // Define your backend API URL
   const BASE_URL = 'https://sanich-farms-tnac.onrender.com/api/orders';
 
-  // Calculate order summary
-  // Use cartTotal from context, which is already a string with 2 decimal places
+  // Calculate order summary - FIX: Remove shipping, replace with delivery note
   const subtotal = parseFloat(cartTotal);
-  const shipping = subtotal > 0 ? 5.00 : 0.00; // Example shipping fee
-  const total = (subtotal + shipping).toFixed(2);
+  const total = subtotal.toFixed(2); // No shipping charges
 
   // If user is not authenticated, show login prompt
   if (!isAuthenticated) {
@@ -100,8 +98,9 @@ const CheckoutPage = () => {
     }
 
     // Basic validation
-    if (!billingInfo.firstName || !billingInfo.lastName || !billingInfo.streetAddress || !billingInfo.email || !billingInfo.phone || !billingInfo.country || !billingInfo.state || !billingInfo.zipCode) {
-      addToast("Please fill in all required billing information.", "error");
+    // FIX: Remove zip code from required validation
+    if (!billingInfo.firstName || !billingInfo.lastName || !billingInfo.streetAddress || !billingInfo.email || !billingInfo.phone || !billingInfo.country || !billingInfo.state) {
+      addToast("Please fill in all required fields.", "error");
       return;
     }
 
@@ -113,7 +112,7 @@ const CheckoutPage = () => {
       paymentMethod,
       orderNotes,
       subtotal: subtotal.toFixed(2),
-      shipping: shipping.toFixed(2),
+      // FIX: Remove shipping from order data
       total,
       orderDate: new Date().toISOString(),
     };
@@ -278,14 +277,20 @@ const CheckoutPage = () => {
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                     required
                   >
-                    <option value="">Select State</option>
+                    <option value="">Select State/Region</option>
+                    {/* FIX: Checkout State Dropdown - Add all Ghana regions */}
+                    <option value="Ashanti Region">Ashanti Region</option>
                     <option value="Greater Accra">Greater Accra</option>
-                    <option value="Ashanti">Ashanti</option>
-                    {/* Add more states */}
+                    <option value="Eastern Region">Eastern Region</option>
+                    <option value="Volta Region">Volta Region</option>
+                    <option value="Central Region">Central Region</option>
+                    <option value="Western Region">Western Region</option>
+                    <option value="Sunyani">Sunyani</option>
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">Zip Code <span className="text-red-500">*</span></label>
+                  <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
+                  {/* FIX: Zip code optional */}
                   <input
                     type="text"
                     id="zipCode"
@@ -293,7 +298,7 @@ const CheckoutPage = () => {
                     value={billingInfo.zipCode}
                     onChange={handleBillingInfoChange}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                    required
+                    placeholder="Optional"
                   />
                 </div>
                 <div className="sm:col-span-2 flex items-center mt-2">
@@ -334,19 +339,34 @@ const CheckoutPage = () => {
                 {cartItems.map(item => (
                   <div key={item.id} className="flex justify-between items-center text-sm">
                     <div className="flex items-center gap-2">
-                      <img src={item.image} alt={item.name} className="h-10 w-10 object-cover rounded-md" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/40x40/cccccc/333333?text=Item"; }} />
+                      {/* FIX: Checkout Cart Item Images */}
+                      <img 
+                        src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/40x40/cccccc/333333?text=Item"} 
+                        alt={item.name} 
+                        className="h-10 w-10 object-cover rounded-md" 
+                        onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/40x40/cccccc/333333?text=Item"; }} 
+                      />
                       <span>{item.name} x{item.quantity}</span>
                     </div>
-                    <span className="font-semibold">GH₵{(item.currentPrice * item.quantity).toFixed(2)}</span>
+                    {/* FIX: Checkout Cart Item Price Display */}
+                    <span className="font-semibold">GH₵{(parseFloat(item.price || item.currentPrice || 0) * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                   <span>Subtotal:</span>
                   <span className="font-semibold">GH₵{subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Shipping:</span>
-                  <span className="font-semibold">GH₵{shipping.toFixed(2)}</span>
+                {/* FIX: Replace Shipping with Delivery Note */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 my-3">
+                  <div className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-medium text-blue-800">Delivery Information</p>
+                      <p className="text-xs text-blue-700">Delivery is handled by a 3rd Party, and the customer bears the cost.</p>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex justify-between items-center pt-4 border-t border-gray-200 font-bold text-xl text-gray-900">
                   <span>Total:</span>

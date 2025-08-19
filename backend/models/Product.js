@@ -39,7 +39,7 @@ import {sequelize} from '../config/sequelize.js';
     },
     rating: {
         type:  DataTypes.DOUBLE,
-        allowNull: false,
+        allowNull: true,
         defaultValue: null,
     },
     unit_of_measure: {

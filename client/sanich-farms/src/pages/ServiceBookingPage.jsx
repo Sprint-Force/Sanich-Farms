@@ -14,6 +14,7 @@ const ServiceBookingPage = () => {
   const BASE_URL_BOOKINGS = 'https://sanich-farms-tnac.onrender.com/api/bookings';
 
   const [selectedService, setSelectedService] = useState(null);
+  const [allServices, setAllServices] = useState([]); // FIX: Add state for all available services
   const [loading, setLoading] = useState(true);
   const [loadingBooking, setLoadingBooking] = useState(false);
   const [error, setError] = useState(null);
@@ -30,24 +31,31 @@ const ServiceBookingPage = () => {
 
   // Effect to fetch service data from the API
   useEffect(() => {
-    const fetchService = async () => {
-      if (!serviceId) {
-        setError("No service ID provided.");
-        setLoading(false);
-        return;
-      }
+    const fetchServiceAndAllServices = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${BASE_URL_SERVICES}/${serviceId}`);
-        const fetchedService = response.data.service; // Extract service from response
-        if (fetchedService) {
-          setSelectedService(fetchedService);
-          setFormData(prev => ({
-            ...prev,
-            serviceType: fetchedService.name, // Use name instead of title
-          }));
+        
+        // Fetch all services for dropdown
+        const allServicesResponse = await axios.get(BASE_URL_SERVICES);
+        const servicesData = allServicesResponse.data.services || [];
+        setAllServices(servicesData);
+        
+        // If serviceId is provided, fetch specific service
+        if (serviceId) {
+          const response = await axios.get(`${BASE_URL_SERVICES}/${serviceId}`);
+          const fetchedService = response.data.service;
+          if (fetchedService) {
+            setSelectedService(fetchedService);
+            setFormData(prev => ({
+              ...prev,
+              serviceType: fetchedService.name,
+            }));
+          } else {
+            setError("Service not found.");
+          }
         } else {
-          setError("Service not found.");
+          // If no specific service, allow user to select from all services
+          setSelectedService(null);
         }
       } catch (err) {
         console.error("Failed to fetch service details:", err);
@@ -57,7 +65,7 @@ const ServiceBookingPage = () => {
       }
     };
 
-    fetchService();
+    fetchServiceAndAllServices();
   }, [serviceId]);
 
   const handleChange = (e) => {
@@ -66,6 +74,14 @@ const ServiceBookingPage = () => {
       ...prev,
       [name]: value,
     }));
+    
+    // FIX: Update selected service when service type changes
+    if (name === 'serviceType') {
+      const selectedSvc = allServices.find(service => service.name === value);
+      if (selectedSvc) {
+        setSelectedService(selectedSvc);
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -208,6 +224,7 @@ const ServiceBookingPage = () => {
               </div>
               <div className="sm:col-span-2">
                 <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">Service Type <span className="text-red-500">*</span></label>
+                {/* FIX: Service Booking Dropdown - Allow user to change service selection */}
                 <select
                   id="serviceType"
                   name="serviceType"
@@ -215,15 +232,14 @@ const ServiceBookingPage = () => {
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                   required
-                  disabled // Disable the select as the service is determined by the URL
                 >
                   <option value="">Select service type</option>
-                  {/* The single selected service is displayed here */}
-                  {selectedService && (
-                    <option key={selectedService.id} value={selectedService.name}>
-                      {selectedService.name}
+                  {/* Display all available services for user selection */}
+                  {allServices.map(service => (
+                    <option key={service.id} value={service.name}>
+                      {service.name} - GH₵{parseFloat(service.price || 0).toFixed(2)}
                     </option>
-                  )}
+                  ))}
                 </select>
               </div>
               <div className="sm:col-span-2">
@@ -257,19 +273,31 @@ const ServiceBookingPage = () => {
             </h2>
             {selectedService ? (
               <div className="space-y-4 text-gray-700 text-lg">
-                <p><strong>Service:</strong> {selectedService.title}</p>
-                <p><strong>Description:</strong> {selectedService.shortDesc || selectedService.fullDescription?.substring(0, 100) + '...'}</p>
-                <p><strong>Price:</strong> {selectedService.price || 'Varies'}</p>
+                {/* FIX: Service Summary Population - Display dynamic service information */}
+                <div className="flex items-center gap-3">
+                  <img
+                    src={selectedService.image_url || "https://placehold.co/60x60/4CAF50/FFFFFF?text=Service"}
+                    alt={selectedService.name}
+                    className="w-16 h-16 rounded-lg object-cover"
+                    onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/60x60/cccccc/333333?text=Service"; }}
+                  />
+                  <div>
+                    <p className="font-semibold">{selectedService.name}</p>
+                    <p className="text-sm text-gray-600">Selected Service</p>
+                  </div>
+                </div>
+                <p><strong>Description:</strong> {selectedService.description?.substring(0, 150) + '...' || 'Professional service available.'}</p>
+                <p><strong>Price:</strong> <span className="text-green-600 font-semibold">GH₵{parseFloat(selectedService.price || 0).toFixed(2)}</span></p>
                 <div className="pt-4 border-t border-gray-200">
                   <h3 className="text-xl font-bold text-gray-800 mb-2">Confirmation Details</h3>
                   <p className="text-gray-600 text-base">
-                    You will receive a confirmation email within 24 hours.
+                    You will receive a confirmation email within 24 hours with detailed instructions and next steps.
                   </p>
                 </div>
               </div>
             ) : (
               <p className="text-gray-600 text-base">
-                Select a service from the form to see its summary here.
+                Select a service from the dropdown to see its summary here.
               </p>
             )}
           </div>

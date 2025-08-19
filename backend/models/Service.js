@@ -28,9 +28,6 @@ export const Service = sequelize.define('Service', {
     image_url : {
         type: DataTypes.STRING,
         allowNull: true,
-        validate: {
-            isUrl: true
-        }
     },
     is_available: {
         type: DataTypes.BOOLEAN,
