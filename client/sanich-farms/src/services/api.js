@@ -26,11 +26,14 @@ apiClient.interceptors.request.use(
   }
 );
 
+// Flag to prevent redirect during logout
+let isLoggingOut = false;
+
 // Response interceptor to handle errors
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !isLoggingOut) {
       // Token expired or invalid, clear auth data
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
@@ -39,6 +42,11 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Export function to set logout flag
+export const setLoggingOut = (status) => {
+  isLoggingOut = status;
+};
 
 // Authentication API methods
 export const authAPI = {
