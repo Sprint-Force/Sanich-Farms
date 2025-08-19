@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthContext } from '../../hooks/useAuthContext';
-import { usersAPI } from '../../services/api';
+import { userAPI } from '../../services/api';
 
 const MyProfile = () => {
   const { user, updateUser } = useAuthContext();
@@ -39,7 +39,7 @@ const MyProfile = () => {
           setOriginalData(profileData);
         } else {
           // Fetch fresh profile data from backend
-          const response = await usersAPI.getProfile();
+          const response = await userAPI.getProfile();
           const profileData = {
             firstName: response.firstName || '',
             lastName: response.lastName || '',
@@ -75,7 +75,7 @@ const MyProfile = () => {
       setError(null);
       
       // Update profile via API
-      const response = await usersAPI.updateProfile(userData);
+      const response = await userAPI.updateProfile(userData);
       
       // Update local context with new user data
       if (updateUser && response) {
