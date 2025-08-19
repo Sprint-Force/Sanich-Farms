@@ -56,16 +56,16 @@ const UserDashboardPage = () => {
   };
 
   // LOGOUT UI FIX: Confirm logout action
-  const confirmLogout = () => {
+  const confirmLogout = async () => {
     try {
+      console.log('Confirm logout called');
+      
       // Clear authentication state (user data, tokens, localStorage)
       logout();
       
-      // Navigate to home page (not login page)
-      navigate('/');
-      
-      // Close modal
-      setShowLogoutModal(false);
+      console.log('Logout completed, using window.location to navigate to homepage...');
+      // Use window.location for a clean redirect that bypasses React Router
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
       alert('There was an error logging out. Please try again.');

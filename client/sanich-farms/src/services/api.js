@@ -33,11 +33,17 @@ let isLoggingOut = false;
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && !isLoggingOut) {
-      // Token expired or invalid, clear auth data
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/';
+    if (error.response?.status === 401) {
+      console.log('401 error detected, isLoggingOut:', isLoggingOut);
+      if (!isLoggingOut) {
+        console.log('Redirecting to login page');
+        // Token expired or invalid, clear auth data
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      } else {
+        console.log('Logout in progress, skipping redirect');
+      }
     }
     return Promise.reject(error);
   }

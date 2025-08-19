@@ -38,16 +38,19 @@ export const useAuth = () => {
 
   // Logout function
   const logout = () => {
+    console.log('Starting logout process...');
     setLoggingOut(true); // Prevent axios interceptor redirect
     setUser(null);
     setToken(null);
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    console.log('Auth data cleared, logging out flag set');
     
-    // Reset flag after a short delay
+    // Reset flag after a longer delay to ensure navigation completes
     setTimeout(() => {
       setLoggingOut(false);
-    }, 100);
+      console.log('Logout flag reset');
+    }, 1000);
   };
 
   // Update user data
