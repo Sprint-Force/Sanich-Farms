@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { setLoggingOut } from '../services/api';
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
@@ -37,10 +38,16 @@ export const useAuth = () => {
 
   // Logout function
   const logout = () => {
+    setLoggingOut(true); // Prevent axios interceptor redirect
     setUser(null);
     setToken(null);
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    
+    // Reset flag after a short delay
+    setTimeout(() => {
+      setLoggingOut(false);
+    }, 100);
   };
 
   // Update user data
