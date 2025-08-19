@@ -47,9 +47,7 @@ const Dashboard = () => {
     totalBookings: 342,
     pendingOrders: 12,
     pendingBookings: 18,
-    outOfStock: 8,
-    wishlistItems: 345,
-    cartItems: 167
+    outOfStock: 8
   };
 
   const recentOrders = [
@@ -189,23 +187,7 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Additional Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            icon={FiHeart}
-            title="Wishlist Items"
-            value={stats.wishlistItems}
-            color="bg-pink-500"
-          />
-          <StatCard
-            icon={FiShoppingCart}
-            title="Cart Items"
-            value={stats.cartItems}
-            color="bg-indigo-500"
-          />
-          <div className="hidden lg:block"></div>
-          <div className="hidden lg:block"></div>
-        </div>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Recent Orders */}
@@ -265,7 +247,7 @@ const Dashboard = () => {
             </div>
             
             <div className="px-6 py-3 border-t border-gray-200">
-              <Link to="/admin/orders"className="text-green-600 hover:text-green-700 hover:underline text-sm font-medium flex items-center gap-1">
+              <Link to="/admin/orders" className="text-green-600 hover:text-green-700 hover:underline text-sm font-medium flex items-center gap-1">
                 <FiEye className="w-4 h-4" />
                 View all orders
               </Link>

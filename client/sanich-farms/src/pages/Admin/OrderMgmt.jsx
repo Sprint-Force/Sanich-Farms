@@ -15,7 +15,13 @@ import {
   FiTruck,
   FiUser,
   FiX,
-  FiXCircle
+  FiXCircle,
+  FiFileText,
+  FiPrinter,
+  FiRotateCcw,
+  FiMail,
+  FiPhone,
+  FiMapPin
 } from 'react-icons/fi';
 
 const OrderMgmt = () => {
@@ -24,7 +30,11 @@ const OrderMgmt = () => {
   const [filterDate, setFilterDate] = useState('all');
   const [showOrderDetail, setShowOrderDetail] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  // const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnReason, setReturnReason] = useState('');
+  const [refundAmount, setRefundAmount] = useState('');
 
   // Mock data - replace with real API
   const [orders, setOrders] = useState([
@@ -119,7 +129,7 @@ const OrderMgmt = () => {
     }
   ]);
 
-  const statuses = ['all', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Refunded'];
+  const statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'canceled', 'refunded'];
   const dateFilters = ['all', 'today', 'yesterday', 'last7days', 'last30days', 'custom'];
 
   const getStatusColor = (status) => {
@@ -171,7 +181,8 @@ const OrderMgmt = () => {
       order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
+    const matchesStatus = filterStatus === 'all' || 
+      order.status.toLowerCase() === filterStatus.toLowerCase();
     
     // Date filtering logic would go here
     const matchesDate = true; // Simplified for now
@@ -241,6 +252,78 @@ const OrderMgmt = () => {
     if (window.confirm('Are you sure you want to refund this order?')) {
       updateOrderStatus(orderId, 'Refunded');
     }
+  };
+
+  const handleGenerateInvoice = (order) => {
+    setSelectedOrder(order);
+    setShowInvoiceModal(true);
+  };
+
+  const handlePrintReceipt = (order) => {
+    setSelectedOrder(order);
+    setShowReceiptModal(true);
+  };
+
+  const handleReturn = (order) => {
+    setSelectedOrder(order);
+    setShowReturnModal(true);
+  };
+
+  const processReturn = () => {
+    if (!returnReason.trim()) {
+      alert('Please provide a return reason');
+      return;
+    }
+
+    const refundValue = refundAmount || selectedOrder.total;
+    
+    // Process the return/refund
+    updateOrderStatus(selectedOrder.id, 'Refunded');
+    
+    // In a real app, you would also:
+    // - Create a return record
+    // - Process the refund payment
+    // - Update inventory
+    // - Send notification to customer
+    
+    setShowReturnModal(false);
+    setReturnReason('');
+    setRefundAmount('');
+    alert(`Return processed successfully. Refund amount: GH₵${refundValue}`);
+  };
+
+  const downloadInvoice = () => {
+    // In a real app, you would generate a PDF invoice
+    const invoiceData = {
+      orderNumber: selectedOrder.id,
+      customer: selectedOrder.customer,
+      items: selectedOrder.items,
+      total: selectedOrder.total,
+      date: selectedOrder.date,
+      paymentMethod: selectedOrder.paymentMethod
+    };
+    
+    // For demo purposes, we'll just log the invoice data
+    console.log('Invoice data:', invoiceData);
+    alert('Invoice downloaded successfully!');
+    setShowInvoiceModal(false);
+  };
+
+  const printReceipt = () => {
+    // In a real app, you would send to printer or generate printable format
+    const receiptData = {
+      orderNumber: selectedOrder.id,
+      customer: selectedOrder.customer.name,
+      items: selectedOrder.items,
+      total: selectedOrder.total,
+      paymentMethod: selectedOrder.paymentMethod,
+      date: selectedOrder.date
+    };
+    
+    // For demo purposes, we'll just log the receipt data
+    console.log('Receipt data:', receiptData);
+    alert('Receipt sent to printer!');
+    setShowReceiptModal(false);
   };
 
   const exportOrders = (format) => {
@@ -322,7 +405,9 @@ const OrderMgmt = () => {
               >
                 {statuses.map(status => (
                   <option key={status} value={status}>
-                    {status === 'all' ? 'All Statuses' : status}
+                    {status === 'all' ? 'All Statuses' : 
+                     status === 'canceled' ? 'Canceled' :
+                     status.charAt(0).toUpperCase() + status.slice(1)}
                   </option>
                 ))}
               </select>
@@ -472,6 +557,29 @@ const OrderMgmt = () => {
                       >
                         <FiEye className="w-4 h-4" />
                       </button>
+                      <button
+                        onClick={() => handleGenerateInvoice(order)}
+                        className="text-purple-600 hover:text-purple-900 p-1"
+                        title="Generate Invoice"
+                      >
+                        <FiFileText className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handlePrintReceipt(order)}
+                        className="text-indigo-600 hover:text-indigo-900 p-1"
+                        title="Print Receipt"
+                      >
+                        <FiPrinter className="w-4 h-4" />
+                      </button>
+                      {order.status === 'delivered' && (
+                        <button
+                          onClick={() => handleReturn(order)}
+                          className="text-orange-600 hover:text-orange-900 p-1"
+                          title="Process Return"
+                        >
+                          <FiRotateCcw className="w-4 h-4" />
+                        </button>
+                      )}
                       {getNextStatus(order.status) && (
                         <button
                           onClick={() => updateOrderStatus(order.id, getNextStatus(order.status))}
@@ -609,15 +717,6 @@ const OrderMgmt = () => {
                     {selectedOrder.status}
                   </span>
                   
-                  {getNextStatus(selectedOrder.status) && (
-                    <button
-                      onClick={() => updateOrderStatus(selectedOrder.id, getNextStatus(selectedOrder.status))}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-                    >
-                      Update to {getNextStatus(selectedOrder.status)}
-                    </button>
-                  )}
-                  
                   {selectedOrder.status !== 'Cancelled' && selectedOrder.status !== 'Refunded' && (
                     <>
                       <button
@@ -666,6 +765,274 @@ const OrderMgmt = () => {
                     </button>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Modal */}
+      {showInvoiceModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Generate Invoice</h3>
+                <button
+                  onClick={() => setShowInvoiceModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <FiX className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Invoice Header */}
+                <div className="text-center border-b pb-4">
+                  <h2 className="text-2xl font-bold text-green-600">SANICH FARMS</h2>
+                  <p className="text-sm text-gray-600">Agricultural Products & Services</p>
+                  <p className="text-sm text-gray-600">
+                    <FiMapPin className="inline w-4 h-4 mr-1" />
+                    Ghana | 
+                    <FiPhone className="inline w-4 h-4 ml-2 mr-1" />
+                    +233 XX XXX XXXX | 
+                    <FiMail className="inline w-4 h-4 ml-2 mr-1" />
+                    info@sanichfarms.com
+                  </p>
+                </div>
+
+                {/* Invoice Details */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Bill To:</h4>
+                    <p className="text-sm text-gray-600">{selectedOrder.customer.name}</p>
+                    <p className="text-sm text-gray-600">{selectedOrder.customer.email}</p>
+                    <p className="text-sm text-gray-600">{selectedOrder.customer.phone}</p>
+                  </div>
+                  <div className="text-right">
+                    <h4 className="font-semibold text-gray-900 mb-2">Invoice Details:</h4>
+                    <p className="text-sm text-gray-600">Invoice #: INV-{selectedOrder.id}</p>
+                    <p className="text-sm text-gray-600">Order #: {selectedOrder.id}</p>
+                    <p className="text-sm text-gray-600">Date: {selectedOrder.date}</p>
+                    <p className="text-sm text-gray-600">Payment: {selectedOrder.paymentMethod}</p>
+                  </div>
+                </div>
+
+                {/* Items Table */}
+                <div>
+                  <table className="w-full border border-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">Item</th>
+                        <th className="px-4 py-2 text-center text-sm font-medium text-gray-900">Qty</th>
+                        <th className="px-4 py-2 text-right text-sm font-medium text-gray-900">Price</th>
+                        <th className="px-4 py-2 text-right text-sm font-medium text-gray-900">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedOrder.items.map((item, index) => (
+                        <tr key={index} className="border-t border-gray-200">
+                          <td className="px-4 py-2 text-sm text-gray-900">{item.name}</td>
+                          <td className="px-4 py-2 text-sm text-gray-600 text-center">{item.quantity}</td>
+                          <td className="px-4 py-2 text-sm text-gray-600 text-right">GH₵{item.price}</td>
+                          <td className="px-4 py-2 text-sm text-gray-900 text-right font-medium">
+                            GH₵{(item.price * item.quantity).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="border-t-2 border-gray-300 bg-gray-50">
+                        <td colSpan="3" className="px-4 py-2 text-sm font-semibold text-gray-900 text-right">
+                          Total Amount:
+                        </td>
+                        <td className="px-4 py-2 text-lg font-bold text-green-600 text-right">
+                          GH₵{selectedOrder.total}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Footer */}
+                <div className="text-center text-sm text-gray-500 border-t pt-4">
+                  <p>Thank you for your business!</p>
+                  <p>This is a computer-generated invoice.</p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
+                <button
+                  onClick={() => setShowInvoiceModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={downloadInvoice}
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition flex items-center gap-2"
+                >
+                  <FiFileText className="w-4 h-4" />
+                  Download Invoice
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Receipt Modal */}
+      {showReceiptModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Print Receipt</h3>
+                <button
+                  onClick={() => setShowReceiptModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <FiX className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4 text-sm">
+                {/* Receipt Header */}
+                <div className="text-center border-b pb-3">
+                  <h2 className="text-lg font-bold">SANICH FARMS</h2>
+                  <p className="text-xs text-gray-600">RECEIPT</p>
+                </div>
+
+                {/* Receipt Details */}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Receipt #:</span>
+                    <span className="font-medium">RCP-{selectedOrder.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Date:</span>
+                    <span>{selectedOrder.date}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Customer:</span>
+                    <span>{selectedOrder.customer.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Payment:</span>
+                    <span>{selectedOrder.paymentMethod}</span>
+                  </div>
+                </div>
+
+                {/* Items */}
+                <div className="border-t border-b py-3 space-y-2">
+                  {selectedOrder.items.map((item, index) => (
+                    <div key={index} className="flex justify-between">
+                      <span className="flex-1">{item.name} x{item.quantity}</span>
+                      <span className="font-medium">GH₵{(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Total */}
+                <div className="flex justify-between text-lg font-bold">
+                  <span>TOTAL:</span>
+                  <span>GH₵{selectedOrder.total}</span>
+                </div>
+
+                {/* Footer */}
+                <div className="text-center text-xs text-gray-500 pt-3">
+                  <p>Thank you for your purchase!</p>
+                  <p>Keep this receipt for your records</p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
+                <button
+                  onClick={() => setShowReceiptModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={printReceipt}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition flex items-center gap-2"
+                >
+                  <FiPrinter className="w-4 h-4" />
+                  Print Receipt
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Return/Refund Modal */}
+      {showReturnModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Process Return</h3>
+                <button
+                  onClick={() => setShowReturnModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <FiX className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Order: #{selectedOrder.id}</p>
+                  <p className="text-sm text-gray-600 mb-4">Customer: {selectedOrder.customer.name}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Return Reason *
+                  </label>
+                  <textarea
+                    value={returnReason}
+                    onChange={(e) => setReturnReason(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    rows="3"
+                    placeholder="Please provide reason for return..."
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Refund Amount (GH₵)
+                  </label>
+                  <input
+                    type="number"
+                    value={refundAmount}
+                    onChange={(e) => setRefundAmount(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder={`Default: ${selectedOrder.total}`}
+                    step="0.01"
+                    min="0"
+                    max={selectedOrder.total}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty to refund full amount (GH₵{selectedOrder.total})
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
+                <button
+                  onClick={() => setShowReturnModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={processReturn}
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition flex items-center gap-2"
+                >
+                  <FiRotateCcw className="w-4 h-4" />
+                  Process Return
+                </button>
               </div>
             </div>
           </div>

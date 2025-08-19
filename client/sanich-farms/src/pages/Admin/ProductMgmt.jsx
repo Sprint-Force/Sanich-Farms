@@ -430,7 +430,7 @@ const ProductMgmt = () => {
 
       {/* Add/Edit Product Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 pt-16 z-[60] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-start justify-center p-4 pt-16 z-[60] overflow-y-auto">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[calc(100vh-8rem)] overflow-y-auto my-4">
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-xl font-bold text-gray-900">

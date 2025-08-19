@@ -96,7 +96,7 @@ const AdminLayout = () => {
               <FiUser className="w-5 h-5 mr-3" />
               Profile
             </Link>
-            <Link to="/admin/logout" className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+            <Link to="/admin/logout" className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-400 rounded-lg hover:bg-red-100 transition-colors">
               <FiLogOut className="w-5 h-5 mr-3" />
               Logout
             </Link>
