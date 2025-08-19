@@ -63,12 +63,26 @@ const Login = () => {
       // Use the login function from auth context
       login(userData, data.accessToken);
       
-      // Display a success toast and redirect the user.
+      // Display a success toast
       addToast('Login successful! Welcome back.', 'success');
       
-      // Redirect to the intended page or dashboard
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      // Check if user has admin role (from API response)
+      if (userData.role === 'admin') {
+        // Store admin session for compatibility with admin routes
+        localStorage.setItem('adminAuth', JSON.stringify({
+          email: userData.email,
+          role: 'admin',
+          name: userData.name,
+          timestamp: Date.now()
+        }));
+        
+        // Redirect to admin dashboard
+        navigate('/admin', { replace: true });
+      } else {
+        // Redirect to the intended page or user dashboard
+        const from = location.state?.from?.pathname || '/dashboard';
+        navigate(from, { replace: true });
+      }
       
     } catch (error) {
       // Handle different types of errors

@@ -7,7 +7,35 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = () => {
-      // Check if admin is authenticated
+      // First check if user is authenticated via normal auth system
+      const normalToken = localStorage.getItem('authToken');
+      const normalUser = localStorage.getItem('user');
+      
+      if (normalToken && normalUser) {
+        try {
+          const userData = JSON.parse(normalUser);
+          // Check if user has admin role (from API)
+          if (userData.role === 'admin') {
+            // Create admin auth entry for compatibility if it doesn't exist
+            const adminAuth = localStorage.getItem('adminAuth');
+            if (!adminAuth) {
+              localStorage.setItem('adminAuth', JSON.stringify({
+                email: userData.email,
+                role: 'admin',
+                name: userData.name,
+                timestamp: Date.now()
+              }));
+            }
+            setAuthState(true);
+            setIsLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Error parsing normal user data:', error);
+        }
+      }
+
+      // Fallback: Check legacy admin auth for existing sessions
       const adminAuth = localStorage.getItem('adminAuth');
       
       if (!adminAuth) {
@@ -18,11 +46,10 @@ const ProtectedRoute = ({ children }) => {
 
       try {
         const authData = JSON.parse(adminAuth);
-        const isExpired = Date.now() - authData.timestamp > 1 * 60 * 60 * 1000; // 1 hour
+        const isExpired = Date.now() - authData.timestamp > 8 * 60 * 60 * 1000; // 8 hours
 
         if (isExpired) {
           localStorage.removeItem('adminAuth');
-          // Clear any other admin-related data
           localStorage.removeItem('adminToken');
           localStorage.removeItem('adminUser');
           setAuthState(false);
@@ -43,7 +70,7 @@ const ProtectedRoute = ({ children }) => {
 
     // Listen for storage changes (when user logs out in another tab)
     const handleStorageChange = (e) => {
-      if (e.key === 'adminAuth' && !e.newValue) {
+      if ((e.key === 'adminAuth' || e.key === 'authToken') && !e.newValue) {
         setAuthState(false);
       }
     };
@@ -66,7 +93,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Redirect to login if not authenticated
   if (authState === false) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children;
