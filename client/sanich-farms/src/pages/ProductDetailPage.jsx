@@ -312,19 +312,53 @@ const ProductDetailPage = () => {
 
           {activeTab === 'additional' && (
             <div className="text-gray-700 leading-relaxed text-base overflow-x-auto hide-scrollbar">
+              {/* FIX: Additional Info Section - Comprehensive product details */}
               <table className="w-full text-left border-collapse min-w-[300px]">
                 <tbody>
-                  {product.additionalInfo && Object.entries(product.additionalInfo).map(([key, value]) => (
-                    <tr key={key} className="border-b border-gray-200 last:border-b-0">
-                      <th className="py-2 pr-4 font-semibold text-gray-800 capitalize">{key}:</th>
-                      <td className="py-2">{value}</td>
-                    </tr>
-                  ))}
-                  {(!product.additionalInfo || Object.keys(product.additionalInfo).length === 0) && (
-                    <tr>
-                      <td colSpan="2" className="py-4 text-center text-gray-500">No additional information available.</td>
-                    </tr>
-                  )}
+                  <tr className="border-b border-gray-200">
+                    <th className="py-2 pr-4 font-semibold text-gray-800">Category:</th>
+                    <td className="py-2">{product.category || 'N/A'}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <th className="py-2 pr-4 font-semibold text-gray-800">Stock Available:</th>
+                    <td className="py-2">{product.stock_quantity || 'N/A'} units</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <th className="py-2 pr-4 font-semibold text-gray-800">Unit of Measure:</th>
+                    <td className="py-2">{product.unit_of_measure || 'N/A'}</td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <th className="py-2 pr-4 font-semibold text-gray-800">Availability:</th>
+                    <td className="py-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        product.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {product.is_available ? 'In Stock' : 'Out of Stock'}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <th className="py-2 pr-4 font-semibold text-gray-800">Product Rating:</th>
+                    <td className="py-2">
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <FiStar
+                            key={i}
+                            className={`w-4 h-4 ${i < (product.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                          />
+                        ))}
+                        <span className="ml-2 text-sm">({product.rating || 0}/5)</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-gray-200">
+                    <th className="py-2 pr-4 font-semibold text-gray-800">Storage Instructions:</th>
+                    <td className="py-2">Store in a cool, dry place away from direct sunlight</td>
+                  </tr>
+                  <tr>
+                    <th className="py-2 pr-4 font-semibold text-gray-800">Origin:</th>
+                    <td className="py-2">Ghana</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -385,11 +419,12 @@ const ProductDetailPage = () => {
           <div className="flex flex-col items-center p-4">
               <div className="flex flex-col items-center mb-3">
                   <span className="text-xl font-bold text-green-700">
-                      GH₵{product?.currentPrice?.toFixed(2) || 'N/A'}
+                      {/* FIX: Mobile Sticky Bar Price - Always display actual product price */}
+                      GH₵{parseFloat(product?.price || 0).toFixed(2)}
                   </span>
-                  {product?.oldPrice && (
-                      <span className="text-sm text-gray-500 line-through">
-                          GH₵{product.oldPrice?.toFixed(2)}
+                  {product?.unit_of_measure && (
+                      <span className="text-sm text-gray-500">
+                          per {product.unit_of_measure}
                       </span>
                   )}
               </div>

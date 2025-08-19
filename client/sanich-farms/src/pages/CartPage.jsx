@@ -66,7 +66,7 @@ const CartPage = () => {
                       <div className="flex-shrink-0 h-20 w-20">
                         <img
                           className="h-full w-full rounded-md object-cover"
-                          src={item.image || item.images?.[0]}
+                          src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/80x80/cccccc/333333?text=Item"}
                           alt={item.name}
                           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/80x80/cccccc/333333?text=Item"; }}
                         />
@@ -104,7 +104,8 @@ const CartPage = () => {
                       </div>
                       {/* Subtotal */}
                       <span className="text-sm font-semibold text-gray-900">
-                        GH₵{((item.currentPrice || 0) * item.quantity).toFixed(2)}
+                        {/* FIX: Mobile Cart Price Display */}
+                        GH₵{(parseFloat(item.price || item.currentPrice || 0) * item.quantity).toFixed(2)}
                       </span>
                     </div>
                     
@@ -141,7 +142,7 @@ const CartPage = () => {
                           <div className="flex-shrink-0 h-16 w-16">
                             <img
                               className="h-16 w-16 rounded-md object-cover"
-                              src={item.image || item.images?.[0]}
+                              src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/64x64/cccccc/333333?text=Item"}
                               alt={item.name}
                               onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/64x64/cccccc/333333?text=Item"; }}
                             />
@@ -155,7 +156,8 @@ const CartPage = () => {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-900">
-                        GH₵{(item.currentPrice || 0).toFixed(2)}
+                        {/* FIX: Product Price Display - Use price from backend API structure */}
+                        GH₵{parseFloat(item.price || item.currentPrice || 0).toFixed(2)}
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center border border-gray-300 rounded-full overflow-hidden w-28">
@@ -179,7 +181,8 @@ const CartPage = () => {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-right text-sm font-semibold text-gray-900">
-                        GH₵{((item.currentPrice || 0) * item.quantity).toFixed(2)}
+                        {/* FIX: Cart Subtotal Display - Proper price calculation */}
+                        GH₵{(parseFloat(item.price || item.currentPrice || 0) * item.quantity).toFixed(2)}
                       </td>
                       <td className="px-4 py-4 text-right text-sm font-medium">
                         <button

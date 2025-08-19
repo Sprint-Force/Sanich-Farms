@@ -60,7 +60,7 @@ const WishlistPage = () => {
                       <div className="flex-shrink-0 h-20 w-20">
                         <img
                           className="h-full w-full rounded-md object-cover"
-                          src={item.image || item.images?.[0]}
+                          src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/80x80/cccccc/333333?text=Item"}
                           alt={item.name}
                           onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/80x80/cccccc/333333?text=Item"; }}
                         />
@@ -71,7 +71,8 @@ const WishlistPage = () => {
                         </Link>
                         <p className="text-xs text-gray-500">{item.category}</p>
                         <p className="text-sm font-semibold text-gray-900 mt-1">
-                          GH₵{(item.currentPrice || 0).toFixed(2)}
+                          {/* FIX: Wishlist Price Display */}
+                          GH₵{parseFloat(item.price || item.currentPrice || 0).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -140,7 +141,7 @@ const WishlistPage = () => {
                           <div className="flex-shrink-0 h-16 w-16">
                             <img
                               className="h-16 w-16 rounded-md object-cover"
-                              src={item.image || item.images?.[0]}
+                              src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/64x64/cccccc/333333?text=Item"}
                               alt={item.name}
                               onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/64x64/cccccc/333333?text=Item"; }}
                             />
@@ -154,7 +155,8 @@ const WishlistPage = () => {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-900">
-                        GH₵{(item.currentPrice || 0).toFixed(2)}
+                        {/* FIX: Wishlist Desktop Price Display */}
+                        GH₵{parseFloat(item.price || item.currentPrice || 0).toFixed(2)}
                       </td>
                       <td className="px-4 py-4 hidden sm:table-cell">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
