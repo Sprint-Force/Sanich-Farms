@@ -27,7 +27,7 @@ const ServiceDetailPage = () => {
       try {
         setLoading(true);
         const response = await axios.get(`${BASE_URL}/${serviceId}`);
-        const fetchedService = response.data;
+        const fetchedService = response.data.service; // Extract service from response
         if (fetchedService) {
           setService(fetchedService);
         } else {
@@ -81,7 +81,7 @@ const ServiceDetailPage = () => {
             <span className="text-base font-medium">Our Services</span>
           </Link>
           <FiChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-green-400 text-base font-semibold truncate max-w-[150px] sm:max-w-none">{service.title}</span>
+          <span className="text-green-400 text-base font-semibold truncate max-w-[150px] sm:max-w-none">{service.name}</span>
         </div>
       </div>
 
@@ -91,17 +91,17 @@ const ServiceDetailPage = () => {
           {/* Service Image and Summary */}
           <div className="flex flex-col gap-6 bg-white rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100">
             <img
-              src={service.image}
-              alt={service.imageAlt}
+              src={service.image_url || service.image || "https://placehold.co/600x400/cccccc/333333?text=Service+Image"}
+              alt={service.name}
               className="w-full h-auto object-cover rounded-lg shadow-md"
               onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/cccccc/333333?text=Service+Image+Error"; }}
             />
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 leading-tight">{service.title}</h1>
-            <p className="text-gray-600 text-lg leading-relaxed">{service.shortDesc}</p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 leading-tight">{service.name}</h1>
+            <p className="text-gray-600 text-lg leading-relaxed">{service.description || 'No description available.'}</p>
 
             <div className="flex items-baseline gap-3 mb-4">
               <span className="text-3xl sm:text-4xl font-bold text-green-700">
-                {service.price}
+                GH₵{parseFloat(service.price || 0).toFixed(2)}
               </span>
             </div>
 
@@ -120,66 +120,59 @@ const ServiceDetailPage = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
                 <FiBookOpen className="text-green-600" /> Description
               </h2>
-              <p className="text-gray-700 leading-relaxed text-base">{service.fullDescription}</p>
+              <p className="text-gray-700 leading-relaxed text-base">{service.description || 'No detailed description available.'}</p>
             </div>
 
-            {/* Benefits */}
-            {service.benefits && service.benefits.length > 0 && (
-              <div className="mb-8 pb-6 border-b border-gray-200">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
-                  <FiCheckCircle className="text-green-600" /> Benefits
-                </h2>
-                <ul className="list-none space-y-2 text-gray-700 text-base">
-                  {service.benefits.map((benefit, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <FiCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                      <span>{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {/* Default Benefits since backend doesn't provide them */}
+            <div className="mb-8 pb-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+                <FiCheckCircle className="text-green-600" /> Benefits
+              </h2>
+              <ul className="list-none space-y-2 text-gray-700 text-base">
+                <li className="flex items-start gap-2">
+                  <FiCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
+                  <span>Professional and experienced service</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <FiCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
+                  <span>Quality guaranteed results</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <FiCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
+                  <span>Affordable pricing</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <FiCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
+                  <span>Customer support included</span>
+                </li>
+              </ul>
+            </div>
 
-            {/* Process Steps */}
-            {service.processSteps && service.processSteps.length > 0 && (
-              <div className="mb-8 pb-6 border-b border-gray-200">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
-                  <FiCalendar className="text-green-600" /> Our Process
-                </h2>
-                <ol className="list-decimal list-inside space-y-2 text-gray-700 text-base">
-                  {service.processSteps.map((step, index) => (
-                    <li key={index}>{step}</li>
-                  ))}
-                </ol>
-              </div>
-            )}
+            {/* Default Process Steps */}
+            <div className="mb-8 pb-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+                <FiCalendar className="text-green-600" /> Our Process
+              </h2>
+              <ol className="list-decimal list-inside space-y-2 text-gray-700 text-base">
+                <li>Initial consultation and assessment</li>
+                <li>Service planning and scheduling</li>
+                <li>Professional service execution</li>
+                <li>Quality assurance and follow-up</li>
+              </ol>
+            </div>
 
-            {/* Pricing Details */}
-            {service.priceDetails && (
-              <div className="mb-8 pb-6 border-b border-gray-200">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
-                  <FiDollarSign className="text-green-600" /> Pricing
-                </h2>
-                <p className="text-gray-700 leading-relaxed text-base">{service.priceDetails}</p>
+            {/* Additional Information */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+                <FiHelpCircle className="text-green-600" /> Additional Information
+              </h2>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p className="text-gray-700 text-sm">
+                  For more information or custom requirements, please contact us during the booking process. 
+                  Our team is ready to provide personalized service to meet your specific needs.
+                </p>
               </div>
-            )}
-
-            {/* FAQs */}
-            {service.faqs && service.faqs.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
-                  <FiHelpCircle className="text-green-600" /> FAQs
-                </h2>
-                <div className="space-y-4">
-                  {service.faqs.map((faq, index) => (
-                    <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <h3 className="font-semibold text-gray-800 mb-1">{faq.question}</h3>
-                      <p className="text-gray-700 text-sm">{faq.answer}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

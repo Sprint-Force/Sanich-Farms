@@ -8,16 +8,11 @@ import { useToast } from '../../context/ToastContext';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
-  const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItems } = useWishlist();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToast } = useToast();
 
   // WISHLIST VISUAL FEEDBACK: Check if product is in wishlist
   const isWishlisted = isInWishlist(product.id);
-  
-  // DEBUG: Log wishlist status
-  console.log('Product ID:', product.id, 'Type:', typeof product.id);
-  console.log('Is Wishlisted:', isWishlisted);
-  console.log('Wishlist Items:', wishlistItems);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -47,7 +42,7 @@ const ProductCard = ({ product }) => {
         {/* pb-[100%] creates a perfect square aspect ratio for the image container */}
         <Link to={`/products/${product.id}`} className="absolute inset-0">
           <img
-            src={product.image || product.images?.[0]}
+            src={product.image_url || product.image || product.images?.[0] || "https://placehold.co/300x300/cccccc/333333?text=Product+Image"}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
             onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x300/cccccc/333333?text=Product+Image"; }}
@@ -84,10 +79,10 @@ const ProductCard = ({ product }) => {
             {[...Array(5)].map((_, i) => (
               <FiStar
                 key={i}
-                className={`w-3 h-3 ${i < product.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
+                className={`w-3 h-3 ${i < (product.rating || 0) ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
               />
             ))}
-            <span className="text-gray-500 ml-1">({product.reviews})</span>
+            <span className="text-gray-500 ml-1">({product.reviews || 0})</span>
           </div>
         </Link>
 
@@ -95,9 +90,9 @@ const ProductCard = ({ product }) => {
           <div className="mt-auto flex items-end justify-between gap-2">
             {/* Price */}
             <div className="flex flex-col">
-              <span className="text-base font-bold text-green-700 leading-none sm:text-lg">GH₵{product.price}</span>
+              <span className="text-base font-bold text-green-700 leading-none sm:text-lg">GH₵{parseFloat(product.price || 0).toFixed(2)}</span>
               {product.oldPrice && (
-                <span className="text-xs text-gray-500 line-through">GH₵{product.oldPrice.toFixed(2)}</span>
+                <span className="text-xs text-gray-500 line-through">GH₵{parseFloat(product.oldPrice || 0).toFixed(2)}</span>
               )}
             </div>
             
