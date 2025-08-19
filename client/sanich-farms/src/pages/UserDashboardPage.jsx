@@ -50,6 +50,17 @@ const UserDashboardPage = () => {
     };
   }, [showLogoutModal]);
 
+  // MOBILE MENU FIX: Cleanup navbar visibility on component unmount
+  useEffect(() => {
+    return () => {
+      // Ensure navbar is visible when leaving dashboard
+      const navbar = document.querySelector('header');
+      if (navbar) {
+        navbar.style.display = 'block';
+      }
+    };
+  }, []);
+
   // LOGOUT UI FIX: Show logout confirmation modal
   const handleLogout = () => {
     setShowLogoutModal(true);
@@ -79,10 +90,28 @@ const UserDashboardPage = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+    
+    // MOBILE MENU FIX: Hide/show navbar when dashboard menu toggles
+    const navbar = document.querySelector('header');
+    if (navbar) {
+      if (!isMobileMenuOpen) {
+        // Opening mobile menu - hide navbar
+        navbar.style.display = 'none';
+      } else {
+        // Closing mobile menu - show navbar
+        navbar.style.display = 'block';
+      }
+    }
   };
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+    
+    // MOBILE MENU FIX: Show navbar when mobile menu is closed
+    const navbar = document.querySelector('header');
+    if (navbar) {
+      navbar.style.display = 'block';
+    }
   };
 
   return (
