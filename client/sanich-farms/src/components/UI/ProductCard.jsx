@@ -7,8 +7,11 @@ import { useToast } from '../../context/ToastContext';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
-  const { addToWishlist } = useWishlist();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToast } = useToast();
+
+  // WISHLIST VISUAL FEEDBACK: Check if product is in wishlist
+  const isWishlisted = isInWishlist(product.id);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -17,11 +20,18 @@ const ProductCard = ({ product }) => {
     addToast(`${product.name} added to cart!`, 'success');
   };
 
-  const handleAddToWishlist = (e) => {
+  // WISHLIST VISUAL FEEDBACK: Toggle wishlist with proper feedback
+  const handleToggleWishlist = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addToWishlist(product);
-    addToast(`${product.name} added to wishlist!`, 'success');
+    
+    if (isWishlisted) {
+      removeFromWishlist(product.id);
+      addToast(`${product.name} removed from wishlist!`, 'info');
+    } else {
+      addToWishlist(product);
+      addToast(`${product.name} added to wishlist!`, 'success');
+    }
   };
 
   return (
@@ -37,13 +47,17 @@ const ProductCard = ({ product }) => {
             onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x300/cccccc/333333?text=Product+Image"; }}
           />
         </Link>
-        {/* Wishlist button */}
+        {/* WISHLIST VISUAL FEEDBACK: Wishlist button with dynamic styling */}
         <button
-          onClick={handleAddToWishlist}
-          className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm text-red-500 p-2 rounded-full shadow-md hover:bg-red-500 hover:text-white transition duration-200 z-10"
-          aria-label="Add to wishlist"
+          onClick={handleToggleWishlist}
+          className={`absolute top-2 right-2 p-2 rounded-full shadow-md transition duration-200 z-10 ${
+            isWishlisted 
+              ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+              : 'bg-white/80 backdrop-blur-sm text-red-500 hover:bg-red-500 hover:text-white'
+          }`}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
-          <FiHeart size={16} />
+          <FiHeart size={16} className={isWishlisted ? 'fill-current' : ''} />
         </button>
       </div>
        {/* Product Details and Add to Cart button */}

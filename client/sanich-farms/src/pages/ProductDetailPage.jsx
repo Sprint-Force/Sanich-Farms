@@ -12,7 +12,7 @@ import ProductCard from '../components/UI/ProductCard';
 const ProductDetailPage = () => {
   const { productId } = useParams();
   const { addToCart } = useCart();
-  const { addToWishlist } = useWishlist();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToast } = useToast();
 
   // Define your backend API URL
@@ -68,13 +68,23 @@ const ProductDetailPage = () => {
     addToast(`${quantity} x ${product.name} added to cart!`, 'success');
   };
 
-  const handleAddToWishlist = () => {
+  // WISHLIST VISUAL FEEDBACK: Check if product is in wishlist
+  const isWishlisted = product ? isInWishlist(product.id) : false;
+
+  // WISHLIST VISUAL FEEDBACK: Toggle wishlist with proper feedback
+  const handleToggleWishlist = () => {
     if (!product) {
       addToast("Error: Product details are not available.", "error");
       return;
     }
-    addToWishlist(product);
-    addToast(`${product.name} added to wishlist!`, 'success');
+    
+    if (isWishlisted) {
+      removeFromWishlist(product.id);
+      addToast(`${product.name} removed from wishlist!`, 'info');
+    } else {
+      addToWishlist(product);
+      addToast(`${product.name} added to wishlist!`, 'success');
+    }
   };
 
   // Note: For a real app, related products would also be fetched from an API,
@@ -234,12 +244,17 @@ const ProductDetailPage = () => {
                 <FiShoppingCart size={20} />
                 <span className="md:hidden lg:inline">Add to Cart</span>
               </button>
+              {/* WISHLIST VISUAL FEEDBACK: Wishlist button with dynamic styling */}
               <button
-                onClick={handleAddToWishlist}
-                className="p-3 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-red-500 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-gray-300"
-                aria-label="Add to wishlist"
+                onClick={handleToggleWishlist}
+                className={`p-3 rounded-full border transition duration-300 shadow-md focus:outline-none focus:ring-2 ${
+                  isWishlisted 
+                    ? 'border-green-500 bg-green-100 text-green-600 hover:bg-green-200 focus:ring-green-300' 
+                    : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-red-500 focus:ring-gray-300'
+                }`}
+                aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
               >
-                <FiHeart size={20} />
+                <FiHeart size={20} className={isWishlisted ? 'fill-current' : ''} />
               </button>
             </div>
             
@@ -407,12 +422,17 @@ const ProductDetailPage = () => {
                       <FiShoppingCart size={18} />
                   </button>
 
+                  {/* WISHLIST VISUAL FEEDBACK: Mobile wishlist button with dynamic styling */}
                   <button
-                      onClick={handleAddToWishlist}
-                      className="p-3 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-red-500 transition shadow-md focus:outline-none focus:ring-2 focus:ring-gray-300 flex-shrink-0"
-                      aria-label="Add to wishlist"
+                      onClick={handleToggleWishlist}
+                      className={`p-3 rounded-full border transition shadow-md focus:outline-none focus:ring-2 flex-shrink-0 ${
+                        isWishlisted 
+                          ? 'border-green-500 bg-green-100 text-green-600 hover:bg-green-200 focus:ring-green-300' 
+                          : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-red-500 focus:ring-gray-300'
+                      }`}
+                      aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                   >
-                      <FiHeart size={18} />
+                      <FiHeart size={18} className={isWishlisted ? 'fill-current' : ''} />
                   </button>
               </div>
           </div>
