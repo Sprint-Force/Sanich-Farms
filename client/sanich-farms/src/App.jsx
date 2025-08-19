@@ -66,11 +66,7 @@ function App() {
                 <Route path='/' element={<Home />} />
                 
                 {/* Public authentication routes */}
-                <Route path='/login' element={
-                  <ProtectedRoute requireAuth={false}>
-                    <Login />
-                  </ProtectedRoute>
-                } />
+                <Route path='/login' element={<Login />} />
                 <Route path='/signup' element={
                   <ProtectedRoute requireAuth={false}>
                     <Signup />

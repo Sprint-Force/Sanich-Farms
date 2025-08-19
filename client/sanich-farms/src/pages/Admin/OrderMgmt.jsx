@@ -354,49 +354,51 @@ const OrderMgmt = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-4 lg:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
-          <p className="text-gray-600 mt-1">View and manage customer orders</p>
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 sm:mb-6">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">Order Management</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1 truncate">View and manage customer orders</p>
         </div>
-        <div className="mt-4 sm:mt-0 flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <button 
             onClick={() => exportOrders('csv')}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition text-sm sm:text-base"
           >
             <FiDownload className="w-4 h-4" />
-            Export CSV
+            <span className="hidden sm:inline">Export</span> CSV
           </button>
           <button 
             onClick={() => exportOrders('pdf')}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition"
+            className="bg-red-500 hover:bg-red-600 text-white px-3 sm:px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition text-sm sm:text-base"
           >
             <FiDownload className="w-4 h-4" />
-            Export PDF
+            <span className="hidden sm:inline">Export</span> PDF
           </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
           {/* Search */}
-          <div className="relative">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search orders..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
+          <div className="sm:col-span-2 xl:col-span-1">
+            <div className="relative">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search orders..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm sm:text-base"
+              />
+            </div>
           </div>
 
           {/* Status Filter */}
           <div className="flex items-center gap-2">
-            <FiFilter className="text-gray-400 w-4 h-4" />
+            <FiFilter className="text-gray-400 w-4 h-4 flex-shrink-0" />
             <div className="relative flex-1">
               <select
                 value={filterStatus}
@@ -417,12 +419,12 @@ const OrderMgmt = () => {
 
           {/* Date Filter */}
           <div className="flex items-center gap-2">
-            <FiCalendar className="text-gray-400 w-4 h-4" />
+            <FiCalendar className="text-gray-400 w-4 h-4 flex-shrink-0" />
             <div className="relative flex-1">
               <select
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none text-sm sm:text-base"
               >
                 {dateFilters.map(filter => (
                   <option key={filter} value={filter}>
@@ -440,40 +442,163 @@ const OrderMgmt = () => {
           </div>
 
           {/* Results Count */}
-          <div className="flex items-center text-sm text-gray-600">
-            <span>{filteredOrders.length} orders found</span>
+          <div className="flex items-center justify-center sm:justify-start text-sm text-gray-600 sm:col-span-2 xl:col-span-1">
+            <span className="font-medium">{filteredOrders.length} orders found</span>
           </div>
         </div>
       </div>
 
-      {/* Orders Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      {/* Mobile/Tablet Card View */}
+      <div className="lg:hidden space-y-4 mb-6">
+        {filteredOrders.map((order) => (
+          <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-bold text-gray-900">{order.id}</span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
+                    {getStatusIcon(order.status)}
+                    {order.status}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                    <FiUser className="w-3 h-3 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 truncate">{order.customer.name}</p>
+                    <p className="text-xs text-gray-500 truncate">{order.customer.email}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right ml-3">
+                <p className="text-lg font-bold text-gray-900">GH₵{order.total.toFixed(2)}</p>
+                <p className="text-xs text-gray-500">{new Date(order.date).toLocaleDateString()}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-1">
+                  {order.items.slice(0, 2).map((item, index) => (
+                    <img
+                      key={index}
+                      src={item.image}
+                      alt={item.name}
+                      className="w-6 h-6 rounded-full border border-white object-cover"
+                    />
+                  ))}
+                  {order.items.length > 2 && (
+                    <div className="w-6 h-6 rounded-full bg-gray-200 border border-white flex items-center justify-center">
+                      <span className="text-xs text-gray-600">+{order.items.length - 2}</span>
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs text-gray-500">{order.items.length} item(s)</span>
+              </div>
+
+              <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
+                {order.paymentStatus === 'Paid' ? <FiCheck className="w-3 h-3" /> : 
+                 order.paymentStatus === 'Pending' ? <FiCreditCard className="w-3 h-3" /> : 
+                 <FiXCircle className="w-3 h-3" />}
+                {order.paymentStatus}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => viewOrderDetail(order)}
+                  className="text-blue-600 hover:text-blue-900 p-1"
+                  title="View Details"
+                >
+                  <FiEye className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleGenerateInvoice(order)}
+                  className="text-purple-600 hover:text-purple-900 p-1"
+                  title="Generate Invoice"
+                >
+                  <FiFileText className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handlePrintReceipt(order)}
+                  className="text-indigo-600 hover:text-indigo-900 p-1"
+                  title="Print Receipt"
+                >
+                  <FiPrinter className="w-4 h-4" />
+                </button>
+                {order.status === 'delivered' && (
+                  <button
+                    onClick={() => handleReturn(order)}
+                    className="text-orange-600 hover:text-orange-900 p-1"
+                    title="Process Return"
+                  >
+                    <FiRotateCcw className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {order.paymentStatus === 'Pending' && (
+                  <button
+                    onClick={() => verifyPayment(order.id)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-medium transition"
+                    title="Verify Payment"
+                  >
+                    Verify
+                  </button>
+                )}
+                {getNextStatus(order.status) && (
+                  <button
+                    onClick={() => updateOrderStatus(order.id, getNextStatus(order.status))}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium transition"
+                    title={`Update to ${getNextStatus(order.status)}`}
+                  >
+                    Update
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {filteredOrders.length === 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <FiPackage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No orders found matching your criteria.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Orders Table - Desktop View */}
+      <div className="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Order ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Customer
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Items
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Payment
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 xl:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -481,21 +606,21 @@ const OrderMgmt = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredOrders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{order.id}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                         <FiUser className="w-4 h-4 text-green-600" />
                       </div>
-                      <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">{order.customer.name}</div>
-                        <div className="text-sm text-gray-500">{order.customer.email}</div>
+                      <div className="ml-3 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">{order.customer.name}</div>
+                        <div className="text-sm text-gray-500 truncate">{order.customer.email}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex -space-x-2">
                         {order.items.slice(0, 3).map((item, index) => (
@@ -515,10 +640,10 @@ const OrderMgmt = () => {
                       <span className="ml-2 text-sm text-gray-500">{order.items.length} item(s)</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     GH₵{order.total.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
                         {getStatusIcon(order.status)}
@@ -526,7 +651,7 @@ const OrderMgmt = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
                         {order.paymentStatus === 'Paid' ? <FiCheck className="w-3 h-3" /> : 
@@ -545,10 +670,10 @@ const OrderMgmt = () => {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {new Date(order.date).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => viewOrderDetail(order)}
