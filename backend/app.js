@@ -33,15 +33,19 @@ app.use(morgan('dev'));
 // JSON Parser
 app.use(express.json());
 
-//Routes
+// User Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/admin', adminRoutes)
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/services', serviceRoutes);
+
+// Admin routes
+app.use('/api/admin/products', adminRoutes);
+app.use('/api/admin/bookings', adminRoutes);
+app.use('/api/admin/services', adminRoutes);
 
 // Error handler
 app.use(errorHandler);

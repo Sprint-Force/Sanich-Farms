@@ -59,10 +59,23 @@ export const Booking = sequelize.define('Booking', {
       }
     }
   },
+  schedule_date: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    validate: {
+      isDate: true,
+    }
+  },
+
   status: {
-    type: DataTypes.ENUM('pending', 'scheduled', 'completed', 'cancelled'),
+    type: DataTypes.ENUM('pending', 'scheduled', 'completed', 'rejected', 'cancelled'),
     allowNull: false,
     defaultValue: 'pending'
+  },
+  payment_status: {
+    type: DataTypes.ENUM('unpaid', 'paid', 'failed', 'refunded'),
+    allowNull: false,
+    defaultValue: 'unpaid',
   },
   note: {
     type: DataTypes.TEXT,

@@ -1,5 +1,6 @@
 import { Product } from "../models/Product.js";
 import { Service } from "../models/Service.js";
+import { Booking } from "../models/Booking.js";
 
 // PRODUCT MANAGEMENT API
 
@@ -188,5 +189,120 @@ export const deleteService = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete service. Try again.' });
   }
 };
+
+// BOOKING MANAGEMENT API
+
+// Approve and schedule booking
+export const approveBooking = async (req, res) => {
+  const { id } = req.params;
+  const { schedule_date, note } = req.body;
+
+  try {
+    const booking = await Booking.findByPk(id);
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    // update fields
+    booking.status = 'scheduled';
+    booking.schedule_date = schedule_date || booking.schedule_date;
+    booking.note = note || booking.note;
+
+    await booking.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Booking approved with schedule & note',
+      booking
+    });
+  } catch (error) {
+    console.error('Error approving booking:', error);
+    res.status(500).json({ message: 'Failed to approve booking.' });
+  }
+};
+
+// Reject booking
+// controllers/bookingController.js
+export const rejectBooking = async (req, res) => {
+  const { id } = req.params;
+  const { note } = req.body;
+
+  try {
+    const booking = await Booking.findByPk(id);
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    booking.status = 'rejected';
+    booking.note = note || booking.note;
+
+    await booking.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Booking rejected successfully',
+      booking
+    });
+  } catch (error) {
+    console.error('Error rejecting booking:', error);
+    res.status(500).json({ error: 'Failed to reject booking.' });
+  }
+};
+
+// Mark booking as paid
+export const markBookingAsPaid = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const booking = await Booking.findByPk(id);
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    booking.payment_status = 'paid';
+    await booking.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Booking marked as paid',
+      booking
+    });
+  } catch (error) {
+    console.error('Error marking booking as paid:', error);
+    res.status(500).json({ error: 'Failed to mark booking as paid.' });
+  }
+};
+
+// Mark booking as complete
+export const completeBooking = async (req, res) => {
+  const { id } = req.params;
+  const { note } = req.body;
+
+  try {
+    const booking = await Booking.findByPk(id);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    booking.status = "completed";
+    booking.note = note;
+    booking.completedAt = new Date();
+
+    await booking.save();
+
+    res.json({
+      status: "success",
+      message: "Booking marked as completed",
+      booking,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 
 
