@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiSettings, FiLogOut, FiX, FiCreditCard } from 'react-icons/fi';
+import { useAuthContext } from '../hooks/useAuthContext';
 
 // Import dashboard section components
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
@@ -14,6 +15,7 @@ const UserDashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation(); // To get current path
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { logout } = useAuthContext(); // LOGOUT FIX: Get logout function from auth context
 
   // DASHBOARD AUDIT FIX: Enhanced active section detection
   const getActiveSection = () => {
@@ -27,11 +29,23 @@ const UserDashboardPage = () => {
 
   const activeSection = getActiveSection();
 
+  // LOGOUT FIX: Proper logout functionality with confirmation
   const handleLogout = () => {
-    // In a real app, you'd clear authentication tokens here
-    console.log("User logged out.");
-    // For now, just navigate to home
-    navigate('/');
+    if (window.confirm('Are you sure you want to logout?')) {
+      try {
+        // Clear authentication state (user data, tokens, localStorage)
+        logout();
+        
+        // Navigate to home page
+        navigate('/');
+        
+        // Optional: Show success message
+        alert('You have been logged out successfully.');
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('There was an error logging out. Please try again.');
+      }
+    }
   };
 
   const toggleMobileMenu = () => {
