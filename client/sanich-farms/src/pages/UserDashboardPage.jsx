@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiSettings, FiLogOut, FiX } from 'react-icons/fi';
+import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiSettings, FiLogOut, FiX, FiCreditCard } from 'react-icons/fi';
 
 // Import dashboard section components
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
 import MyOrders from '../components/Dashboard/MyOrders';
 import MyBookings from '../components/Dashboard/MyBookings';
 import MyProfile from '../components/Dashboard/MyProfile';
+import PaymentsWallet from '../components/Dashboard/PaymentsWallet'; // DASHBOARD AUDIT FIX: Add payments section
 import WishlistPage from './WishlistPage'; // Reusing existing WishlistPage
 
 const UserDashboardPage = () => {
@@ -14,11 +15,12 @@ const UserDashboardPage = () => {
   const location = useLocation(); // To get current path
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Determine active section based on URL path
+  // DASHBOARD AUDIT FIX: Enhanced active section detection
   const getActiveSection = () => {
     if (location.pathname.includes('/dashboard/orders')) return 'orders';
     if (location.pathname.includes('/dashboard/bookings')) return 'bookings';
     if (location.pathname.includes('/dashboard/profile')) return 'profile';
+    if (location.pathname.includes('/dashboard/payments')) return 'payments';
     if (location.pathname.includes('/dashboard/wishlist')) return 'wishlist';
     return 'overview'; // Default to overview
   };
@@ -99,6 +101,15 @@ const UserDashboardPage = () => {
             >
               <FiCalendar size={20} /> My Bookings
             </Link>
+            {/* DASHBOARD AUDIT FIX: Add payments section like Amazon */}
+            <Link
+              to="/dashboard/payments"
+              onClick={closeMobileMenu}
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg text-lg font-medium transition-colors duration-200
+                ${activeSection === 'payments' ? 'bg-green-100 text-green-700' : 'text-gray-700 hover:bg-gray-100'}`}
+            >
+              <FiCreditCard size={20} /> Payments & Wallet
+            </Link>
             <Link
               to="/dashboard/profile"
               onClick={closeMobileMenu}
@@ -107,14 +118,15 @@ const UserDashboardPage = () => {
             >
               <FiUser size={20} /> My Profile
             </Link>
-            {/* <Link
-              to="/dashboard/wishlist"
+            {/* DASHBOARD AUDIT FIX: Add wishlist back with proper navigation */}
+            <Link
+              to="/wishlist"
               onClick={closeMobileMenu}
               className={`flex items-center gap-3 px-4 py-2 rounded-lg text-lg font-medium transition-colors duration-200
                 ${activeSection === 'wishlist' ? 'bg-green-100 text-green-700' : 'text-gray-700 hover:bg-gray-100'}`}
             >
               <FiHeart size={20} /> My Wishlist
-            </Link> */}
+            </Link>
           </nav>
           <div className="mt-auto pt-4 border-t border-gray-200">
             <button
