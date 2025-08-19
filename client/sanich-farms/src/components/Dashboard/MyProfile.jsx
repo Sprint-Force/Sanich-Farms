@@ -1,40 +1,138 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuthContext } from '../../hooks/useAuthContext';
+import { usersAPI } from '../../services/api';
 
 const MyProfile = () => {
-  // Mock user data (replace with actual user data from context/backend)
+  const { user, updateUser } = useAuthContext();
   const [userData, setUserData] = useState({
-    firstName: 'Sanich',
-    lastName: 'User',
-    email: 'user@example.com',
-    phone: '0241234567',
-    address: '123 Farm Road, Kumasi, Ghana',
-    company: 'Sanich Farms Customer',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    company: '',
   });
-
+  const [originalData, setOriginalData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  // PROFILE API INTEGRATION: Load user profile data
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Use data from context if available, otherwise fetch from API
+        if (user) {
+          const profileData = {
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            email: user.email || '',
+            phone: user.phone || '',
+            address: user.address || '',
+            company: user.company || '',
+          };
+          setUserData(profileData);
+          setOriginalData(profileData);
+        } else {
+          // Fetch fresh profile data from backend
+          const response = await usersAPI.getProfile();
+          const profileData = {
+            firstName: response.firstName || '',
+            lastName: response.lastName || '',
+            email: response.email || '',
+            phone: response.phone || '',
+            address: response.address || '',
+            company: response.company || '',
+          };
+          setUserData(profileData);
+          setOriginalData(profileData);
+        }
+      } catch (err) {
+        console.error('Error loading profile:', err);
+        setError('Failed to load profile data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserProfile();
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUserData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = (e) => {
+  // PROFILE API INTEGRATION: Save profile changes to backend
+  const handleSave = async (e) => {
     e.preventDefault();
-    console.log("Saving user data:", userData);
-    // In a real app, send this data to your backend to update user profile
-    alert("Profile updated successfully!"); // Using alert for simplicity
-    setIsEditing(false);
+    try {
+      setSaving(true);
+      setError(null);
+      
+      // Update profile via API
+      const response = await usersAPI.updateProfile(userData);
+      
+      // Update local context with new user data
+      if (updateUser && response) {
+        updateUser(response);
+      }
+      
+      // Update original data to reflect saved changes
+      setOriginalData(userData);
+      setIsEditing(false);
+      
+      alert("Profile updated successfully!");
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      setError('Failed to update profile. Please try again.');
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
+  // PROFILE API INTEGRATION: Cancel editing and restore original data
   const handleCancel = () => {
-    // Reset to original data if cancel (in a real app, fetch original data again)
-    // For now, just exit editing mode
+    setUserData(originalData);
     setIsEditing(false);
+    setError(null);
   };
+
+  // PROFILE API INTEGRATION: Loading state
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-12 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6 animate-pulse"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className={i >= 2 ? "md:col-span-2" : ""}>
+                <div className="h-4 bg-gray-200 rounded w-1/4 mb-2 animate-pulse"></div>
+                <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-6">My Profile</h1>
+
+      {/* PROFILE API INTEGRATION: Error message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4 border-gray-200">
@@ -51,6 +149,7 @@ const MyProfile = () => {
                 value={userData.firstName}
                 onChange={handleChange}
                 disabled={!isEditing}
+                placeholder={isEditing ? "Enter your first name" : ""}
                 className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
@@ -63,6 +162,7 @@ const MyProfile = () => {
                 value={userData.lastName}
                 onChange={handleChange}
                 disabled={!isEditing}
+                placeholder={isEditing ? "Enter your last name" : ""}
                 className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
@@ -75,6 +175,7 @@ const MyProfile = () => {
                 value={userData.email}
                 onChange={handleChange}
                 disabled={!isEditing}
+                placeholder={isEditing ? "Enter your email address" : ""}
                 className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
@@ -87,6 +188,7 @@ const MyProfile = () => {
                 value={userData.phone}
                 onChange={handleChange}
                 disabled={!isEditing}
+                placeholder={isEditing ? "Enter your phone number" : ""}
                 className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
@@ -99,6 +201,7 @@ const MyProfile = () => {
                 value={userData.address}
                 onChange={handleChange}
                 disabled={!isEditing}
+                placeholder={isEditing ? "Enter your address" : ""}
                 className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               ></textarea>
             </div>
@@ -111,6 +214,7 @@ const MyProfile = () => {
                 value={userData.company}
                 onChange={handleChange}
                 disabled={!isEditing}
+                placeholder={isEditing ? "Enter your company name (optional)" : ""}
                 className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
@@ -122,15 +226,27 @@ const MyProfile = () => {
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="bg-gray-200 text-gray-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md"
+                  disabled={saving}
+                  className="bg-gray-200 text-gray-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md"
+                  disabled={saving}
+                  className="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Save Changes
+                  {saving ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
               </>
             ) : (
