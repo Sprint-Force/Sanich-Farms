@@ -10,7 +10,7 @@ import { orderRoutes } from "./routes/orderRoutes.js";
 import { wishlistRoutes } from "./routes/wishlistRoutes.js";
 import { bookingRoutes } from "./routes/bookingRoutes.js";
 import { serviceRoutes } from "./routes/serviceRoutes.js";
-
+import { adminRoutes } from "./routes/adminRoutes.js"
 
 
 
@@ -36,6 +36,7 @@ app.use(express.json());
 //Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/admin', adminRoutes)
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);

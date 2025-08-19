@@ -48,7 +48,7 @@ export const getAllProducts = async (req, res) => {
             status: 'success',
             currentPage: parseInt(page),
             totalPages: Math.ceil(count / limit),
-            totalProducts: count,
+            totalCount: count,
             count: products.length,
             products,
         });
