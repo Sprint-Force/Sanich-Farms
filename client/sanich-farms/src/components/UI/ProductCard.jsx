@@ -1,17 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiStar, FiShoppingCart, FiHeart } from 'react-icons/fi';
+import { FaHeart } from 'react-icons/fa';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../context/ToastContext';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { addToWishlist, removeFromWishlist, isInWishlist, wishlistItems } = useWishlist();
   const { addToast } = useToast();
 
   // WISHLIST VISUAL FEEDBACK: Check if product is in wishlist
   const isWishlisted = isInWishlist(product.id);
+  
+  // DEBUG: Log wishlist status
+  console.log('Product ID:', product.id, 'Type:', typeof product.id);
+  console.log('Is Wishlisted:', isWishlisted);
+  console.log('Wishlist Items:', wishlistItems);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -57,7 +63,11 @@ const ProductCard = ({ product }) => {
           }`}
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
-          <FiHeart size={16} className={isWishlisted ? 'fill-current' : ''} />
+          {isWishlisted ? (
+            <FaHeart size={16} />
+          ) : (
+            <FiHeart size={16} />
+          )}
         </button>
       </div>
        {/* Product Details and Add to Cart button */}
