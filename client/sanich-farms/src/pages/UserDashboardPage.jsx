@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiSettings, FiLogOut, FiX, FiCreditCard } from 'react-icons/fi';
 import { useAuthContext } from '../hooks/useAuthContext';
@@ -15,6 +15,7 @@ const UserDashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation(); // To get current path
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // LOGOUT UI FIX: Add modal state
   const { logout } = useAuthContext(); // LOGOUT FIX: Get logout function from auth context
 
   // DASHBOARD AUDIT FIX: Enhanced active section detection
@@ -29,23 +30,51 @@ const UserDashboardPage = () => {
 
   const activeSection = getActiveSection();
 
-  // LOGOUT FIX: Proper logout functionality with confirmation
-  const handleLogout = () => {
-    if (window.confirm('Are you sure you want to logout?')) {
-      try {
-        // Clear authentication state (user data, tokens, localStorage)
-        logout();
-        
-        // Navigate to home page
-        navigate('/');
-        
-        // Optional: Show success message
-        alert('You have been logged out successfully.');
-      } catch (error) {
-        console.error('Logout error:', error);
-        alert('There was an error logging out. Please try again.');
+  // LOGOUT UI FIX: Handle ESC key to close logout modal
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && showLogoutModal) {
+        setShowLogoutModal(false);
       }
+    };
+
+    if (showLogoutModal) {
+      document.addEventListener('keydown', handleEscKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
     }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showLogoutModal]);
+
+  // LOGOUT UI FIX: Show logout confirmation modal
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  // LOGOUT UI FIX: Confirm logout action
+  const confirmLogout = () => {
+    try {
+      // Clear authentication state (user data, tokens, localStorage)
+      logout();
+      
+      // Navigate to home page (not login page)
+      navigate('/');
+      
+      // Close modal
+      setShowLogoutModal(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('There was an error logging out. Please try again.');
+    }
+  };
+
+  // LOGOUT UI FIX: Cancel logout action
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   const toggleMobileMenu = () => {
@@ -179,6 +208,57 @@ const UserDashboardPage = () => {
           <Outlet /> {/* Renders the nested route component */}
         </main>
       </div>
+
+      {/* LOGOUT UI FIX: Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={cancelLogout} // Close on backdrop click
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+          >
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <FiLogOut className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Confirm Logout</h3>
+                  <p className="text-sm text-gray-500">Are you sure you want to sign out?</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <p className="text-gray-600 mb-6">
+                You will be logged out of your account and redirected to the homepage. 
+                Any unsaved changes may be lost.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelLogout}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                  <FiLogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
