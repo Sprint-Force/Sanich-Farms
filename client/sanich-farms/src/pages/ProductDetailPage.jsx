@@ -31,13 +31,13 @@ const ProductDetailPage = () => {
         setLoading(true);
         setError(null);
         const response = await axios.get(`${BASE_URL}/${productId}`);
-        const fetchedProduct = response.data;
+        const fetchedProduct = response.data.product; // Extract product from response
         if (!fetchedProduct) {
           setError("Product not found.");
           addToast("Product not found.", "error");
         } else {
           setProduct(fetchedProduct);
-          setMainImage(fetchedProduct.images?.[0] || fetchedProduct.image || '');
+          setMainImage(fetchedProduct.image_url || fetchedProduct.image || fetchedProduct.images?.[0] || '');
         }
       } catch (err) {
         console.error("Failed to fetch product:", err);
@@ -92,7 +92,10 @@ const ProductDetailPage = () => {
   // For now, we'll keep the mock data for this section.
   const relatedProducts = [].slice(0, 4); // Dummy related products
 
-  const productThumbnails = product?.images && product?.images.length > 0 ? product.images : (product?.image ? [product.image] : []);
+    // Handle image thumbnails
+  const productThumbnails = product?.image_url ? [product.image_url] : 
+                           product?.images && product?.images.length > 0 ? product.images : 
+                           product?.image ? [product.image] : [];
 
   // Conditional rendering for loading, error, and main content
   if (loading) {
@@ -138,14 +141,14 @@ const ProductDetailPage = () => {
             {/* Main Image */}
             <div className="flex-grow relative overflow-hidden rounded-xl shadow-lg border border-gray-100 aspect-square">
               <img
-                src={mainImage}
+                src={mainImage || "https://placehold.co/600x600/cccccc/333333?text=Product+Image"}
                 alt={product.name}
                 className="w-full h-full object-cover rounded-xl"
                 onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x600/cccccc/333333?text=Product+Image+Error"; }}
               />
-              {product.oldPrice && (
-                <span className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md">
-                  {Math.round(((product.oldPrice - product.currentPrice) / product.oldPrice) * 100)}% OFF
+              {product.stock_quantity < 10 && product.stock_quantity > 0 && (
+                <span className="absolute top-4 left-4 bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md">
+                  Only {product.stock_quantity} left!
                 </span>
               )}
             </div>
@@ -172,7 +175,7 @@ const ProductDetailPage = () => {
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 leading-tight">{product.name}</h1>
               <span className="bg-green-100 text-green-700 text-sm font-semibold px-3 py-1 rounded-full">
-                {product.availability || 'In Stock'}
+                {product.is_available ? 'In Stock' : 'Out of Stock'}
               </span>
             </div>
 
@@ -180,39 +183,37 @@ const ProductDetailPage = () => {
               {[...Array(5)].map((_, i) => (
                 <FiStar
                   key={i}
-                  className={`w-4 h-4 ${i < product.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                  className={`w-4 h-4 ${i < (product.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
                 />
               ))}
-              <span className="ml-2 text-sm text-gray-600">({product.reviews || 0} Reviews)</span>
+              <span className="ml-2 text-sm text-gray-600">(0 Reviews)</span>
             </div>
 
             <div className="flex items-baseline gap-3 mb-4">
               <span className="text-3xl sm:text-4xl font-bold text-green-700">
-                GH₵{product.currentPrice?.toFixed(2) || 'N/A'}
+                GH₵{parseFloat(product.price || 0).toFixed(2)}
               </span>
-              {product.oldPrice && (
-                <span className="text-lg text-gray-500 line-through">
-                  GH₵{product.oldPrice?.toFixed(2)}
+              {product.unit_of_measure && (
+                <span className="text-sm text-gray-500">
+                  per {product.unit_of_measure}
                 </span>
               )}
             </div>
 
             <p className="text-gray-600 mb-4 leading-relaxed text-base">
-              {product.shortDescription || product.description}
+              {product.description || 'No description available.'}
             </p>
 
             {/* Key Features/Benefits */}
             <div className="mb-4 space-y-2 text-gray-700 text-sm">
-              {product.keyFeatures?.map((feature, index) => (
-                <p key={index} className="flex items-center gap-2">
-                  <span className="text-green-500"><FiCheckCircle /></span> {feature}
-                </p>
-              )) || (
-                <>
-                  <p className="flex items-center gap-2"><span className="text-green-500"><FiCheckCircle /></span> High Quality & Fresh</p>
-                  <p className="flex items-center gap-2"><span className="text-green-500"><FiCheckCircle /></span> Fast & Secure Delivery</p>
-                  <p className="flex items-center gap-2"><span className="text-green-500"><FiCheckCircle /></span> Expert Support</p>
-                </>
+              <p className="flex items-center gap-2"><span className="text-green-500"><FiCheckCircle /></span> High Quality & Fresh</p>
+              <p className="flex items-center gap-2"><span className="text-green-500"><FiCheckCircle /></span> Fast & Secure Delivery</p>
+              <p className="flex items-center gap-2"><span className="text-green-500"><FiCheckCircle /></span> Expert Support</p>
+              {product.category && (
+                <p className="flex items-center gap-2"><span className="text-green-500"><FiCheckCircle /></span> Category: {product.category}</p>
+              )}
+              {product.stock_quantity && (
+                <p className="flex items-center gap-2"><span className="text-green-500"><FiCheckCircle /></span> Stock: {product.stock_quantity} units available</p>
               )}
             </div>
             

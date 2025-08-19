@@ -78,16 +78,16 @@ const Services = () => {
                 >
                   <div className="relative h-64 sm:h-56 md:h-64 lg:h-72">
                     <img
-                      src={service.image}
-                      alt={service.imageAlt}
+                      src={service.image_url || service.image || "https://placehold.co/400x300/4CAF50/FFFFFF?text=Service"}
+                      alt={service.name}
                       className="w-full h-full object-cover"
                       onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/400x300/cccccc/333333?text=Service+Image+Error"; }}
                     />
                   </div>
                   <div className="p-6 md:p-7">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-3">{service.title}</h3>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-3">{service.name}</h3>
                     <p className="text-gray-600 mb-4 leading-relaxed text-base">
-                      {service.cardDesc}
+                      {service.description?.substring(0, 100) + '...' || 'Professional service available.'}
                     </p>
                     <button
                       onClick={() => handleNavigate(service.id)}

@@ -39,12 +39,12 @@ const ServiceBookingPage = () => {
       try {
         setLoading(true);
         const response = await axios.get(`${BASE_URL_SERVICES}/${serviceId}`);
-        const fetchedService = response.data;
+        const fetchedService = response.data.service; // Extract service from response
         if (fetchedService) {
           setSelectedService(fetchedService);
           setFormData(prev => ({
             ...prev,
-            serviceType: fetchedService.title,
+            serviceType: fetchedService.name, // Use name instead of title
           }));
         } else {
           setError("Service not found.");
@@ -129,7 +129,7 @@ const ServiceBookingPage = () => {
             <span className="text-base font-medium">Our Services</span>
           </Link>
           <FiChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-green-400 text-base font-semibold">Book: {selectedService.title}</span>
+          <span className="text-green-400 text-base font-semibold">Book: {selectedService.name}</span>
         </div>
       </div>
 
@@ -220,8 +220,8 @@ const ServiceBookingPage = () => {
                   <option value="">Select service type</option>
                   {/* The single selected service is displayed here */}
                   {selectedService && (
-                    <option key={selectedService.id} value={selectedService.title}>
-                      {selectedService.title}
+                    <option key={selectedService.id} value={selectedService.name}>
+                      {selectedService.name}
                     </option>
                   )}
                 </select>

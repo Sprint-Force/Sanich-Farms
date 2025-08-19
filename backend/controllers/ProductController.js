@@ -1,4 +1,5 @@
 import { Product } from "../models/Product.js";
+import { Op } from "sequelize";
 
 // Get all products
 export const getAllProducts = async (req, res) => {
