@@ -13,7 +13,7 @@ const Home = () => {
       <WhyUs />         {/* Why Us section */}
       <Products />      {/* Products section */}
       <Services />      {/* Services section */}
-      <Testimonials />  {/* Testimonials section */}
+      {/* <Testimonials />  Testimonials section - Hidden as requested */}
     </>
   );
 };

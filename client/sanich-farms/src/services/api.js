@@ -105,6 +105,12 @@ export const ordersAPI = {
     const response = await apiClient.get(`/orders/${id}`);
     return response.data;
   },
+
+  // DASHBOARD API INTEGRATION: Add cancel order functionality
+  cancel: async (id) => {
+    const response = await apiClient.patch(`/orders/${id}/cancel`);
+    return response.data;
+  },
 };
 
 // Bookings API methods
@@ -121,6 +127,17 @@ export const bookingsAPI = {
 
   getById: async (id) => {
     const response = await apiClient.get(`/bookings/${id}`);
+    return response.data;
+  },
+
+  // DASHBOARD API INTEGRATION: Add booking management functionality
+  update: async (id, bookingData) => {
+    const response = await apiClient.patch(`/bookings/${id}`, bookingData);
+    return response.data;
+  },
+
+  cancel: async (id) => {
+    const response = await apiClient.patch(`/bookings/${id}/cancel`);
     return response.data;
   },
 };
@@ -187,6 +204,44 @@ export const wishlistAPI = {
     const response = await apiClient.delete('/wishlist');
     return response.data;
   },
+};
+
+// DASHBOARD API INTEGRATION: Payments API methods
+export const paymentsAPI = {
+  getTransactions: async () => {
+    const response = await apiClient.get('/payments/transactions');
+    return response.data;
+  },
+
+  getPaymentMethods: async () => {
+    const response = await apiClient.get('/user/payment-methods');
+    return response.data;
+  },
+
+  addPaymentMethod: async (methodData) => {
+    const response = await apiClient.post('/user/payment-methods', methodData);
+    return response.data;
+  },
+
+  removePaymentMethod: async (methodId) => {
+    const response = await apiClient.delete(`/user/payment-methods/${methodId}`);
+    return response.data;
+  },
+
+  getWalletBalance: async () => {
+    const response = await apiClient.get('/user/wallet/balance');
+    return response.data;
+  },
+
+  addFunds: async (amount) => {
+    const response = await apiClient.post('/user/wallet/add-funds', { amount });
+    return response.data;
+  },
+
+  processPayment: async (paymentData) => {
+    const response = await apiClient.post('/payments/process', paymentData);
+    return response.data;
+  }
 };
 
 export default apiClient;
