@@ -35,15 +35,25 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       console.log('401 error detected, isLoggingOut:', isLoggingOut);
-      if (!isLoggingOut) {
-        console.log('Redirecting to login page');
-        // Token expired or invalid, clear auth data
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-      } else {
+      console.log('Request URL:', error.config?.url);
+      
+      // Don't redirect if we're logging out
+      if (isLoggingOut) {
         console.log('Logout in progress, skipping redirect');
+        return Promise.reject(error);
       }
+      
+      // Don't redirect if this is a login attempt (failed login should stay on login page)
+      if (error.config?.url?.includes('/auth/login')) {
+        console.log('Failed login attempt, not redirecting');
+        return Promise.reject(error);
+      }
+      
+      // Only redirect for other 401 errors (expired tokens, etc.)
+      console.log('Redirecting to login page for expired token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
