@@ -90,7 +90,7 @@ export const Order = sequelize.define('Order', {
     },
   },
   status: {
-    type: DataTypes.ENUM('pending', 'paid', 'processing', 'delivered', 'cancelled'),
+    type: DataTypes.ENUM('pending', 'processing', 'delivered', 'cancelled'),
     allowNull: false,
     defaultValue: 'pending',
   },

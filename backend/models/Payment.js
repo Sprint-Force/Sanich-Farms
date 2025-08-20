@@ -48,7 +48,7 @@ export const Payment = sequelize.define(
 
     transaction_reference: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       unique: true,
     },
 
