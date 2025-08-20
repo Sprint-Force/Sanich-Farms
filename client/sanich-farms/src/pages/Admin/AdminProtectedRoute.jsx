@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }) => {
+const AdminProtectedRoute = ({ children }) => {
   const [authState, setAuthState] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,8 +16,10 @@ const ProtectedRoute = ({ children }) => {
           const userData = JSON.parse(normalUser);
           // Check if user has admin role (from API)
           if (userData.role === 'admin') {
-            // Create admin auth entry for compatibility if it doesn't exist
+            // Check if there's an explicit logout happening
             const adminAuth = localStorage.getItem('adminAuth');
+            
+            // Only create admin auth entry if it doesn't exist AND we're not in a logout state
             if (!adminAuth) {
               localStorage.setItem('adminAuth', JSON.stringify({
                 email: userData.email,
@@ -49,12 +51,23 @@ const ProtectedRoute = ({ children }) => {
         const isExpired = Date.now() - authData.timestamp > 8 * 60 * 60 * 1000; // 8 hours
 
         if (isExpired) {
+          // Clear all admin related data when expired
           localStorage.removeItem('adminAuth');
           localStorage.removeItem('adminToken');
           localStorage.removeItem('adminUser');
           setAuthState(false);
         } else {
-          setAuthState(true);
+          // Double check that main auth still exists if we're relying on admin auth
+          const mainToken = localStorage.getItem('authToken');
+          if (!mainToken) {
+            // Main auth is gone, clear admin auth too
+            localStorage.removeItem('adminAuth');
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            setAuthState(false);
+          } else {
+            setAuthState(true);
+          }
         }
       } catch {
         localStorage.removeItem('adminAuth');
@@ -99,4 +112,4 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-export default ProtectedRoute;
+export default AdminProtectedRoute;
