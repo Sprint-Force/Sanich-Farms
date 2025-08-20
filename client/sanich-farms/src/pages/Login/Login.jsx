@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { useToast } from '../../context/ToastContext';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { authAPI } from '../../services/api';
 import { ButtonSpinner } from '../../components/UI/LoadingSpinner';
+import AuthFooter from '../../components/Layout/AuthFooter';
 
 // This component handles the user login functionality.
 const Login = () => {
@@ -145,92 +146,107 @@ const Login = () => {
   };
 
   return (
-    <div className="font-poppins bg-gray-50 min-h-screen flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 w-full max-w-md">
-        <h2 className="text-3xl font-bold text-gray-800 text-center mb-6">Login</h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
-            <div className="relative">
-              <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+    <div className="font-poppins bg-gray-50 min-h-screen">
+      {/* Main Content */}
+      <main className="max-w-sm mx-auto px-4 py-6">
+        <div className="bg-white rounded border border-gray-300 p-6">
+          <h1 className="text-2xl font-medium text-gray-900 mb-4">Login</h1>
+          
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
                 placeholder="you@example.com"
                 required
                 disabled={loading}
               />
             </div>
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                placeholder="********"
-                required
-                disabled={loading}
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                disabled={loading}
-              >
-                {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                disabled={loading}
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-gray-900">
-                Remember me
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
               </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                  placeholder="********"
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  disabled={loading}
+                >
+                  {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                </button>
+              </div>
             </div>
-            <Link 
-              to="/forgot-password" 
-              className="font-medium text-green-600 hover:text-green-800 transition duration-200"
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Forgot your password?
+              {loading && <ButtonSpinner />}
+              {loading ? 'Signing in...' : 'Login'}
+            </button>
+          </form>
+
+          <div className="text-xs text-gray-600 mt-4">
+            By continuing, you agree to Sanich Farms{' '}
+            <Link to="/terms" className="text-blue-600 hover:text-green-600 hover:underline">
+              Terms & Conditions
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="text-blue-600 hover:text-green-600 hover:underline">
+              Privacy Policy
             </Link>
+            .
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        </div>
+
+        {/* Forgot Password */}
+        <div className="mt-4 text-center">
+          <Link 
+            to="/forgot-password" 
+            className="text-sm text-blue-600 hover:text-green-600 hover:underline"
           >
-            {loading && <ButtonSpinner />}
-            {loading ? 'Signing In...' : 'Login'}
-          </button>
-        </form>
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
-          <Link to="/signup" className="font-medium text-green-600 hover:text-green-800 transition duration-200">
-            Sign Up
+            Forgot your password?
           </Link>
-        </p>
-      </div>
+        </div>
+
+        {/* Divider */}
+        <div className="mt-6 mb-4 text-center text-xs text-gray-500">
+          <span className="bg-gray-50 px-2">New to Sanich Farms?</span>
+          <hr className="border-gray-300 -mt-2" />
+        </div>
+
+        {/* Create Account Button */}
+        <Link
+          to="/signup"
+          className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 px-4 rounded text-sm font-medium text-center border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+        >
+          Create Account
+        </Link>
+
+        {/* Auth Footer */}
+        <AuthFooter />
+      </main>
     </div>
   );
 };
