@@ -34,18 +34,13 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.log('401 error detected, isLoggingOut:', isLoggingOut);
-      console.log('Request URL:', error.config?.url);
-      
       // Don't redirect if we're logging out
       if (isLoggingOut) {
-        console.log('Logout in progress, skipping redirect');
         return Promise.reject(error);
       }
       
       // Don't redirect if this is a login attempt (failed login should stay on login page)
       if (error.config?.url?.includes('/auth/login')) {
-        console.log('Failed login attempt, not redirecting');
         return Promise.reject(error);
       }
       

@@ -29,7 +29,7 @@ const MainLayout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar ref={navbarRef} /> {/* Pass ref to Navbar */}
-      <main className="flex-grow">
+      <main className="flex-grow" style={{ paddingTop: 'var(--navbar-height, 120px)' }}>
         <Outlet /> {/* This is where nested route components (like Home, Login, etc.) will render */}
       </main>
       <Footer />

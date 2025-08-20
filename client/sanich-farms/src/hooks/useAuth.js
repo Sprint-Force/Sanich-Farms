@@ -38,7 +38,6 @@ export const useAuth = () => {
 
   // Logout function
   const logout = () => {
-    console.log('Starting logout process...');
     setLoggingOut(true); // Prevent axios interceptor redirect
     setUser(null);
     setToken(null);
@@ -48,12 +47,10 @@ export const useAuth = () => {
     localStorage.removeItem('adminAuth');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
-    console.log('Auth data cleared, logging out flag set');
     
     // Reset flag after a longer delay to ensure navigation completes
     setTimeout(() => {
       setLoggingOut(false);
-      console.log('Logout flag reset');
     }, 1000);
   };
 

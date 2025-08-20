@@ -8,10 +8,38 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
+/* Navbar hide/show behavior - works on all devices */
+header.navbar-hidden {
+  transform: translateY(-100%) !important;
+  opacity: 0 !important;
+}
+
+header.navbar-visible {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+}
+
+/* Ensure smooth transitions on all devices */
+header {
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
+}
+
 /* Custom Animations (for Navbar, Header, Testimonials, Products, Services) */
 @keyframes slideInRight {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
+}
+@keyframes slideInFromRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 @keyframes fadeAndScaleIn {
   from { opacity: 0; transform: scale(0.95); }
@@ -29,6 +57,9 @@ body {
 }
 
 .animate-slide-in-right { animation: slideInRight 0.3s ease-out forwards; }
+.animate-slide-in-from-right { animation: slideInFromRight 0.4s ease-out forwards; }
+.animate-slide-down { animation: slideDown 0.3s ease-out forwards; }
+.animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
 .animate-fade-in-down { animation: fadeAndScaleIn 0.2s ease-out forwards; }
 .animate-bounce-once { animation: bounceOnce 0.8s ease-in-out; }
 .animate-fade-in-left { animation: fadeInLeft 0.8s ease-out forwards; }
@@ -47,10 +78,13 @@ body {
 
 /* --- Mobile Menu Overflow Prevention --- */
 @media (max-width: 1024px) {
-  /* Prevent horizontal overflow on mobile */
+  /* Prevent horizontal overflow on mobile but allow vertical scrolling */
   html, body {
     overflow-x: hidden;
     max-width: 100vw;
+    /* Ensure vertical scrolling is always enabled */
+    overflow-y: auto;
+    min-height: 100vh;
   }
   
   /* Ensure mobile menu doesn't cause horizontal scroll */
@@ -59,12 +93,13 @@ body {
     overflow-x: hidden;
   }
   
-  /* Ensure all content stays within viewport */
+  /* Ensure all content stays within viewport but allows scrolling */
   * {
     max-width: 100vw;
+    box-sizing: border-box;
   }
   
-  /* Mobile menu specific z-index fixes */
+  /* Mobile menu specific z-index fixes and full screen coverage */
   .mobile-menu-overlay {
     z-index: 10000 !important;
     position: fixed !important;
@@ -72,10 +107,84 @@ body {
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
   }
   
   .mobile-menu-content {
     z-index: 10001 !important;
     position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  /* Prevent any scrolling when mobile menu is open */
+  body.mobile-menu-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+  }
+
+  /* Enhanced mobile menu animation */
+  .animate-slide-in-from-right {
+    animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  /* Navbar slide animations */
+  .navbar-slide-down {
+    animation: slideDown 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .navbar-slide-up {
+    animation: slideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  /* Mobile menu content staggered animation */
+  .mobile-menu-item {
+    opacity: 0;
+    transform: translateX(20px);
+    animation: slideInLeft 0.3s ease-out forwards;
+  }
+
+  .mobile-menu-item:nth-child(1) { animation-delay: 0.1s; }
+  .mobile-menu-item:nth-child(2) { animation-delay: 0.15s; }
+  .mobile-menu-item:nth-child(3) { animation-delay: 0.2s; }
+  .mobile-menu-item:nth-child(4) { animation-delay: 0.25s; }
+  .mobile-menu-item:nth-child(5) { animation-delay: 0.3s; }
+  .mobile-menu-item:nth-child(6) { animation-delay: 0.35s; }
+
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Hamburger menu icon animations */
+  .hamburger-icon {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .hamburger-icon.open {
+    transform: rotate(180deg) scale(1.1);
+  }
+
+  .hamburger-icon.closed {
+    transform: rotate(0deg) scale(1);
+  }
+
+  /* Icon bounce animation */
+  @keyframes iconBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+
+  .icon-bounce {
+    animation: iconBounce 0.3s ease-in-out;
+  }
+
+  /* Ensure content has minimum height for scrolling */
+  main, .main-content, #root {
+    min-height: 100vh;
   }
 }

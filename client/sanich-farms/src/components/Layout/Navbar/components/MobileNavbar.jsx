@@ -70,10 +70,22 @@ const MobileNavbar = ({
         {/* Hamburger Button */}
         <button 
           onClick={toggleMobileMenu} 
-          className="text-gray-700 hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100" 
+          className="text-gray-700 hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100 relative overflow-hidden" 
           aria-label="Toggle mobile menu"
         >
-          {isMobileMenuOpen ? <FiX size={iconSizes.xlarge} /> : <FiMenu size={iconSizes.xlarge} />}
+          <div className={`hamburger-icon ${isMobileMenuOpen ? 'open' : 'closed'}`}>
+            {isMobileMenuOpen ? (
+              <FiX 
+                size={iconSizes.xlarge} 
+                className="icon-bounce"
+              />
+            ) : (
+              <FiMenu 
+                size={iconSizes.xlarge}
+                className="icon-bounce" 
+              />
+            )}
+          </div>
         </button>
       </div>
     </div>
