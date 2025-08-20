@@ -1,6 +1,7 @@
 import { Product } from "../models/Product.js";
 import { Service } from "../models/Service.js";
 import { Booking } from "../models/Booking.js";
+import { uploadToCloudinary } from "../services/cloudinary.js";
 
 // PRODUCT MANAGEMENT API
 
@@ -12,13 +13,21 @@ export const addProduct = async (req, res) => {
     category,
     price, 
     stock_quantity, 
-    rating, 
-    image_url 
+    rating,  
   } = req.body;
 
   // Basic validation
-  if (!name || !description || !category || !price || !stock_quantity || !image_url) {
+  if (!name || !description || !category || !price || !stock_quantity) {
     return res.status(400).json({ error: "Please provide all required fields" });
+  }
+
+  let imageUrl = null;
+  let imageId = null;
+
+  if (req.file) {
+    const result = await uploadToCloudinary(req.file.buffer, "sanich-farms/products");
+    imageUrl = result.url;
+    imageId = result.id;
   }
 
   try {
@@ -30,7 +39,8 @@ export const addProduct = async (req, res) => {
       price,
       stock_quantity,
       rating: rating || 0, 
-      image_url,
+      image_url: imageUrl,
+      image_id: imageId,
       is_available: true 
     });
 
@@ -60,8 +70,15 @@ export const editProduct = async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    // Update only provided fields
-    await product.update(req.body);
+    let updates = { ...req.body };
+
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer, "sanich-farms/products");
+      updates.image_url = result.url;
+      updates.image_id = result.id;
+    }
+
+    await product.update(updates);
 
     return res.status(200).json({
       status: "success",
@@ -111,12 +128,21 @@ export const deleteProduct = async (req, res) => {
 
 // SERVICE MANAGEMENT API
 
-// Add Service
+// Add Service (Admin only)
 export const addService = async (req, res) => {
-  const { name, description, price, image_url } = req.body;
+  const { name, description, price } = req.body;
 
-  if (!name || !description || !price || !image_url) {
+  if (!name || !description || !price) {
     return res.status(400).json({ error: 'Please provide all required fields' });
+  }
+
+  let imageUrl = null;
+  let imageId = null;
+
+  if (req.file) {
+    const result = await uploadToCloudinary(req.file.buffer, "sanich-farms/services");
+    imageUrl = result.url;
+    imageId = result.id;
   }
 
   try {
@@ -124,23 +150,24 @@ export const addService = async (req, res) => {
       name,
       description,
       price,
-      image_url,
+      image_url: imageUrl,
+      image_id: imageId,
       is_available: true
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       status: 'success',
       message: 'Service added successfully',
       service,
     });
   } catch (error) {
     console.error('Error adding service:', error);
-    res.status(500).json({ error: 'Failed to add service. Try again.' });
+    return res.status(500).json({ error: 'Failed to add service. Try again.' });
   }
 };
 
 
-// Edit Service
+// Edit Service (Admin only)
 export const editService = async (req, res) => {
   const { id } = req.params;
 
@@ -151,21 +178,32 @@ export const editService = async (req, res) => {
       return res.status(404).json({ error: 'Service not found' });
     }
 
-    // Update only provided fields
-    await service.update(req.body);
+    let imageUrl = service.image_url;
+    let imageId = service.image_id;
 
-    await service.save();
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer, "sanich-farms/services");
+      imageUrl = result.url;
+      imageId = result.id;
+    }
 
-    res.status(200).json({
+    await service.update({
+      ...req.body,
+      image_url: imageUrl,
+      image_id: imageId
+    });
+
+    return res.status(200).json({
       status: 'success',
       message: 'Service updated successfully',
       service,
     });
   } catch (error) {
     console.error('Error updating service:', error);
-    res.status(500).json({ error: 'Failed to update service. Try again.' });
+    return res.status(500).json({ error: 'Failed to update service. Try again.' });
   }
 };
+
 
 // Delete Service
 export const deleteService = async (req, res) => {
