@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiMapPin, FiMail, FiPhone } from 'react-icons/fi';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext'; // Import useToast context
+import { useLoading } from '../hooks/useLoading'; // Import useLoading hook
+import { ButtonSpinner } from '../components/UI/LoadingSpinner';
 import { ClickableEmail, ClickablePhone } from '../utils/contactUtils';
 
 const ContactUsPage = () => {
   const { addToast } = useToast();
+  const { showLoading, hideLoading } = useLoading();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -26,11 +29,13 @@ const ContactUsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    showLoading('Sending your message...');
 
     // Basic validation
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
       addToast("Please fill in all required fields.", "error");
       setLoading(false);
+      hideLoading();
       return;
     }
 
@@ -52,6 +57,7 @@ const ContactUsPage = () => {
       addToast("Failed to send message. Please try again later.", "error");
     } finally {
       setLoading(false);
+      hideLoading();
     }
   };
 
@@ -177,9 +183,10 @@ const ContactUsPage = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full sm:w-auto text-white px-8 py-3 rounded-full font-semibold text-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300
+                  className={`w-full sm:w-auto text-white px-8 py-3 rounded-full font-semibold text-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300 flex items-center justify-center gap-2
                     ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
                 >
+                  {loading && <ButtonSpinner />}
                   {loading ? 'Sending...' : 'Send Message'}
                 </button>
               </div>

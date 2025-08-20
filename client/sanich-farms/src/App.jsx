@@ -41,6 +41,7 @@ import TrackOrderPage from './pages/TrackOrderPage';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ToastProvider } from './context/ToastContext';
+import { LoadingProvider } from './context/LoadingContext';
 import AuthProvider from './context/AuthContext';
 import ScrollToTop from './components/utils/ScrollToTop';
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -62,11 +63,12 @@ import UserMgmt from './pages/Admin/UserMgmt';
 function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <ScrollToTop />
-            <Routes>
+      <LoadingProvider>
+        <ToastProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <ScrollToTop />
+              <Routes>
               <Route element={<MainLayout />}>
                 <Route path='/' element={<Home />} />
                 
@@ -171,6 +173,7 @@ function App() {
           </WishlistProvider>
         </CartProvider>
       </ToastProvider>
+      </LoadingProvider>
     </AuthProvider>
   );
 }
