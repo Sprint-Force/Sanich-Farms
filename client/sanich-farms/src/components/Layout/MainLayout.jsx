@@ -12,24 +12,36 @@ const MainLayout = () => {
   useEffect(() => {
     const setNavbarHeight = () => {
       if (navbarRef.current) {
-        document.documentElement.style.setProperty('--navbar-height', `${navbarRef.current.offsetHeight}px`);
+        const height = navbarRef.current.offsetHeight;
+        document.documentElement.style.setProperty('--navbar-height', `${height}px`);
+        
+        // Add responsive padding to ensure breadcrumbs are never covered
+        const additionalPadding = window.innerWidth >= 1024 ? 12 : window.innerWidth >= 768 ? 8 : 4;
+        const totalPadding = height + additionalPadding;
+        document.documentElement.style.setProperty('--content-padding-top', `${totalPadding}px`);
       }
     };
 
     // Set height on mount and on resize
     setNavbarHeight();
     window.addEventListener('resize', setNavbarHeight);
+    
+    // Also recalculate on orientation change for mobile devices
+    window.addEventListener('orientationchange', () => {
+      setTimeout(setNavbarHeight, 100); // Small delay to let orientation change complete
+    });
 
-    // Cleanup listener on unmount
+    // Cleanup listeners on unmount
     return () => {
       window.removeEventListener('resize', setNavbarHeight);
+      window.removeEventListener('orientationchange', setNavbarHeight);
     };
   }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar ref={navbarRef} /> {/* Pass ref to Navbar */}
-      <main className="flex-grow" style={{ paddingTop: 'var(--navbar-height, 120px)' }}>
+      <main className="flex-grow" style={{ paddingTop: 'var(--content-padding-top, 120px)' }}>
         <Outlet /> {/* This is where nested route components (like Home, Login, etc.) will render */}
       </main>
       <Footer />

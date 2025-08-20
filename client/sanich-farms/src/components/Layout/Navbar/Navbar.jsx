@@ -43,7 +43,7 @@ const style = `
 }
 `;
 
-const Navbar = forwardRef(() => {
+const Navbar = forwardRef((_, ref) => {
   // Ref for dropdown close timeout
   const dropdownTimeoutRef = useRef(null);
 
@@ -64,8 +64,7 @@ const Navbar = forwardRef(() => {
     handleDesktopSearchSubmit,
     handleLogout,
     setShowShopDropdown,
-    searchInputRef,
-    navbarRef 
+    searchInputRef
   } = useNavbar();
 
   const { cartCount } = useCart();
@@ -128,7 +127,7 @@ const Navbar = forwardRef(() => {
 
   return (
     <header
-      ref={navbarRef}
+      ref={ref}
       className={`fixed top-0 z-50 w-full bg-white shadow-md font-poppins transition-all duration-500 ease-in-out
                  ${isNavbarHidden ? '-translate-y-full opacity-90' : 'translate-y-0 opacity-100'}
                  ${navbarAnimationClass}`}
