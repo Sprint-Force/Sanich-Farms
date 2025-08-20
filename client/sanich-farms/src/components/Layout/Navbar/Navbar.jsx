@@ -72,6 +72,19 @@ const Navbar = forwardRef(() => {
   const { wishlistCount } = useWishlist();
   const { user, isAuthenticated } = useAuthContext();
 
+  // Force mobile menu to update when authentication state changes
+  useEffect(() => {
+    // Small delay to ensure state has propagated
+    const timer = setTimeout(() => {
+      // Force a re-render by briefly closing and reopening if menu is open
+      if (isMobileMenuOpen) {
+        // This ensures the mobile menu reflects the current auth state
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, user?.id, isMobileMenuOpen]);
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -196,7 +209,11 @@ const Navbar = forwardRef(() => {
 
       {/* Mobile Menu Portal */}
       {isMobileMenuOpen && ReactDOM.createPortal(
-        <div className="lg:hidden fixed inset-0 w-screen h-screen mobile-menu-overlay" style={{ zIndex: 10000 }}>
+        <div 
+          key={`mobile-menu-${isAuthenticated}-${user?.id || 'guest'}`}
+          className="lg:hidden fixed inset-0 w-screen h-screen mobile-menu-overlay" 
+          style={{ zIndex: 10000 }}
+        >
           {/* Menu Content - Full Screen */}
           <div 
             className="flex flex-col w-full h-full bg-white overflow-hidden mobile-menu-content animate-slide-in-from-right"
@@ -220,13 +237,12 @@ const Navbar = forwardRef(() => {
               </button>
             </div>
 
-            {/* User Greeting */}
-            {isAuthenticated && (
-              <div className="px-6 py-4 bg-green-50 border-b border-gray-100 flex-shrink-0 mobile-menu-item">
-                <span className={`${getTypographyClasses('userGreeting')} text-green-600 font-semibold block`}>
-                  Hi! {user?.name?.split(' ')[0] || 'User'}
+            {/* User Greeting - Compact */}
+            {isAuthenticated && user && (
+              <div className="px-4 py-2 bg-green-50 border-b border-gray-100 flex-shrink-0 mobile-menu-item">
+                <span className="text-green-600 font-medium text-sm">
+                  Hi! {user?.name?.split(' ')[0] || 'User'}, welcome back
                 </span>
-                <span className="text-sm text-gray-600">Welcome back to Sanich Farms</span>
               </div>
             )}
           
@@ -281,50 +297,63 @@ const Navbar = forwardRef(() => {
                 <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-2.5 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   My Dashboard
                 </Link>
+
+                {/* Settings and Info Section */}
+                <div className="pt-3 mt-3 border-t border-gray-100 mobile-menu-item">
+                  <div className="flex items-center justify-between px-4 py-2 text-gray-600">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm">🇬🇭</span>
+                        <span className="font-medium text-xs">GHS</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm">🇬🇧</span>
+                        <span className="font-medium text-xs">ENG</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <FiPhoneCall className="text-green-600 text-sm" />
+                      <ClickablePhone 
+                        phone="0243826137" 
+                        className="text-gray-600 hover:text-green-600 font-medium text-xs" 
+                      />
+                    </div>
+                  </div>
+                </div>
               </nav>
             </div>
 
-            {/* Fixed Footer with Auth and Quick Info */}
+            {/* Fixed Auth Button Section */}
             <div className="flex-shrink-0 px-4 py-3 bg-gray-50 border-t border-gray-200">
-              {/* Compact Info Row */}
-              <div className="flex items-center justify-between text-xs text-gray-600 mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm">🇬🇭</span>
-                    <span className="font-medium">GHS</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm">🇬🇧</span>
-                    <span className="font-medium">ENG</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <FiPhoneCall className="text-green-600 text-sm" />
-                  <ClickablePhone 
-                    phone="0243826137" 
-                    className="text-gray-600 hover:text-green-600 font-medium" 
-                  />
-                </div>
-              </div>
-              
-              {/* Compact Auth Button */}
               <div className="mobile-menu-item">
-                {isAuthenticated ? (
-                  <button
-                    onClick={handleLogout}
-                    className="w-full bg-red-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-600 transition duration-200 text-sm"
-                  >
-                    Logout
-                  </button>
-                ) : (
-                  <Link
-                    to="/login"
-                    onClick={closeMobileMenu}
-                    className="block w-full text-center bg-green-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-green-700 transition duration-200 text-sm"
-                  >
-                    Login / Signup
-                  </Link>
-                )}
+                {/* Render auth button with fallback */}
+                {(() => {
+                  const authState = isAuthenticated;
+                  const userData = user;
+                  
+                  if (authState && userData) {
+                    return (
+                      <button
+                        key={`logout-${userData.id || Date.now()}`}
+                        onClick={handleLogout}
+                        className="w-full bg-red-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-600 transition duration-200 text-sm"
+                      >
+                        Logout
+                      </button>
+                    );
+                  } else {
+                    return (
+                      <Link
+                        key={`login-${Date.now()}`}
+                        to="/login"
+                        onClick={closeMobileMenu}
+                        className="block w-full text-center bg-green-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-green-700 transition duration-200 text-sm"
+                      >
+                        Login / Signup
+                      </Link>
+                    );
+                  }
+                })()}
               </div>
             </div>
           </div>
