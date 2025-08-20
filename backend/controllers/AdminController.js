@@ -2,6 +2,8 @@ import { Product } from "../models/Product.js";
 import { Service } from "../models/Service.js";
 import { Booking } from "../models/Booking.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
+import { Order, Payment } from "../models";
+import axios from "axios";
 
 // PRODUCT MANAGEMENT API
 
@@ -343,4 +345,81 @@ export const completeBooking = async (req, res) => {
 };
 
 
+// ORDER MANAGEMENT API
+
+// Admin: Update order status
+export const updateOrderStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status, delivery_status } = req.body;
+
+  try {
+    const order = await Order.findByPk(id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // Only update allowed fields
+    if (status) order.status = status; 
+    if (delivery_status) order.delivery_status = delivery_status; 
+
+    await order.save();
+
+    return res.status(200).json({ message: "Order updated successfully", order });
+  } catch (error) {
+    console.error("Update order error:", error.message);
+    return res.status(500).json({ message: "Failed to update order", error: error.message });
+  }
+};
+
+// Admin: Cancel an order
+export const cancelOrder = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = await Order.findByPk(id);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    // If payment was made, initiate refund
+    if (order.payment_status === "paid") {
+      const payment = await Payment.findOne({ where: { order_id: order.id } });
+      if (payment) {
+        // Example refund using Paystack API
+        await axios.post(
+          "https://api.paystack.co/refund",
+          { transaction: payment.transaction_reference, amount: payment.amount * 100 }, // in kobo
+          {
+            headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` },
+          }
+        );
+        payment.status = "failed"; // mark payment as refunded/failed
+        await payment.save();
+      }
+    }
+
+    // Update order status
+    order.status = "cancelled";
+    await order.save();
+
+    return res.status(200).json({ message: "Order cancelled successfully", order });
+  } catch (error) {
+    console.error("Cancel order error:", error.response?.data || error.message);
+    return res.status(500).json({ message: "Failed to cancel order", error: error.message });
+  }
+};
+
+// Admin: Get all orders with optional filters
+export const getAllOrders = async (req, res) => {
+  const { status, payment_status, delivery_status } = req.query;
+
+  const filters = {};
+  if (status) filters.status = status;
+  if (payment_status) filters.payment_status = payment_status;
+  if (delivery_status) filters.delivery_status = delivery_status;
+
+  try {
+    const orders = await Order.findAll({ where: filters, order: [["created_at", "DESC"]] });
+    return res.status(200).json({ orders });
+  } catch (error) {
+    console.error("Get orders error:", error.message);
+    return res.status(500).json({ message: "Failed to retrieve orders", error: error.message });
+  }
+};
 

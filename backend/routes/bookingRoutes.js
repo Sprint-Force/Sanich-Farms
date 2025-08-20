@@ -16,7 +16,6 @@ bookingRoutes.patch('/:id', updateBooking);
 bookingRoutes.patch('/:id/cancel', cancelBooking);
 
 // Middlewares
-bookingRoutes.use(auth);
 bookingRoutes.use(isAdmin);
 
 // Protected routes (Admin only)
