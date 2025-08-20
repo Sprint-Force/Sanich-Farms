@@ -20,6 +20,12 @@ export const useNavbar = () => {
   // Navbar visibility for scroll behavior
   const [isNavbarHidden, setIsNavbarHidden] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [navbarAnimationClass, setNavbarAnimationClass] = useState('');
+  
+  // Initialize scroll position on mount
+  useEffect(() => {
+    setLastScrollY(window.scrollY);
+  }, []);
   
   // Refs
   const navbarRef = useRef(null);
@@ -39,23 +45,70 @@ export const useNavbar = () => {
 
   // Handle scroll behavior for navbar visibility
   useEffect(() => {
+    let timeoutId = null;
+    
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const navbarHeight = navbarRef.current ? navbarRef.current.offsetHeight : 0;
+      const scrollY = Math.max(0, window.scrollY || window.pageYOffset || document.documentElement.scrollTop);
 
-      if (currentScrollY > lastScrollY && currentScrollY > navbarHeight) {
-        setIsNavbarHidden(true);
-      } else {
-        isMobileMenuOpen ? setIsNavbarHidden(true) : setIsNavbarHidden(false);
+      // Don't hide navbar if mobile menu is open
+      if (isMobileMenuOpen) {
+        setIsNavbarHidden(false);
+        return;
       }
-      setLastScrollY(currentScrollY);
+
+      // Simplified responsive threshold - lower for all screen sizes
+      const scrollThreshold = 100; // Fixed 100px threshold for all screens
+      
+      // Minimum movement to register (prevent tiny movements)
+      const scrollDiff = Math.abs(scrollY - lastScrollY);
+      if (scrollDiff < 10) return;
+
+      // Clear any existing timeout
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      // Simple logic: hide when scrolling down past threshold, show when scrolling up
+      if (scrollY > scrollThreshold && scrollY > lastScrollY) {
+        // Scrolling down past threshold - hide navbar
+        if (!isNavbarHidden) {
+          setIsNavbarHidden(true);
+          setNavbarAnimationClass('navbar-slide-up');
+        }
+      } else if (scrollY < lastScrollY || scrollY <= 50) {
+        // Scrolling up or near top - show navbar
+        if (isNavbarHidden) {
+          setIsNavbarHidden(false);
+          setNavbarAnimationClass('navbar-slide-down');
+        }
+      }
+
+      // Debounce scroll position update
+      timeoutId = setTimeout(() => {
+        setLastScrollY(scrollY);
+      }, 10);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    // Simpler event handling - focus on scroll event
+    const options = { passive: true };
+    
+    // Primary scroll event
+    window.addEventListener('scroll', handleScroll, options);
+    
+    // Secondary events for mobile
+    window.addEventListener('touchmove', handleScroll, options);
+    
+    // Initial call
+    handleScroll();
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('touchmove', handleScroll);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
-  }, [lastScrollY, isMobileMenuOpen]);
+  }, [lastScrollY, isMobileMenuOpen, isNavbarHidden]);
 
   // Handle escape key for mobile menu
   useEffect(() => {
@@ -74,19 +127,28 @@ export const useNavbar = () => {
   // Control body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      
+      // Prevent body scroll
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-      document.body.style.overflowX = 'hidden';
-      document.documentElement.style.overflowX = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-      document.body.style.overflowX = 'auto';
-      document.documentElement.style.overflowX = 'auto';
+      document.documentElement.style.overflow = 'hidden';
+      
+      return () => {
+        // Restore body scroll and position
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        
+        // Restore scroll position
+        window.scrollTo(0, scrollY);
+      };
     }
-    return () => {
-      document.body.style.overflow = 'auto';
-      document.body.style.overflowX = 'auto';
-      document.documentElement.style.overflowX = 'auto';
-    };
   }, [isMobileMenuOpen]);
 
   // Focus management for mobile search
@@ -152,6 +214,7 @@ export const useNavbar = () => {
     mobileSearchQuery,
     desktopSearchQuery,
     isNavbarHidden,
+    navbarAnimationClass,
     
     // Refs
     navbarRef,

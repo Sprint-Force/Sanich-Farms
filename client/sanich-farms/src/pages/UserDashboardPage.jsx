@@ -70,12 +70,9 @@ const UserDashboardPage = () => {
   // LOGOUT UI FIX: Confirm logout action
   const confirmLogout = async () => {
     try {
-      console.log('Confirm logout called');
-      
       // Clear authentication state (user data, tokens, localStorage)
       logout();
       
-      console.log('Logout completed, using window.location to navigate to homepage...');
       // Use window.location for a clean redirect that bypasses React Router
       window.location.href = '/';
     } catch (error) {

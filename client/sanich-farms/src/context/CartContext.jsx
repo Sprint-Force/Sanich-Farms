@@ -52,7 +52,6 @@ export const CartProvider = ({ children }) => {
     setError(null);
     try {
       const response = await cartAPI.getCart();
-      console.log("Cart API response:", response);
       
       // Handle the API response structure: {status: 'success', cart: Array}
       const cartData = response.cart || response.data || response || [];
@@ -118,8 +117,6 @@ export const CartProvider = ({ children }) => {
           productId: product.id,
           quantity: quantity
         });
-        
-        console.log("Add to cart response:", response);
         
         // Handle the response and update cart
         if (response.cart) {
@@ -201,7 +198,6 @@ export const CartProvider = ({ children }) => {
       setError(null);
       try {
         const response = await cartAPI.removeFromCart(productId);
-        console.log("Remove from cart response:", response);
         
         // Handle the response and update cart
         if (response.cart) {
@@ -260,7 +256,6 @@ export const CartProvider = ({ children }) => {
       setError(null);
       try {
         const response = await cartAPI.updateCartItem(productId, { quantity: newQuantity });
-        console.log("Update cart item response:", response);
         
         // Handle the response and update cart
         if (response.cart) {

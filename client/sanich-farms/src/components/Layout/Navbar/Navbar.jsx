@@ -48,23 +48,24 @@ const Navbar = forwardRef(() => {
   const dropdownTimeoutRef = useRef(null);
 
   // Use custom navbar hook for state management
-  const {
-    isMobileMenuOpen,
-    showShopDropdown,
+  const { 
+    isMobileMenuOpen, 
+    isNavbarHidden, 
+    navbarAnimationClass,
+    showShopDropdown, 
     mobileSearchQuery,
-    desktopSearchQuery,
-    isNavbarHidden,
-    navbarRef,
-    searchInputRef,
     setMobileSearchQuery,
+    desktopSearchQuery,
     setDesktopSearchQuery,
-    setShowShopDropdown,
-    toggleMobileMenu,
-    closeMobileMenu,
+    toggleMobileMenu, 
+    closeMobileMenu, 
     handleShopDropdownToggle,
     handleMobileSearchSubmit,
     handleDesktopSearchSubmit,
     handleLogout,
+    setShowShopDropdown,
+    searchInputRef,
+    navbarRef 
   } = useNavbar();
 
   const { cartCount } = useCart();
@@ -115,8 +116,9 @@ const Navbar = forwardRef(() => {
   return (
     <header
       ref={navbarRef}
-      className={`sticky top-0 z-50 w-full bg-white shadow-md font-poppins transition-transform duration-300
-                 ${isNavbarHidden ? '-translate-y-full' : 'translate-y-0'}`}
+      className={`fixed top-0 z-50 w-full bg-white shadow-md font-poppins transition-all duration-500 ease-in-out
+                 ${isNavbarHidden ? '-translate-y-full opacity-90' : 'translate-y-0 opacity-100'}
+                 ${navbarAnimationClass}`}
     >
       <style>{style}</style>
       
@@ -194,17 +196,10 @@ const Navbar = forwardRef(() => {
 
       {/* Mobile Menu Portal */}
       {isMobileMenuOpen && ReactDOM.createPortal(
-        <div className="lg:hidden fixed inset-0 flex mobile-menu-overlay" style={{ zIndex: 10000 }}>
-          {/* Overlay */}
+        <div className="lg:hidden fixed inset-0 w-screen h-screen mobile-menu-overlay" style={{ zIndex: 10000 }}>
+          {/* Menu Content - Full Screen */}
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50"
-            style={{ zIndex: 10000 }}
-            onClick={closeMobileMenu}
-          />
-          
-          {/* Menu Content */}
-          <div 
-            className="ml-auto flex flex-col w-full bg-white shadow-xl animate-slide-in-from-right max-w-full overflow-hidden relative mobile-menu-content"
+            className="flex flex-col w-full h-full bg-white overflow-hidden mobile-menu-content animate-slide-in-from-right"
             style={{ zIndex: 10001 }}
           >
             {/* Header */}
@@ -227,7 +222,7 @@ const Navbar = forwardRef(() => {
 
             {/* User Greeting */}
             {isAuthenticated && (
-              <div className="px-6 py-4 bg-green-50 border-b border-gray-100 flex-shrink-0">
+              <div className="px-6 py-4 bg-green-50 border-b border-gray-100 flex-shrink-0 mobile-menu-item">
                 <span className={`${getTypographyClasses('userGreeting')} text-green-600 font-semibold block`}>
                   Hi! {user?.name?.split(' ')[0] || 'User'}
                 </span>
@@ -236,17 +231,17 @@ const Navbar = forwardRef(() => {
             )}
           
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4">
               <nav className={`flex flex-col gap-2 text-gray-800 ${getTypographyClasses('mobileMenu.links')}`}>
-                <Link to="/" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200">
+                <Link to="/" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   Home
                 </Link>
-                <Link to="/about" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200">
+                <Link to="/about" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   About Us
                 </Link>
                 
                 {/* Shop Dropdown */}
-                <div className="relative">
+                <div className="relative mobile-menu-item">
                   <button
                     onClick={handleShopDropdownToggle}
                     className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 flex items-center justify-between focus:outline-none"
@@ -255,7 +250,7 @@ const Navbar = forwardRef(() => {
                     <FiChevronRight className={`w-5 h-5 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : 'rotate-0'}`} />
                   </button>
                   {showShopDropdown && (
-                    <div className="flex flex-col pl-6 mt-2 space-y-1">
+                    <div className="flex flex-col pl-6 mt-2 space-y-1 animate-fade-in-down">
                       <Link to="/shop" onClick={closeMobileMenu} className={`block py-2 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
                         All Products
                       </Link>
@@ -269,13 +264,13 @@ const Navbar = forwardRef(() => {
                   )}
                 </div>
                 
-                <Link to="/services" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200">
+                <Link to="/services" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   Services
                 </Link>
-                <Link to="/contact" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200">
+                <Link to="/contact" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   Contact Us
                 </Link>
-                <Link to="/wishlist" onClick={closeMobileMenu} className="flex items-center justify-between px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200">
+                <Link to="/wishlist" onClick={closeMobileMenu} className="flex items-center justify-between px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   <span>My Wishlist</span>
                   {wishlistCount > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -283,12 +278,12 @@ const Navbar = forwardRef(() => {
                     </span>
                   )}
                 </Link>
-                <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200">
+                <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   My Dashboard
                 </Link>
                 
                 {/* Auth Section */}
-                <div className="pt-4 border-t border-gray-100 mt-4">
+                <div className="pt-4 border-t border-gray-100 mt-4 mobile-menu-item">
                   {isAuthenticated ? (
                     <button
                       onClick={handleLogout}
@@ -308,7 +303,7 @@ const Navbar = forwardRef(() => {
                 </div>
 
                 {/* Footer */}
-                <div className="pt-6 mt-6 border-t border-gray-100 space-y-4">
+                <div className="pt-6 mt-6 border-t border-gray-100 space-y-4 mobile-menu-item">
                   <div className="flex justify-around items-center">
                     <div className="flex items-center gap-1 text-gray-700">
                       <span className="text-lg">🇬🇧</span>
