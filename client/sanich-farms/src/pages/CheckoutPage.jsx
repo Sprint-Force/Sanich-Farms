@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiHome, FiChevronRight } from 'react-icons/fi';
-import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext'; // Import useToast context
 import { useAuthContext } from '../hooks/useAuthContext';
+import { ordersAPI } from '../services/api'; // Use the configured API service
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -27,9 +27,6 @@ const CheckoutPage = () => {
   });
   const [paymentMethod, setPaymentMethod] = useState('cashOnDelivery');
   const [orderNotes, setOrderNotes] = useState('');
-
-  // Define your backend API URL
-  const BASE_URL = 'https://sanich-farms-tnac.onrender.com/api/orders';
 
   // Calculate order summary - FIX: Remove shipping, replace with delivery note
   const subtotal = parseFloat(cartTotal);
@@ -80,20 +77,19 @@ const CheckoutPage = () => {
     );
   }
 
-  const handleBillingInfoChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setBillingInfo(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
 
     if (cartItems.length === 0) {
       addToast("Your cart is empty. Please add items before placing an order.", "error");
       navigate('/shop');
+      return;
+    }
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      addToast("Please log in to place an order.", "error");
+      navigate('/login', { state: { from: { pathname: '/checkout' } } });
       return;
     }
 
@@ -107,41 +103,48 @@ const CheckoutPage = () => {
     setLoading(true);
 
     const orderDetails = {
-      cartItems,
-      billingInfo,
-      paymentMethod,
-      orderNotes,
-      subtotal: subtotal.toFixed(2),
-      // FIX: Remove shipping from order data
-      total,
-      orderDate: new Date().toISOString(),
+      first_name: billingInfo.firstName,
+      last_name: billingInfo.lastName,
+      company_name: billingInfo.companyName,
+      email: billingInfo.email,
+      phone_number: billingInfo.phone,
+      delivery_address: billingInfo.streetAddress,
+      country: billingInfo.country,
+      state: billingInfo.state,
+      zipcode: billingInfo.zipCode,
+      delivery_fee: 0, // No delivery fee for now
+      payment_method: paymentMethod,
+      note: orderNotes,
     };
 
     try {
-      // In a real application, you would get the user's authentication token here
-      // For this example, we'll use a placeholder.
-      // const token = "YOUR_AUTH_TOKEN_HERE";
-      
-      const response = await axios.post(BASE_URL, orderDetails, {
-        // You would pass the auth token here if needed
-        // headers: { 'Authorization': `Bearer ${token}` }
-      });
+      // Use the configured API service with authentication
+      const response = await ordersAPI.create(orderDetails);
 
-      console.log("Order placed successfully:", response.data);
+      console.log("Order placed successfully:", response);
       addToast("Order placed successfully!", "success");
       
       // Clear the cart on successful order
       clearCart();
       
       // Navigate to an order confirmation page
-      navigate('/order-confirmation', { state: { orderDetails: response.data } });
+      navigate('/order-confirmation', { state: { orderDetails: response } });
 
     } catch (error) {
       console.error("Failed to place order:", error);
-      addToast("Failed to place order. Please try again.", "error");
+      const errorMessage = error.response?.data?.message || error.message || "Failed to place order. Please try again.";
+      addToast(errorMessage, "error");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBillingInfoChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setBillingInfo(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
   return (
