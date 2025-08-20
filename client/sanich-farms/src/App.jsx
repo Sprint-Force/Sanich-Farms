@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from './components/Layout/MainLayout';
+import AuthLayout from './components/Layout/AuthLayout';
 import Home from './pages/Home';
 import Login from './pages/Login/Login';
 import Signup from './pages/Login/Signup';
@@ -72,24 +73,6 @@ function App() {
               <Route element={<MainLayout />}>
                 <Route path='/' element={<Home />} />
                 
-                {/* Public authentication routes */}
-                <Route path='/login' element={<Login />} />
-                <Route path='/signup' element={
-                  <ProtectedRoute requireAuth={false}>
-                    <Signup />
-                  </ProtectedRoute>
-                } />
-                <Route path='/forgot-password' element={
-                  <ProtectedRoute requireAuth={false}>
-                    <ForgotPassword />
-                  </ProtectedRoute>
-                } />
-                <Route path='/reset-password' element={
-                  <ProtectedRoute requireAuth={false}>
-                    <ResetPassword />
-                  </ProtectedRoute>
-                } />
-                
                 {/* Public pages */}
                 <Route path='/shop' element={<ShopPage />} />
                 <Route path='/products/:productId' element={<ProductDetailPage />} />
@@ -144,6 +127,26 @@ function App() {
                   <Route path='orders/:orderId' element={<OrderDetailPage />} />
                   <Route path='bookings/:bookingId' element={<BookingDetailPage />} />
                 </Route>
+              </Route>
+
+              {/* Authentication routes - using AuthLayout without footer */}
+              <Route element={<AuthLayout />}>
+                <Route path='/login' element={<Login />} />
+                <Route path='/signup' element={
+                  <ProtectedRoute requireAuth={false}>
+                    <Signup />
+                  </ProtectedRoute>
+                } />
+                <Route path='/forgot-password' element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ForgotPassword />
+                  </ProtectedRoute>
+                } />
+                <Route path='/reset-password' element={
+                  <ProtectedRoute requireAuth={false}>
+                    <ResetPassword />
+                  </ProtectedRoute>
+                } />
               </Route>
 
               {/* Admin Routes */}
