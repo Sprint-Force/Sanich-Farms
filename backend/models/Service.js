@@ -29,6 +29,10 @@ export const Service = sequelize.define('Service', {
         type: DataTypes.STRING,
         allowNull: true,
     },
+    image_id : {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     is_available: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,

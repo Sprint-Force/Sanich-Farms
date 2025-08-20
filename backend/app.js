@@ -10,8 +10,7 @@ import { orderRoutes } from "./routes/orderRoutes.js";
 import { wishlistRoutes } from "./routes/wishlistRoutes.js";
 import { bookingRoutes } from "./routes/bookingRoutes.js";
 import { serviceRoutes } from "./routes/serviceRoutes.js";
-import { adminRoutes } from "./routes/adminRoutes.js"
-import { uploadRoutes } from "./routes/uploadRoutes.js";
+//import { uploadRoutes } from "./routes/uploadRoutes.js";
 
 
 
@@ -45,7 +44,7 @@ app.use('/api/services', serviceRoutes);
 
 
 // Image upload route
-app.use('/api/uploads', uploadRoutes);
+//app.use('/api/uploads', uploadRoutes);
 
 // Error handler
 app.use(errorHandler);

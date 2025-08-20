@@ -1,7 +1,7 @@
 import { Product } from "../models/Product.js";
 import { Service } from "../models/Service.js";
 import { Booking } from "../models/Booking.js";
-import { uploadToCloudinary } from "../services/cloudinary.js";
+import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 
 // PRODUCT MANAGEMENT API
 

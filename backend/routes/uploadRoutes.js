@@ -1,4 +1,4 @@
-import express from "express";
+/* import express from "express";
 import { upload } from "../middlewares/upload.js";
 import cloudinary from "../services/cloudinary.js";
 
@@ -32,5 +32,5 @@ uploadRoutes.post("/", upload.single("file"), async (req, res) => {
     res.status(500).json({ error: "Upload failed" });
   }
 });
-
+ */
 
