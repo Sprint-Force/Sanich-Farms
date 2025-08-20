@@ -26,12 +26,17 @@ import DashboardOverview from './components/Dashboard/DashboardOverview';
 import MyOrders from './components/Dashboard/MyOrders';
 import MyBookings from './components/Dashboard/MyBookings';
 import MyProfile from './components/Dashboard/MyProfile';
+import TrackOrders from './components/Dashboard/TrackOrders';
 // Imports for detail pages
 import OrderDetailPage from './components/Dashboard/OrderDetailPage';
 import BookingDetailPage from './components/Dashboard/BookingDetailPage';
 
 import NotFoundPage from './pages/NotFoundPage';
 import SearchPage from './pages/SearchPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import FAQPage from './pages/FAQPage';
+import TrackOrderPage from './pages/TrackOrderPage';
 
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -91,6 +96,10 @@ function App() {
                 <Route path='/services' element={<AllServicesPage />} />
                 <Route path='/services/:serviceId' element={<ServiceDetailPage />} />
                 <Route path='/search' element={<SearchPage />} />
+                <Route path='/terms' element={<TermsPage />} />
+                <Route path='/privacy' element={<PrivacyPage />} />
+                <Route path='/faq' element={<FAQPage />} />
+                <Route path='/track-order' element={<TrackOrderPage />} />
 
                 {/* Public cart and wishlist - accessible to both guest and authenticated users */}
                 <Route path='/cart' element={<CartPage />} />
@@ -126,6 +135,7 @@ function App() {
                 }>
                   <Route index element={<DashboardOverview />} />
                   <Route path='orders' element={<MyOrders />} />
+                  <Route path='track-orders' element={<TrackOrders />} />
                   <Route path='bookings' element={<MyBookings />} />
                   <Route path='profile' element={<MyProfile />} />
                   <Route path='wishlist' element={<WishlistPage />} />

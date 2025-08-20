@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiSettings, FiLogOut, FiX, FiCreditCard } from 'react-icons/fi';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiSettings, FiLogOut, FiX, FiCreditCard, FiTruck } from 'react-icons/fi';
 import { useAuthContext } from '../hooks/useAuthContext';
 
 // Import dashboard section components
@@ -9,10 +9,10 @@ import MyOrders from '../components/Dashboard/MyOrders';
 import MyBookings from '../components/Dashboard/MyBookings';
 import MyProfile from '../components/Dashboard/MyProfile';
 import PaymentsWallet from '../components/Dashboard/PaymentsWallet'; // DASHBOARD AUDIT FIX: Add payments section
+import TrackOrders from '../components/Dashboard/TrackOrders'; // NEW: Add track orders component
 import WishlistPage from './WishlistPage'; // Reusing existing WishlistPage
 
 const UserDashboardPage = () => {
-  const navigate = useNavigate();
   const location = useLocation(); // To get current path
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false); // LOGOUT UI FIX: Add modal state
@@ -25,6 +25,7 @@ const UserDashboardPage = () => {
     if (location.pathname.includes('/dashboard/profile')) return 'profile';
     if (location.pathname.includes('/dashboard/payments')) return 'payments';
     if (location.pathname.includes('/dashboard/wishlist')) return 'wishlist';
+    if (location.pathname.includes('/dashboard/track-orders')) return 'track-orders';
     return 'overview'; // Default to overview
   };
 
@@ -164,6 +165,14 @@ const UserDashboardPage = () => {
                 ${activeSection === 'orders' ? 'bg-green-100 text-green-700' : 'text-gray-700 hover:bg-gray-100'}`}
             >
               <FiShoppingBag size={20} /> My Orders
+            </Link>
+            <Link
+              to="/dashboard/track-orders"
+              onClick={closeMobileMenu}
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg text-lg font-medium transition-colors duration-200
+                ${activeSection === 'track-orders' ? 'bg-green-100 text-green-700' : 'text-gray-700 hover:bg-gray-100'}`}
+            >
+              <FiTruck size={20} /> Track Orders
             </Link>
             <Link
               to="/dashboard/bookings"
