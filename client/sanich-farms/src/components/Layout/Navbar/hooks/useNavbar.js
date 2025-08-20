@@ -75,11 +75,17 @@ export const useNavbar = () => {
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.style.overflowX = 'hidden';
+      document.documentElement.style.overflowX = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
+      document.body.style.overflowX = 'auto';
+      document.documentElement.style.overflowX = 'auto';
     }
     return () => {
       document.body.style.overflow = 'auto';
+      document.body.style.overflowX = 'auto';
+      document.documentElement.style.overflowX = 'auto';
     };
   }, [isMobileMenuOpen]);
 
