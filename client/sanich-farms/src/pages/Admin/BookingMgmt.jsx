@@ -20,6 +20,7 @@ import {
   FiRefreshCw,
   FiEye
 } from 'react-icons/fi';
+import { ClickableEmail, ClickablePhone } from '../../utils/contactUtils';
 
 const BookingMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -910,11 +911,17 @@ const BookingMgmt = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <p className="text-sm text-gray-900">{selectedBooking.customerEmail}</p>
+                    <ClickableEmail 
+                      email={selectedBooking.customerEmail} 
+                      className="text-sm text-gray-900 hover:text-green-600" 
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Phone</label>
-                    <p className="text-sm text-gray-900">{selectedBooking.customerPhone}</p>
+                    <ClickablePhone 
+                      phone={selectedBooking.customerPhone} 
+                      className="text-sm text-gray-900 hover:text-green-600" 
+                    />
                   </div>
                 </div>
               </div>

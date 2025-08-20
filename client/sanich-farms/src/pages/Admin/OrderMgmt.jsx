@@ -23,6 +23,7 @@ import {
   FiPhone,
   FiMapPin
 } from 'react-icons/fi';
+import { ClickableEmail, ClickablePhone } from '../../utils/contactUtils';
 
 const OrderMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -746,8 +747,8 @@ const OrderMgmt = () => {
                   <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
                   <div className="space-y-2 text-sm">
                     <p><span className="font-medium">Name:</span> {selectedOrder.customer.name}</p>
-                    <p><span className="font-medium">Email:</span> {selectedOrder.customer.email}</p>
-                    <p><span className="font-medium">Phone:</span> {selectedOrder.customer.phone}</p>
+                    <p><span className="font-medium">Email:</span> <ClickableEmail email={selectedOrder.customer.email} className="text-gray-900 hover:text-green-600" /></p>
+                    <p><span className="font-medium">Phone:</span> <ClickablePhone phone={selectedOrder.customer.phone} className="text-gray-900 hover:text-green-600" /></p>
                     <p><span className="font-medium">Address:</span> {selectedOrder.customer.address}</p>
                   </div>
                 </div>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FaFacebookF, FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
 import { FiMail, FiPhoneCall, FiMapPin } from 'react-icons/fi';
 import axios from 'axios'; // Import axios for API calls
+import { ClickableEmail, ClickablePhone } from '../../../utils/contactUtils';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -91,9 +92,18 @@ const Footer = () => {
           <div className="space-y-2 text-gray-400">
             <p className="flex items-center gap-2"><FiMapPin className="text-green-400" /> Ejisu, Okese Avenue, Fillet Street</p>
             <p className="flex items-center gap-2"><FiMapPin className="text-green-400" /> Kumasi, Ghana</p>
-            <p className="flex items-center gap-2"><FiMail className="text-green-400" /> Sanichfarms@gmail.com</p>
-            <p className="flex items-center gap-2"><FiPhoneCall className="text-green-400" /> 0243826137</p>
-            <p className="flex items-center gap-2"><FiPhoneCall className="text-green-400" /> 0598990595</p>
+            <p className="flex items-center gap-2">
+              <FiMail className="text-green-400" /> 
+              <ClickableEmail email="Sanichfarms@gmail.com" className="text-gray-400 hover:text-green-400" />
+            </p>
+            <p className="flex items-center gap-2">
+              <FiPhoneCall className="text-green-400" /> 
+              <ClickablePhone phone="0243826137" className="text-gray-400 hover:text-green-400" />
+            </p>
+            <p className="flex items-center gap-2">
+              <FiPhoneCall className="text-green-400" /> 
+              <ClickablePhone phone="0598990595" className="text-gray-400 hover:text-green-400" />
+            </p>
           </div>
         </div>
 

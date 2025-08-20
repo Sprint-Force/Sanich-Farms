@@ -19,6 +19,7 @@ import {
   FiPieChart,
   FiChevronDown
 } from 'react-icons/fi';
+import { ClickableEmail } from '../../utils/contactUtils';
 
 const Analytic = () => {
   const [timeRange, setTimeRange] = useState('7days');
@@ -899,7 +900,10 @@ const Analytic = () => {
                         />
                         <div>
                           <p className="font-medium text-gray-900 text-sm">{customer.name}</p>
-                          <p className="text-xs text-gray-500">{customer.email}</p>
+                          <ClickableEmail 
+                            email={customer.email} 
+                            className="text-xs text-gray-500 hover:text-green-600" 
+                          />
                         </div>
                       </div>
                       <div className="text-right">
@@ -944,7 +948,10 @@ const Analytic = () => {
                       <td className="px-4 sm:px-6 py-4">
                         <div>
                           <p className="text-sm font-medium text-gray-900">{cart.customer}</p>
-                          <p className="text-xs text-gray-500">{cart.email}</p>
+                          <ClickableEmail 
+                            email={cart.email} 
+                            className="text-xs text-gray-500 hover:text-green-600" 
+                          />
                         </div>
                       </td>
                       <td className="px-4 sm:px-6 py-4 text-sm text-gray-900">{cart.items}</td>

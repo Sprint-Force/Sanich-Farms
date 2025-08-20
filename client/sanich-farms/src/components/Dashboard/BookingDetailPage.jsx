@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiCalendar, FiUser, FiMail, FiPhone, FiMapPin, FiInfo } from 'react-icons/fi';
 import { bookingsData } from '../../data/bookingsData'; // Import centralized bookings data
+import { ClickableEmail, ClickablePhone } from '../../utils/contactUtils';
 
 const BookingDetailPage = () => {
   const { bookingId } = useParams();
@@ -54,8 +55,8 @@ const BookingDetailPage = () => {
           </h2>
           <div className="space-y-2 text-gray-700">
             <p><strong>Name:</strong> {booking.customerName}</p>
-            <p><strong>Email:</strong> {booking.email}</p>
-            <p><strong>Phone:</strong> {booking.phone}</p>
+            <p><strong>Email:</strong> <ClickableEmail email={booking.email} className="text-gray-700 hover:text-green-600" /></p>
+            <p><strong>Phone:</strong> <ClickablePhone phone={booking.phone} className="text-gray-700 hover:text-green-600" /></p>
             <p><strong>Location:</strong> {booking.location}</p>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiMapPin, FiMail, FiPhone } from 'react-icons/fi';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext'; // Import useToast context
+import { ClickableEmail, ClickablePhone } from '../utils/contactUtils';
 
 const ContactUsPage = () => {
   const { addToast } = useToast();
@@ -87,15 +88,26 @@ const ContactUsPage = () => {
               <FiMail size={24} className="text-green-600 mt-1 flex-shrink-0" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Email Us</h3>
-                <p className="text-gray-600 text-base">Sanichfarms@gmail.com</p>
+                <ClickableEmail 
+                  email="Sanichfarms@gmail.com" 
+                  className="text-gray-600 text-base hover:text-green-600" 
+                />
               </div>
             </div>
             <div className="flex items-start gap-4">
               <FiPhone size={24} className="text-green-600 mt-1 flex-shrink-0" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Call Us</h3>
-                <p className="text-gray-600 text-base">0243826137</p>
-                <p className="text-gray-600 text-base">0568160546</p>
+                <div className="space-y-1">
+                  <ClickablePhone 
+                    phone="0243826137" 
+                    className="text-gray-600 text-base hover:text-green-600 block" 
+                  />
+                  <ClickablePhone 
+                    phone="0568160546" 
+                    className="text-gray-600 text-base hover:text-green-600 block" 
+                  />
+                </div>
               </div>
             </div>
           </div>
