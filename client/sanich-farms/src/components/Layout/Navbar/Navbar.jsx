@@ -231,12 +231,12 @@ const Navbar = forwardRef(() => {
             )}
           
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4">
-              <nav className={`flex flex-col gap-2 text-gray-800 ${getTypographyClasses('mobileMenu.links')}`}>
-                <Link to="/" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-2">
+              <nav className={`flex flex-col gap-1 text-gray-800 ${getTypographyClasses('mobileMenu.links')}`}>
+                <Link to="/" onClick={closeMobileMenu} className="block px-4 py-2.5 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   Home
                 </Link>
-                <Link to="/about" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
+                <Link to="/about" onClick={closeMobileMenu} className="block px-4 py-2.5 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   About Us
                 </Link>
                 
@@ -244,33 +244,33 @@ const Navbar = forwardRef(() => {
                 <div className="relative mobile-menu-item">
                   <button
                     onClick={handleShopDropdownToggle}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 flex items-center justify-between focus:outline-none"
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-100 rounded-lg transition duration-200 flex items-center justify-between focus:outline-none"
                   >
                     Shop
                     <FiChevronRight className={`w-5 h-5 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : 'rotate-0'}`} />
                   </button>
                   {showShopDropdown && (
-                    <div className="flex flex-col pl-6 mt-2 space-y-1 animate-fade-in-down">
-                      <Link to="/shop" onClick={closeMobileMenu} className={`block py-2 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
+                    <div className="flex flex-col pl-6 mt-1 space-y-0.5 animate-fade-in-down">
+                      <Link to="/shop" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
                         All Products
                       </Link>
-                      <Link to="/shop/chicks" onClick={closeMobileMenu} className={`block py-2 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
+                      <Link to="/shop/chicks" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
                         Chicks
                       </Link>
-                      <Link to="/shop/feeds" onClick={closeMobileMenu} className={`block py-2 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
+                      <Link to="/shop/feeds" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
                         Feeds
                       </Link>
                     </div>
                   )}
                 </div>
                 
-                <Link to="/services" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
+                <Link to="/services" onClick={closeMobileMenu} className="block px-4 py-2.5 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   Services
                 </Link>
-                <Link to="/contact" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
+                <Link to="/contact" onClick={closeMobileMenu} className="block px-4 py-2.5 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   Contact Us
                 </Link>
-                <Link to="/wishlist" onClick={closeMobileMenu} className="flex items-center justify-between px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
+                <Link to="/wishlist" onClick={closeMobileMenu} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   <span>My Wishlist</span>
                   {wishlistCount > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -278,50 +278,54 @@ const Navbar = forwardRef(() => {
                     </span>
                   )}
                 </Link>
-                <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
+                <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-2.5 hover:bg-gray-100 rounded-lg transition duration-200 mobile-menu-item">
                   My Dashboard
                 </Link>
-                
-                {/* Auth Section */}
-                <div className="pt-4 border-t border-gray-100 mt-4 mobile-menu-item">
-                  {isAuthenticated ? (
-                    <button
-                      onClick={handleLogout}
-                      className={`block w-full text-center bg-red-600 text-white px-6 py-3 rounded-full ${getTypographyClasses('mobileMenu.links')} font-semibold hover:bg-red-700 transition duration-300 shadow-md`}
-                    >
-                      Logout
-                    </button>
-                  ) : (
-                    <Link
-                      to="/login"
-                      onClick={closeMobileMenu}
-                      className={`block text-center bg-green-600 text-white px-6 py-3 rounded-full ${getTypographyClasses('mobileMenu.links')} font-semibold hover:bg-green-700 transition duration-300 shadow-md`}
-                    >
-                      Login / Signup
-                    </Link>
-                  )}
-                </div>
-
-                {/* Footer */}
-                <div className="pt-6 mt-6 border-t border-gray-100 space-y-4 mobile-menu-item">
-                  <div className="flex justify-around items-center">
-                    <div className="flex items-center gap-1 text-gray-700">
-                      <span className="text-lg">🇬🇧</span>
-                      <span className={`${getTypographyClasses('topBar')} font-medium`}>ENG</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-700">
-                      <span className={`${getTypographyClasses('topBar')} font-medium`}>GHS</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 text-gray-700">
-                    <FiPhoneCall className="text-green-700 text-xl flex-shrink-0" />
-                    <ClickablePhone 
-                      phone="0243826137" 
-                      className={`${getTypographyClasses('contact')} text-gray-700 hover:text-green-600`} 
-                    />
-                  </div>
-                </div>
               </nav>
+            </div>
+
+            {/* Fixed Footer with Auth and Quick Info */}
+            <div className="flex-shrink-0 px-4 py-3 bg-gray-50 border-t border-gray-200">
+              {/* Compact Info Row */}
+              <div className="flex items-center justify-between text-xs text-gray-600 mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm">🇬🇭</span>
+                    <span className="font-medium">GHS</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm">🇬🇧</span>
+                    <span className="font-medium">ENG</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <FiPhoneCall className="text-green-600 text-sm" />
+                  <ClickablePhone 
+                    phone="0243826137" 
+                    className="text-gray-600 hover:text-green-600 font-medium" 
+                  />
+                </div>
+              </div>
+              
+              {/* Compact Auth Button */}
+              <div className="mobile-menu-item">
+                {isAuthenticated ? (
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-red-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-600 transition duration-200 text-sm"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={closeMobileMenu}
+                    className="block w-full text-center bg-green-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-green-700 transition duration-200 text-sm"
+                  >
+                    Login / Signup
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>,
