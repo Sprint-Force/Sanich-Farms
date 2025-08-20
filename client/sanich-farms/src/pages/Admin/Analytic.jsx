@@ -465,50 +465,50 @@ const Analytic = () => {
 
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-4 lg:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics & Reports</h1>
-          <p className="text-gray-600 mt-1">Track your business performance and insights</p>
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4 sm:mb-6">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">Analytics & Reports</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1 truncate">Track your business performance and insights</p>
         </div>
-        <div className="mt-4 sm:mt-0 flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <div className="relative">
             <select
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
-              className="bg-white border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none"
+              className="w-full sm:w-auto bg-white border border-gray-300 rounded-lg px-3 py-2 pr-8 sm:pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none"
             >
               <option value="sales">Sales Reports</option>
               <option value="bookings">Booking Reports</option>
             </select>
-            <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" />
+            <FiChevronDown className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" />
           </div>
           <div className="relative">
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="bg-white border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none"
+              className="w-full sm:w-auto bg-white border border-gray-300 rounded-lg px-3 py-2 pr-8 sm:pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none"
             >
               <option value="7days">Last 7 days</option>
               <option value="4weeks">Last 4 weeks</option>
               <option value="12months">Last 12 months</option>
             </select>
-            <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" />
+            <FiChevronDown className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none w-4 h-4" />
           </div>
           <button 
             onClick={() => exportData(reportType === 'bookings' ? 'bookings' : 'revenue')}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition text-sm"
+            className="bg-green-500 hover:bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition text-sm"
           >
             <FiDownload className="w-4 h-4" />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </button>
         </div>
       </div>
 
       {/* Key Metrics */}
       {reportType === 'sales' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 lg:mb-8">
           <StatCard
             icon={FiDollarSign}
             title="Total Revenue"

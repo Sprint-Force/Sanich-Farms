@@ -51,8 +51,8 @@ const AdminLogout = () => {
     );
   }
 
-  // Redirect to admin login page
-  return <Navigate to="/admin/login" replace />;
+  // Redirect to normal login page
+  return <Navigate to="/login" replace />;
 };
 
 export default AdminLogout;

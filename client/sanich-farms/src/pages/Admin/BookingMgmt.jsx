@@ -224,6 +224,11 @@ const BookingMgmt = () => {
         case 'today':
           matchesDate = bookingDate.toDateString() === today.toDateString();
           break;
+        case 'yesterday': {
+          const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+          matchesDate = bookingDate.toDateString() === yesterday.toDateString();
+          break;
+        }
         case 'week': {
           const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
           matchesDate = bookingDate >= weekAgo;
@@ -523,6 +528,7 @@ const BookingMgmt = () => {
             <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
           </div>
           
+          {/*  */}
           <div className="relative">
             <select
               value={filterService}
@@ -538,6 +544,7 @@ const BookingMgmt = () => {
             <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
           </div>
           
+          {/* Date filter */}
           <div className="relative">
             <select
               value={selectedDateRange}
@@ -546,6 +553,7 @@ const BookingMgmt = () => {
             >
               <option value="all">All Dates</option>
               <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
               <option value="week">Last 7 Days</option>
               <option value="month">Last 30 Days</option>
             </select>

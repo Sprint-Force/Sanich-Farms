@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Import admin responsive utilities */
+@import "./styles/admin-responsive.css";
+
 /* Global Poppins Font Application */
 body {
   font-family: 'Poppins', sans-serif;

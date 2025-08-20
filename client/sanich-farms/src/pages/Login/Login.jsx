@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useToast } from '../../context/ToastContext';
@@ -22,7 +22,19 @@ const Login = () => {
   // The useToast hook provides a consistent way to display success and error messages.
   const { addToast } = useToast();
   // Auth context for managing authentication state
-  const { login } = useAuthContext();
+  const { login, isAuthenticated, user } = useAuthContext();
+
+  // Redirect already authenticated users
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        const from = location.state?.from?.pathname || '/dashboard';
+        navigate(from, { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate, location.state]);
 
   // This handler updates the state as the user types in the input fields.
   const handleChange = (e) => {
@@ -51,7 +63,35 @@ const Login = () => {
     }
 
     try {
-      // Use the new API service
+      // Temporary admin user for testing (remove in production)
+      if (formData.email === 'admin@sanichfarms.com' && formData.password === 'admin123') {
+        const tempAdminUser = {
+          email: 'admin@sanichfarms.com',
+          name: 'Admin User',
+          role: 'admin',
+          id: 'admin-temp-001'
+        };
+        
+        // Use the login function from auth context
+        login(tempAdminUser, 'temp-admin-token');
+        
+        // Store admin session for compatibility with admin routes
+        localStorage.setItem('adminAuth', JSON.stringify({
+          email: tempAdminUser.email,
+          role: 'admin',
+          name: tempAdminUser.name,
+          timestamp: Date.now()
+        }));
+        
+        // Display success message
+        addToast('Login successful! Welcome Admin.', 'success');
+        
+        // Redirect to admin dashboard
+        navigate('/admin', { replace: true });
+        return;
+      }
+      
+      // Use the new API service for regular users
       const data = await authAPI.login(formData);
       
       // Extract user data from the response
@@ -63,12 +103,26 @@ const Login = () => {
       // Use the login function from auth context
       login(userData, data.accessToken);
       
-      // Display a success toast and redirect the user.
+      // Display a success toast
       addToast('Login successful! Welcome back.', 'success');
       
-      // Redirect to the intended page or dashboard
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      // Check if user has admin role (from API response)
+      if (userData.role === 'admin') {
+        // Store admin session for compatibility with admin routes
+        localStorage.setItem('adminAuth', JSON.stringify({
+          email: userData.email,
+          role: 'admin',
+          name: userData.name,
+          timestamp: Date.now()
+        }));
+        
+        // Redirect to admin dashboard
+        navigate('/admin', { replace: true });
+      } else {
+        // Redirect to the intended page or user dashboard
+        const from = location.state?.from?.pathname || '/dashboard';
+        navigate(from, { replace: true });
+      }
       
     } catch (error) {
       // Handle different types of errors

@@ -44,6 +44,10 @@ export const useAuth = () => {
     setToken(null);
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    // Also clear admin auth data for unified logout
+    localStorage.removeItem('adminAuth');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
     console.log('Auth data cleared, logging out flag set');
     
     // Reset flag after a longer delay to ensure navigation completes
