@@ -319,42 +319,39 @@ const Navbar = forwardRef(() => {
                       />
                     </div>
                   </div>
+                  
+                  {/* Auth Button - Right after settings */}
+                  <div className="px-4 pt-3 mobile-menu-item">
+                    {(() => {
+                      const authState = isAuthenticated;
+                      const userData = user;
+                      
+                      if (authState && userData) {
+                        return (
+                          <button
+                            key={`logout-${userData.id || Date.now()}`}
+                            onClick={handleLogout}
+                            className="w-full bg-red-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-600 transition duration-200 text-sm"
+                          >
+                            Logout
+                          </button>
+                        );
+                      } else {
+                        return (
+                          <Link
+                            key={`login-${Date.now()}`}
+                            to="/login"
+                            onClick={closeMobileMenu}
+                            className="block w-full text-center bg-green-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-green-700 transition duration-200 text-sm"
+                          >
+                            Login / Signup
+                          </Link>
+                        );
+                      }
+                    })()}
+                  </div>
                 </div>
               </nav>
-            </div>
-
-            {/* Fixed Auth Button Section */}
-            <div className="flex-shrink-0 px-4 py-3 bg-gray-50 border-t border-gray-200">
-              <div className="mobile-menu-item">
-                {/* Render auth button with fallback */}
-                {(() => {
-                  const authState = isAuthenticated;
-                  const userData = user;
-                  
-                  if (authState && userData) {
-                    return (
-                      <button
-                        key={`logout-${userData.id || Date.now()}`}
-                        onClick={handleLogout}
-                        className="w-full bg-red-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-600 transition duration-200 text-sm"
-                      >
-                        Logout
-                      </button>
-                    );
-                  } else {
-                    return (
-                      <Link
-                        key={`login-${Date.now()}`}
-                        to="/login"
-                        onClick={closeMobileMenu}
-                        className="block w-full text-center bg-green-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-green-700 transition duration-200 text-sm"
-                      >
-                        Login / Signup
-                      </Link>
-                    );
-                  }
-                })()}
-              </div>
             </div>
           </div>
         </div>,
