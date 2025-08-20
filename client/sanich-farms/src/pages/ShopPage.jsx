@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiFilter, FiChevronDown, FiX } from 'react-icons/fi';
 import ProductCard from '../components/UI/ProductCard';
+import { PageSpinner } from '../components/UI/LoadingSpinner';
 import axios from 'axios'; // Import axios for API calls
 
 const ShopPage = () => {
@@ -30,7 +31,7 @@ const ShopPage = () => {
   const BASE_URL = 'https://sanich-farms-tnac.onrender.com/api/products';
 
   // Function to fetch products from the API
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -62,7 +63,7 @@ const ShopPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, selectedPriceRange, selectedRating, sortBy, showCount]);
 
   // Effect to set initial category from URL and fetch products
   useEffect(() => {
@@ -82,12 +83,12 @@ const ShopPage = () => {
 
     // Call fetchProducts whenever the component mounts or URL changes
     fetchProducts();
-  }, [location.pathname]); // Dependency on location.pathname to handle direct URL access
+  }, [location.pathname, fetchProducts]); // Dependency on location.pathname to handle direct URL access
 
   // Effect to trigger product fetch whenever filters or sort options change
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, selectedPriceRange, selectedRating, sortBy, showCount]);
+  }, [fetchProducts]);
 
   // Effect to update active filters for display
   useEffect(() => {
@@ -395,9 +396,7 @@ const ShopPage = () => {
 
         {/* Product Grid and Loading/Error States */}
         {loading ? (
-          <div className="text-center py-10 text-gray-600 text-lg">
-            Loading products...
-          </div>
+          <PageSpinner text="Loading products..." />
         ) : error ? (
           <div className="text-center py-10 text-red-500 text-lg">
             {error}

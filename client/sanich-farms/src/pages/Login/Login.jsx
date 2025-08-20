@@ -4,6 +4,7 @@ import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useToast } from '../../context/ToastContext';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { authAPI } from '../../services/api';
+import { ButtonSpinner } from '../../components/UI/LoadingSpinner';
 
 // This component handles the user login functionality.
 const Login = () => {
@@ -217,8 +218,9 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
+            {loading && <ButtonSpinner />}
             {loading ? 'Signing In...' : 'Login'}
           </button>
         </form>
