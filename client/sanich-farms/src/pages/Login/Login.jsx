@@ -71,35 +71,35 @@ const Login = () => {
     }
 
     try {
-      // Temporary admin user for testing (remove in production)
-      if (formData.email === 'admin@sanichfarms.com' && formData.password === 'admin123') {
-        const tempAdminUser = {
-          email: 'admin@sanichfarms.com',
-          name: 'Admin User',
-          role: 'admin',
-          id: 'admin-temp-001'
-        };
+      //  // Temporary admin user for testing (remove in production)
+      // if (formData.email === 'admin@sanichfarms.com' && formData.password === 'admin123') {
+      //   const tempAdminUser = {
+      //     email: 'admin@sanichfarms.com',
+      //     name: 'Admin User',
+      //     role: 'admin',
+      //     id: 'admin-temp-001'
+      //   };
         
-        // Use the login function from auth context
-        login(tempAdminUser, 'temp-admin-token');
+      //   // Use the login function from auth context
+      //   login(tempAdminUser, 'temp-admin-token');
         
-        // Store admin session for compatibility with admin routes
-        localStorage.setItem('adminAuth', JSON.stringify({
-          email: tempAdminUser.email,
-          role: 'admin',
-          name: tempAdminUser.name,
-          timestamp: Date.now()
-        }));
+      //   // Store admin session for compatibility with admin routes
+      //   localStorage.setItem('adminAuth', JSON.stringify({
+      //     email: tempAdminUser.email,
+      //     role: 'admin',
+      //     name: tempAdminUser.name,
+      //     timestamp: Date.now()
+      //   }));
         
-        // Display success message
-        addToast('Login successful! Welcome Admin.', 'success');
+      //   // Display success message
+      //   addToast('Login successful! Welcome Admin.', 'success');
         
-        // Redirect to admin dashboard
-        navigate('/admin', { replace: true });
-        return;
-      }
-      
-      // Use the new API service for regular users
+      //   // Redirect to admin dashboard
+      //   navigate('/admin', { replace: true });
+      //   return;
+      // }
+
+      // Use the API service for all users (no hardcoded admin)
       const data = await authAPI.login(formData);
       
       // Extract user data from the response
