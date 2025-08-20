@@ -10,8 +10,7 @@ import { orderRoutes } from "./routes/orderRoutes.js";
 import { wishlistRoutes } from "./routes/wishlistRoutes.js";
 import { bookingRoutes } from "./routes/bookingRoutes.js";
 import { serviceRoutes } from "./routes/serviceRoutes.js";
-import { adminRoutes } from "./routes/adminRoutes.js"
-import { uploadRoutes } from "./routes/uploadRoutes.js";
+//import { uploadRoutes } from "./routes/uploadRoutes.js";
 
 
 
@@ -34,7 +33,7 @@ app.use(morgan('dev'));
 // JSON Parser
 app.use(express.json());
 
-// User Routes
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
@@ -43,13 +42,9 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/services', serviceRoutes);
 
-// Admin routes
-app.use('/api/admin/products', adminRoutes);
-app.use('/api/admin/bookings', adminRoutes);
-app.use('/api/admin/services', adminRoutes);
 
 // Image upload route
-app.use('/api/uploads', uploadRoutes);
+//app.use('/api/uploads', uploadRoutes);
 
 // Error handler
 app.use(errorHandler);
