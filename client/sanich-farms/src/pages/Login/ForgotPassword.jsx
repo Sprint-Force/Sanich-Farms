@@ -59,16 +59,16 @@ const ForgotPassword = () => {
   return (
     <div className="font-poppins bg-gray-50 min-h-screen">
       {/* Main Content */}
-      <main className="max-w-sm mx-auto px-4 py-6">
-        <div className="bg-white rounded border border-gray-300 p-6">
-          <h1 className="text-2xl font-medium text-gray-900 mb-4">Forgot Password</h1>
-          <p className="text-sm text-gray-600 mb-4">
+      <main className="max-w-sm md:max-w-md lg:max-w-lg mx-auto px-4 py-6">
+        <div className="bg-white rounded border border-gray-300 p-6 md:p-8 lg:p-10">
+          <h1 className="text-2xl md:text-3xl lg:text-3xl font-medium text-gray-900 mb-4 md:mb-6">Password assistance</h1>
+          <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
             Enter the email address associated with your Sanich Farms account.
           </p>
           
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4 lg:space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
                 Email
               </label>
               <input
@@ -77,7 +77,7 @@ const ForgotPassword = () => {
                 name="email"
                 value={email}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
                 placeholder="Enter your email"
                 required
                 disabled={loading}
@@ -87,13 +87,13 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Sending...' : 'Continue'}
             </button>
           </form>
 
-          <div className="text-xs text-gray-600 mt-4">
+          <div className="text-xs md:text-sm text-gray-600 mt-4 md:mt-6">
             Has your email address changed?{' '}
             <Link to="/contact" className="text-blue-600 hover:text-green-600 hover:underline">
               Contact us
@@ -102,10 +102,10 @@ const ForgotPassword = () => {
         </div>
 
         {/* Back to Sign In */}
-        <div className="mt-4 text-center">
+        <div className="mt-4 md:mt-6 text-center">
           <Link 
             to="/login" 
-            className="text-sm text-blue-600 hover:text-green-600 hover:underline"
+            className="text-sm md:text-base text-blue-600 hover:text-green-600 hover:underline"
           >
             ← Back to sign in
           </Link>

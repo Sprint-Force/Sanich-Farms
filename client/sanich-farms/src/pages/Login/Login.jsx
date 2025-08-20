@@ -148,13 +148,13 @@ const Login = () => {
   return (
     <div className="font-poppins bg-gray-50 min-h-screen">
       {/* Main Content */}
-      <main className="max-w-sm mx-auto px-4 py-6">
-        <div className="bg-white rounded border border-gray-300 p-6">
-          <h1 className="text-2xl font-medium text-gray-900 mb-4">Login</h1>
+      <main className="max-w-sm md:max-w-md lg:max-w-lg mx-auto px-4 py-6">
+        <div className="bg-white rounded border border-gray-300 p-6 md:p-8 lg:p-10">
+          <h1 className="text-2xl md:text-3xl lg:text-3xl font-medium text-gray-900 mb-4 md:mb-6">Login</h1>
           
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4 lg:space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
                 Email
               </label>
               <input
@@ -163,7 +163,7 @@ const Login = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
                 placeholder="you@example.com"
                 required
                 disabled={loading}
@@ -171,7 +171,7 @@ const Login = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
                 Password
               </label>
               <div className="relative">
@@ -181,7 +181,7 @@ const Login = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                  className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 md:pr-12 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
                   placeholder="********"
                   required
                   disabled={loading}
@@ -189,7 +189,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
                   disabled={loading}
                 >
                   {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
@@ -200,7 +200,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading && <ButtonSpinner />}
               {loading ? 'Signing in...' : 'Login'}

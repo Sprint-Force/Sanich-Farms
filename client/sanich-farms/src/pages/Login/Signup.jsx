@@ -108,13 +108,13 @@ const Signup = () => {
   return (
     <div className="font-poppins bg-gray-50 min-h-screen">
       {/* Main Content */}
-      <main className="max-w-sm mx-auto px-4 py-6">
-        <div className="bg-white rounded border border-gray-300 p-6">
-          <h1 className="text-2xl font-medium text-gray-900 mb-4">Create Account</h1>
+      <main className="max-w-sm md:max-w-md lg:max-w-lg mx-auto px-4 py-6">
+        <div className="bg-white rounded border border-gray-300 p-6 md:p-8 lg:p-10">
+          <h1 className="text-2xl md:text-3xl lg:text-3xl font-medium text-gray-900 mb-4 md:mb-6">Create account</h1>
           
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4 lg:space-y-5">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
                 Full Name
               </label>
               <input
@@ -123,7 +123,7 @@ const Signup = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
                 placeholder="John Doe"
                 required
                 disabled={loading}
@@ -131,7 +131,7 @@ const Signup = () => {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
                 Email
               </label>
               <input
@@ -140,7 +140,7 @@ const Signup = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
                 placeholder="you@example.com"
                 required
                 disabled={loading}
@@ -148,7 +148,7 @@ const Signup = () => {
             </div>
 
             <div>
-              <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="phone_number" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
                 Phone Number
               </label>
               <input
@@ -157,7 +157,7 @@ const Signup = () => {
                 name="phone_number"
                 value={formData.phone_number}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
                 placeholder="e.g., 055 123 4567"
                 required
                 disabled={loading}
@@ -165,7 +165,7 @@ const Signup = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
                 Password
               </label>
               <div className="relative">
@@ -175,7 +175,7 @@ const Signup = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                  className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
                   placeholder="********"
                   required
                   disabled={loading}
@@ -192,7 +192,7 @@ const Signup = () => {
             </div>
 
             <div>
-              <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="confirm_password" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
                 Confirm Password
               </label>
               <div className="relative">
@@ -202,7 +202,7 @@ const Signup = () => {
                   name="confirm_password"
                   value={formData.confirm_password}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded text-sm focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                  className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
                   placeholder="********"
                   required
                   disabled={loading}
@@ -221,14 +221,14 @@ const Signup = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading && <ButtonSpinner />}
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
 
-          <div className="text-xs text-gray-600 mt-4">
+          <div className="text-xs md:text-sm text-gray-600 mt-4 md:mt-6">
             By creating an account, you agree to Sanich Farms{' '}
             <Link to="/terms" className="text-blue-600 hover:text-green-600 hover:underline">
               Terms & Conditions
@@ -242,7 +242,7 @@ const Signup = () => {
         </div>
 
         {/* Divider */}
-        <div className="mt-6 mb-4 text-center text-xs text-gray-500">
+        <div className="mt-6 mb-4 text-center text-xs md:text-sm text-gray-500">
           <span className="bg-gray-50 px-2">Already have an account?</span>
           <hr className="border-gray-300 -mt-2" />
         </div>
@@ -250,7 +250,7 @@ const Signup = () => {
         {/* Sign In Button */}
         <Link
           to="/login"
-          className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 px-4 rounded text-sm font-medium text-center border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium text-center border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
         >
           Login
         </Link>
