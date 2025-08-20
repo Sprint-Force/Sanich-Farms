@@ -8,21 +8,21 @@ dotenv.config();
 cloudinary.config();
 
 export const uploadToCloudinary = (fileBuffer, folder) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { resource_type: "auto", folder },
+      { folder },
       (error, result) => {
-        if (error) {
-          console.error("Cloudinary upload error:", error);
-          resolve(null); // fail gracefully
-        } else {
-          resolve(result?.secure_url || null);
-        }
+        if (error) reject(error);   
+        else resolve({
+          url: result.secure_url,   
+          id: result.public_id,     
+        });
       }
     );
     stream.end(fileBuffer);
   });
 };
+
 
 export default cloudinary;
 
