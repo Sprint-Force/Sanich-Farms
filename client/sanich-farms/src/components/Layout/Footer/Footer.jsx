@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaFacebookF, FaInstagram, FaYoutube, FaTiktok } from "react-icons/fa";
 import { FiMail, FiPhoneCall, FiMapPin } from 'react-icons/fi';
-import axios from 'axios'; // Import axios for API calls
 import { ClickableEmail, ClickablePhone } from '../../../utils/contactUtils';
 
 const Footer = () => {
@@ -11,9 +10,6 @@ const Footer = () => {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Define your backend API URL for newsletter subscription
-  const NEWSLETTER_API_URL = 'https://sanich-farms-tnac.onrender.com/api/newsletter/subscribe';
-
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -21,10 +17,10 @@ const Footer = () => {
     setIsError(false);
 
     try {
-      // Make an API call to your backend
-      const response = await axios.post(NEWSLETTER_API_URL, { email });
+      // Simulate newsletter subscription for MVP
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Assuming the API returns a success message
+      // Mock success response
       setMessage("Thank you for subscribing to our newsletter!");
       setEmail(''); // Clear the input field on success
     } catch (error) {
@@ -111,8 +107,8 @@ const Footer = () => {
         <div>
           <h2 className="text-lg font-bold text-white mb-5">My Account</h2>
           <ul className="space-y-3 text-gray-400">
-            <li><Link to="/my-account" className="hover:text-green-400 transition-colors duration-200">My Account</Link></li>
-            <li><Link to="/order-history" className="hover:text-green-400 transition-colors duration-200">Order History</Link></li>
+            <li><Link to="/dashboard" className="hover:text-green-400 transition-colors duration-200">My Account</Link></li>
+            <li><Link to="/dashboard/orders" className="hover:text-green-400 transition-colors duration-200">Order History</Link></li>
             <li><Link to="/cart" className="hover:text-green-400 transition-colors duration-200">Shopping Cart</Link></li>
             <li><Link to="/wishlist" className="hover:text-green-400 transition-colors duration-200">Wishlist</Link></li>
           </ul>
