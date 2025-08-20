@@ -16,6 +16,7 @@ import {
   FiMapPin,
   FiPhone
 } from 'react-icons/fi';
+import { ClickableEmail, ClickablePhone } from '../../utils/contactUtils';
 
 const UserMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -454,11 +455,11 @@ const UserMgmt = () => {
                   <div className="space-y-2 text-sm">
                     <p className="flex items-center gap-2">
                       <FiMail className="w-4 h-4 text-gray-400" />
-                      {selectedUser.email}
+                      <ClickableEmail email={selectedUser.email} className="text-gray-900 hover:text-green-600" />
                     </p>
                     <p className="flex items-center gap-2">
                       <FiPhone className="w-4 h-4 text-gray-400" />
-                      {selectedUser.phone}
+                      <ClickablePhone phone={selectedUser.phone} className="text-gray-900 hover:text-green-600" />
                     </p>
                     <p className="flex items-center gap-2">
                       <FiMapPin className="w-4 h-4 text-gray-400" />

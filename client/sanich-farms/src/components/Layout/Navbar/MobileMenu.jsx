@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiX, FiChevronRight, FiPhoneCall } from 'react-icons/fi';
 import logo from '../../../assets/logo.png';
+import { ClickablePhone } from '../../../utils/contactUtils';
 
 // Mobile Menu Component
 const MobileMenu = ({ 
@@ -133,7 +134,10 @@ const MobileMenu = ({
             {/* Contact Info */}
             <div className="flex items-center justify-center gap-2 mt-4 text-gray-700">
               <FiPhoneCall className="text-green-700 text-xl" />
-              <span className="text-base font-semibold">0243826137</span>
+              <ClickablePhone 
+                phone="0243826137" 
+                className="text-base font-semibold text-gray-700 hover:text-green-600" 
+              />
             </div>
           </nav>
         </div>

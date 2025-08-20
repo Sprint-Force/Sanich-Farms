@@ -8,6 +8,7 @@ import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useNavbar } from './hooks/useNavbar';
 import { getTypographyClasses } from './config/typography';
 import TopBar from './components/TopBar';
+import { ClickablePhone } from '../../../utils/contactUtils';
 import SearchBar from './components/SearchBar';
 import MobileNavbar from './components/MobileNavbar';
 import DesktopNavbar from './components/DesktopNavbar';
@@ -183,7 +184,10 @@ const Navbar = forwardRef(() => {
         </div>
         <div className="flex items-center gap-2 text-white">
           <FiPhoneCall className="text-white text-xl" />
-          <span className="text-base font-semibold">0243826137</span>
+          <ClickablePhone 
+            phone="0243826137" 
+            className="text-base font-semibold text-white hover:text-green-300" 
+          />
         </div>
       </nav>
 
@@ -277,7 +281,10 @@ const Navbar = forwardRef(() => {
               </div>
               <div className={`flex items-center justify-center gap-2 mt-4 text-gray-700`}>
                 <FiPhoneCall className="text-green-700 text-xl" />
-                <span className={`${getTypographyClasses('contact')}`}>0243826137</span>
+                <ClickablePhone 
+                  phone="0243826137" 
+                  className={`${getTypographyClasses('contact')} text-gray-700 hover:text-green-600`} 
+                />
               </div>
             </nav>
           </div>
