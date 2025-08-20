@@ -27,6 +27,14 @@ const Login = () => {
   // Redirect already authenticated users
   useEffect(() => {
     if (isAuthenticated && user) {
+      // Check if we're coming from admin logout
+      const wasAdminLogout = location.pathname === '/login' && location.state?.fromAdminLogout;
+      
+      // If coming from admin logout, don't auto-redirect even if user has admin role
+      if (wasAdminLogout) {
+        return;
+      }
+
       if (user.role === 'admin') {
         navigate('/admin', { replace: true });
       } else {
@@ -34,7 +42,7 @@ const Login = () => {
         navigate(from, { replace: true });
       }
     }
-  }, [isAuthenticated, user, navigate, location.state]);
+  }, [isAuthenticated, user, navigate, location.state, location.pathname]);
 
   // This handler updates the state as the user types in the input fields.
   const handleChange = (e) => {
