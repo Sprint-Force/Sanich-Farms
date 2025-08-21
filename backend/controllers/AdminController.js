@@ -2,7 +2,8 @@ import { Product } from "../models/Product.js";
 import { Service } from "../models/Service.js";
 import { Booking } from "../models/Booking.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
-import { Order, Payment } from "../models";
+import { Order } from "../models/Order.js";
+import { Payment } from "../models/Payment.js";
 import axios from "axios";
 
 // PRODUCT MANAGEMENT API

@@ -18,6 +18,7 @@ orderRoutes.get('/:id', getSingleOrder);
 orderRoutes.use(isAdmin);
 
 // Protected routes
+orderRoutes.get('/all', getAllOrders);
 orderRoutes.patch('/:id/cancel', cancelOrder);
 orderRoutes.patch('/:id/status', updateOrderStatus)
-orderRoutes.get('/all', getAllOrders);
+
