@@ -8,6 +8,7 @@ import {
   FiMail, 
   FiX, 
   FiUser,
+  FiUsers,
   FiShoppingBag,
   FiCalendar,
   FiActivity,
@@ -337,7 +338,7 @@ const UserMgmt = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    GH₵{customer.totalSpent.toFixed(2)}
+                    GH₵{Number(customer?.totalSpent || 0).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(customer.status)}`}>
