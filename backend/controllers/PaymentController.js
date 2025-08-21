@@ -32,6 +32,7 @@ export const initiatePayment =  async (req, res) => {
             {
                 email: order.email, 
                 amount: Math.round(amount * 100), // in kobo
+                callback_url: `${process.env.PAYSTACK_CALLBACK_URL}/payment-success`,
                 metadata: {
                 order_id: order.id,
                 payment_id: payment.id,
