@@ -156,8 +156,8 @@ const ThankYouPage = () => {
               Need help? Contact our support team
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-sm text-gray-500">
-              <span>📧 support@sanichfarms.com</span>
-              <span>📞 +233 XX XXX XXXX</span>
+              <span>📧 Sanichfarms@gmail.com</span>
+              <span>📞 +233 24 382 6137</span>
               <span>🕒 Mon-Fri 8AM-6PM</span>
             </div>
           </div>
