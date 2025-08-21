@@ -62,9 +62,11 @@ const ProductMgmt = () => {
   };
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
-    return matchesSearch && matchesCategory;
+  const name = (product && product.name) ? String(product.name) : '';
+  const category = (product && product.category) ? String(product.category) : '';
+  const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesCategory = filterCategory === 'all' || category === filterCategory;
+  return matchesSearch && matchesCategory;
   });
 
   const handleInputChange = (e) => {
@@ -96,23 +98,23 @@ const ProductMgmt = () => {
     if (product) {
       setEditingProduct(product);
       setFormData({
-        name: product.name,
-        category: product.category,
-        price: product.price.toString(),
-        originalPrice: product.originalPrice.toString(),
-        discount: product.discount.toString(),
-        stock: product.stock.toString(),
-        description: product.description,
-        tags: product.tags.join(', '),
-        featured: product.featured,
-        active: product.active,
-        seasonal: product.seasonal,
-        bulkAvailable: product.bulkAvailable,
-        bulkMinQuantity: product.bulkMinQuantity.toString(),
-        bulkDiscount: product.bulkDiscount.toString(),
-        seasonStartDate: product.seasonStartDate,
-        seasonEndDate: product.seasonEndDate,
-        images: product.images
+  name: product.name || '',
+  category: product.category || '',
+  price: product.price != null ? String(product.price) : '',
+  originalPrice: product.originalPrice != null ? String(product.originalPrice) : '',
+  discount: product.discount != null ? String(product.discount) : '',
+  stock: product.stock != null ? String(product.stock) : '',
+  description: product.description || '',
+  tags: Array.isArray(product.tags) ? product.tags.join(', ') : (product.tags ? String(product.tags) : ''),
+  featured: !!product.featured,
+  active: product.active == null ? true : !!product.active,
+  seasonal: !!product.seasonal,
+  bulkAvailable: !!product.bulkAvailable,
+  bulkMinQuantity: product.bulkMinQuantity != null ? String(product.bulkMinQuantity) : '',
+  bulkDiscount: product.bulkDiscount != null ? String(product.bulkDiscount) : '',
+  seasonStartDate: product.seasonStartDate || '',
+  seasonEndDate: product.seasonEndDate || '',
+  images: Array.isArray(product.images) ? product.images : (product.images ? [product.images] : [])
       });
     } else {
       setEditingProduct(null);
@@ -318,8 +320,8 @@ const ProductMgmt = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <img
-                        src={product.images[0]}
-                        alt={product.name}
+                            src={(product && product.images && product.images[0]) ? product.images[0] : ''}
+                            alt={product && product.name ? product.name : 'product'}
                         className="w-10 h-10 rounded-lg object-cover"
                       />
                       <div className="ml-4">
@@ -333,21 +335,21 @@ const ProductMgmt = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>
-                      <span className="font-medium">GH₵{product.price}</span>
-                      {product.discount > 0 && (
+                      <span className="font-medium">GH₵{product && product.price != null ? product.price : '0.00'}</span>
+                      {(product && product.discount > 0) && (
                         <div className="text-xs text-gray-500">
-                          <span className="line-through">GH₵{product.originalPrice}</span>
+                          <span className="line-through">GH₵{product.originalPrice != null ? product.originalPrice : ''}</span>
                           <span className="text-red-500 ml-1">(-{product.discount}%)</span>
                         </div>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {product.stock}
+                    {product && product.stock != null ? product.stock : 0}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(product.status)}`}>
-                      {product.status}
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(product && product.status ? product.status : '')}`}>
+                      {product && product.status ? product.status : 'Unknown'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
