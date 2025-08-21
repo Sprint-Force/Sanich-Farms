@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiFilter, FiChevronDown, FiX } from 'react-icons/fi';
 import ProductCard from '../components/UI/ProductCard';
 import { PageSpinner } from '../components/UI/LoadingSpinner';
-import axios from 'axios'; // Import axios for API calls
+import { productsAPI } from '../services/api';
 
 const ShopPage = () => {
   const location = useLocation();
@@ -27,38 +27,31 @@ const ShopPage = () => {
   // State for mobile filter menu visibility
   const [isMobileFilterMenuOpen, setIsMobileFilterMenuOpen] = useState(false);
 
-  // Define API URL
-  const BASE_URL = 'https://sanich-farms-tnac.onrender.com/api/products';
-
-  // Function to fetch products from the API
+  // Function to fetch products from the API using centralized client
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // Build query parameters based on current state
       const params = {};
-      if (selectedCategory !== 'All Categories') {
-        params.category = selectedCategory.toLowerCase();
-      }
+      if (selectedCategory !== 'All Categories') params.category = selectedCategory.toLowerCase();
       if (selectedPriceRange !== 'All Prices') {
         const [min, max] = selectedPriceRange.split('-').map(Number);
         params.minPrice = min;
         params.maxPrice = max;
       }
-      if (selectedRating !== 'All Ratings') {
-        params.minRating = parseInt(selectedRating.split(' ')[0]);
-      }
-      // Pass sort and limit parameters
+      if (selectedRating !== 'All Ratings') params.minRating = parseInt(selectedRating.split(' ')[0]);
       params.sort = sortBy;
       params.limit = showCount;
 
-      const response = await axios.get(BASE_URL, { params });
-      setProducts(response.data.products);
-      setTotalProducts(response.data.totalCount || response.data.products.length); // Use totalCount if provided, otherwise fallback
+      const response = await productsAPI.getAll(params);
+      // response may be an array or an object with { products, totalCount }
+      const productsData = Array.isArray(response) ? response : (response?.products || response?.data || []);
+      setProducts(productsData);
+      setTotalProducts(response?.totalCount || productsData.length || 0);
     } catch (err) {
-      console.error("Failed to fetch products:", err);
-      setError("Failed to load products. Please try again later.");
-      setProducts([]); // Clear products on error
+      console.error('Failed to fetch products:', err);
+      setError('Failed to load products. Please try again later.');
+      setProducts([]);
       setTotalProducts(0);
     } finally {
       setLoading(false);
