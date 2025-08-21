@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FiUpload, 
   FiSave, 
@@ -17,93 +17,97 @@ import {
   FiSettings
 } from 'react-icons/fi';
 
+import apiClient from '../../services/api';
+
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('store');
   const [showApiKey, setShowApiKey] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
   const [showAddRole, setShowAddRole] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  // Store Settings State
+  // Store Settings State (empty defaults until loaded from API)
   const [storeSettings, setStoreSettings] = useState({
-    name: 'Sanich Farms',
-    tagline: 'Fresh Agricultural Products & Services',
-    email: 'contact@sanichfarms.com',
-    phone: '+233 24 123 4567',
-    address: 'Accra, Ghana',
+    name: '',
+    tagline: '',
+    email: '',
+    phone: '',
+    address: '',
     logo: null,
-    description: 'We provide high-quality agricultural products and farming services to help you grow better.'
+    description: ''
   });
 
   // Payment Settings State
   const [paymentSettings, setPaymentSettings] = useState({
-    paypal: {
-      enabled: true,
-      clientId: 'your_paypal_client_id',
-      secret: 'your_paypal_secret',
-      sandbox: true
-    },
-    stripe: {
-      enabled: false,
-      publishableKey: 'pk_test_...',
-      secretKey: 'sk_test_...',
-      webhookSecret: 'whsec_...'
-    },
-    momo: {
-      enabled: true,
-      merchantId: 'MOMO123456',
-      apiKey: 'momo_api_key_here'
-    }
+    paypal: { enabled: false, clientId: '', secret: '', sandbox: true },
+    stripe: { enabled: false, publishableKey: '', secretKey: '', webhookSecret: '' },
+    momo: { enabled: false, merchantId: '', apiKey: '' }
   });
 
   // Shipping Settings State
-  const [shippingRates, setShippingRates] = useState([
-    { id: 1, zone: 'Greater Accra', rate: 10.00, freeShippingThreshold: 100.00 },
-    { id: 2, zone: 'Ashanti Region', rate: 15.00, freeShippingThreshold: 150.00 },
-    { id: 3, zone: 'Northern Regions', rate: 25.00, freeShippingThreshold: 200.00 },
-    { id: 4, zone: 'Other Regions', rate: 20.00, freeShippingThreshold: 180.00 }
-  ]);
+  const [shippingRates, setShippingRates] = useState([]);
 
   // Tax Settings State
-  const [taxSettings, setTaxSettings] = useState({
-    enableTax: true,
-    defaultRate: 12.5,
-    includeShipping: false,
-    rules: [
-      { id: 1, name: 'VAT', rate: 12.5, applicable: 'All Products' },
-      { id: 2, name: 'Luxury Tax', rate: 5.0, applicable: 'Premium Items' }
-    ]
-  });
+  const [taxSettings, setTaxSettings] = useState({ enableTax: false, defaultRate: 0, includeShipping: false, rules: [] });
 
   // Admin Roles State
-  const [adminRoles, setAdminRoles] = useState([
-    {
-      id: 1,
-      name: 'Super Admin',
-      permissions: ['all'],
-      users: ['admin@sanichfarms.com'],
-      description: 'Full access to all features'
-    },
-    {
-      id: 2,
-      name: 'Store Manager',
-      permissions: ['products', 'orders', 'customers'],
-      users: ['manager@sanichfarms.com'],
-      description: 'Manage products, orders and customers'
-    },
-    {
-      id: 3,
-      name: 'Content Editor',
-      permissions: ['products', 'content'],
-      users: ['editor@sanichfarms.com'],
-      description: 'Edit products and content'
-    }
-  ]);
+  const [adminRoles, setAdminRoles] = useState([]);
 
   const [newRole, setNewRole] = useState({
     name: '',
     permissions: [],
     description: ''
   });
+
+  // Load settings from server on mount
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await apiClient.get('/settings');
+        if (!mounted) return;
+        const data = res?.data || res || {};
+        if (data.storeSettings) setStoreSettings(data.storeSettings);
+        if (data.paymentSettings) setPaymentSettings(data.paymentSettings);
+        if (data.shippingRates) setShippingRates(data.shippingRates);
+        if (data.taxSettings) setTaxSettings(data.taxSettings);
+        if (data.adminRoles) setAdminRoles(data.adminRoles);
+      } catch (err) {
+        console.warn('Failed to load settings from API', err?.response?.data || err.message || err);
+        if (!mounted) return;
+        setError('Failed to load settings from server');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  // Auto-clear messages
+  useEffect(() => {
+    if (error || success) {
+      const t = setTimeout(() => { setError(null); setSuccess(null); }, 5000);
+      return () => clearTimeout(t);
+    }
+  }, [error, success]);
+
+  const saveAllSettings = async () => {
+    setLoading(true);
+    try {
+      const payload = { storeSettings, paymentSettings, shippingRates, taxSettings, adminRoles };
+      await apiClient.put('/settings', payload);
+      setSuccess('Settings saved successfully');
+    } catch (err) {
+      console.warn('Failed to save settings', err?.response?.data || err.message || err);
+      setError('Failed to save settings to server');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const allPermissions = [
     'products', 'orders', 'customers', 'analytics', 'settings', 'content', 'payments', 'shipping'
@@ -129,13 +133,11 @@ const Settings = () => {
   };
 
   const saveStoreSettings = () => {
-    console.log('Saving store settings:', storeSettings);
-    // API call to save settings
+  saveAllSettings();
   };
 
   const savePaymentSettings = () => {
-    console.log('Saving payment settings:', paymentSettings);
-    // API call to save payment settings
+  saveAllSettings();
   };
 
   const addShippingRate = () => {
@@ -196,14 +198,19 @@ const Settings = () => {
         ...newRole,
         users: []
       };
-      setAdminRoles([...adminRoles, role]);
+  const updated = [...adminRoles, role];
+  setAdminRoles(updated);
+  // persist
+  saveAllSettings();
       setNewRole({ name: '', permissions: [], description: '' });
       setShowAddRole(false);
     }
   };
 
   const deleteRole = (id) => {
-    setAdminRoles(prev => prev.filter(role => role.id !== id));
+  const updated = adminRoles.filter(role => role.id !== id);
+  setAdminRoles(updated);
+  saveAllSettings();
   };
 
   const togglePermission = (permission) => {
@@ -226,15 +233,11 @@ const Settings = () => {
   };
 
   const saveEditedRole = () => {
-    setAdminRoles(prev =>
-      prev.map(role =>
-        role.id === editingRole
-          ? { ...role, ...newRole }
-          : role
-      )
-    );
-    setEditingRole(null);
-    setNewRole({ name: '', permissions: [], description: '' });
+  const updated = adminRoles.map(role => role.id === editingRole ? { ...role, ...newRole } : role);
+  setAdminRoles(updated);
+  saveAllSettings();
+  setEditingRole(null);
+  setNewRole({ name: '', permissions: [], description: '' });
   };
 
   const cancelEditing = () => {
@@ -249,6 +252,15 @@ const Settings = () => {
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="text-gray-600 mt-1">Configure your store settings and preferences</p>
       </div>
+
+      {/* Status banner */}
+      {(loading || error || success) && (
+        <div className={`mb-4 p-3 rounded-md ${error ? 'bg-red-50 border border-red-200 text-red-700' : success ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-yellow-50 border border-yellow-200 text-yellow-700'}`}>
+          {loading && <div className="text-sm">Saving settings... Please wait.</div>}
+          {error && <div className="text-sm">{error}</div>}
+          {success && <div className="text-sm">{success}</div>}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">

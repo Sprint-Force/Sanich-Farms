@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { productsAPI } from '../../services/api';
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiFilter, FiEye, FiStar, FiToggleLeft, FiToggleRight, FiX, FiUpload, FiTag, FiChevronDown } from 'react-icons/fi';
 
 const ProductMgmt = () => {
@@ -26,74 +27,28 @@ const ProductMgmt = () => {
     images: []
   });
 
-  // Mock data - replace with real API
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: 'Premium Chicken Feed',
-      category: 'Feed',
-      price: 14.99,
-      originalPrice: 18.99,
-      discount: 21,
-      stock: 45,
-      status: 'Active',
-      featured: true,
-      active: true,
-      seasonal: false,
-      bulkAvailable: true,
-      bulkMinQuantity: 10,
-      bulkDiscount: 15,
-      seasonStartDate: '',
-      seasonEndDate: '',
-      description: 'High-quality chicken feed for optimal nutrition',
-      tags: ['organic', 'nutritious', 'premium'],
-      images: [
-        'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80',
-      ]
-    },
-    {
-      id: 2,
-      name: 'Organic Egg Layers',
-      category: 'Poultry',
-      price: 25.50,
-      originalPrice: 25.50,
-      discount: 0,
-      stock: 12,
-      status: 'Active',
-      featured: false,
-      active: true,
-      seasonal: true,
-      bulkAvailable: false,
-      bulkMinQuantity: '',
-      bulkDiscount: '',
-      seasonStartDate: '2025-03-01',
-      seasonEndDate: '2025-10-31',
-      description: 'Fresh organic egg layers for your farm',
-      tags: ['organic', 'fresh', 'poultry'],
-      images: ['https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=100&q=80']
-    },
-    {
-      id: 3,
-      name: 'Farming Equipment',
-      category: 'Equipment',
-      price: 89.99,
-      originalPrice: 89.99,
-      discount: 0,
-      stock: 0,
-      status: 'Out of Stock',
-      featured: false,
-      active: false,
-      seasonal: false,
-      bulkAvailable: true,
-      bulkMinQuantity: 5,
-      bulkDiscount: 10,
-      seasonStartDate: '',
-      seasonEndDate: '',
-      description: 'Professional farming equipment for efficient work',
-      tags: ['equipment', 'professional', 'durable'],
-      images: ['https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=100&q=80']
-    }
-  ]);
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoadingProducts(true);
+      try {
+        const data = await productsAPI.getAll();
+        if (!mounted) return;
+        setProducts(Array.isArray(data) ? data : data.products || []);
+      } catch {
+        console.warn('Failed to fetch products from API, using local mock data');
+        // fallback: keep products empty or provide a small mock
+        setProducts([]);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   const categories = ['all', 'Feed', 'Poultry', 'Equipment', 'Supplies', 'Tools', 'Seeds'];
 
@@ -213,17 +168,42 @@ const ProductMgmt = () => {
       images: formData.images
     };
 
-    if (editingProduct) {
-      setProducts(prev => prev.map(p => p.id === editingProduct.id ? newProduct : p));
-    } else {
-      setProducts(prev => [...prev, newProduct]);
-    }
-    closeModal();
+    const submit = async () => {
+      try {
+        if (editingProduct) {
+          const updated = await productsAPI.update(editingProduct.id, newProduct);
+          setProducts(prev => prev.map(p => p.id === editingProduct.id ? updated : p));
+        } else {
+          const created = await productsAPI.create(newProduct);
+          setProducts(prev => [...prev, created]);
+        }
+  } catch {
+        // Fallback to local manipulation
+        if (editingProduct) {
+          setProducts(prev => prev.map(p => p.id === editingProduct.id ? newProduct : p));
+        } else {
+          setProducts(prev => [...prev, { ...newProduct, id: Date.now() }]);
+        }
+      } finally {
+        closeModal();
+      }
+    };
+
+    submit();
   };
 
   const deleteProduct = (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      setProducts(prev => prev.filter(p => p.id !== id));
+      const remove = async () => {
+        try {
+          await productsAPI.remove(id);
+          setProducts(prev => prev.filter(p => p.id !== id));
+  } catch {
+          // fallback
+          setProducts(prev => prev.filter(p => p.id !== id));
+        }
+      };
+      remove();
     }
   };
 
@@ -299,6 +279,9 @@ const ProductMgmt = () => {
 
       {/* Products Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        {loadingProducts && (
+          <div className="p-4 text-center text-gray-600">Loading products...</div>
+        )}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

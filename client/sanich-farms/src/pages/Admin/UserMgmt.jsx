@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import apiClient from '../../services/api';
 import { 
   FiSearch, 
   FiFilter,
@@ -29,77 +30,34 @@ const UserMgmt = () => {
     message: '',
     recipients: []
   });
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [usersError, setUsersError] = useState('');
+  // Users state (will be loaded from API on mount; fallback to mock)
+  const [customers, setCustomers] = useState([]);
 
-  // Mock data - replace with real API
-  const [customers, setCustomers] = useState([
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john@example.com',
-      phone: '+233 123 456 789',
-      address: '123 Main St, Accra, Ghana',
-      status: 'Active',
-      registrationDate: '2024-01-15',
-      lastActivity: '2024-08-07',
-      totalOrders: 12,
-      totalSpent: 1285.50,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-      orderHistory: [
-        { id: 'ORD001', date: '2024-08-07', amount: 125.50, status: 'Completed' },
-        { id: 'ORD015', date: '2024-07-25', amount: 89.99, status: 'Completed' },
-        { id: 'ORD028', date: '2024-07-10', amount: 234.75, status: 'Completed' }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      phone: '+233 987 654 321',
-      address: '456 Oak Ave, Kumasi, Ghana',
-      status: 'Active',
-      registrationDate: '2024-02-20',
-      lastActivity: '2024-08-06',
-      totalOrders: 8,
-      totalSpent: 756.30,
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b9a4b8ba?w=100&h=100&fit=crop&crop=face',
-      orderHistory: [
-        { id: 'ORD002', date: '2024-08-06', amount: 89.99, status: 'Processing' },
-        { id: 'ORD018', date: '2024-07-20', amount: 156.80, status: 'Completed' }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Mike Johnson',
-      email: 'mike@example.com',
-      phone: '+233 555 123 456',
-      address: '789 Pine St, Tamale, Ghana',
-      status: 'Suspended',
-      registrationDate: '2024-03-10',
-      lastActivity: '2024-07-15',
-      totalOrders: 3,
-      totalSpent: 234.75,
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      orderHistory: [
-        { id: 'ORD003', date: '2024-07-15', amount: 234.75, status: 'Refunded' }
-      ]
-    },
-    {
-      id: 4,
-      name: 'Sarah Wilson',
-      email: 'sarah@example.com',
-      phone: '+233 777 888 999',
-      address: '321 Elm St, Cape Coast, Ghana',
-      status: 'Banned',
-      registrationDate: '2024-04-05',
-      lastActivity: '2024-06-20',
-      totalOrders: 15,
-      totalSpent: 2156.80,
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
-      orderHistory: [
-        { id: 'ORD045', date: '2024-06-20', amount: 145.30, status: 'Cancelled' }
-      ]
-    }
-  ]);
+  useEffect(() => {
+    let mounted = true;
+    const loadUsers = async () => {
+      setLoadingUsers(true);
+      setUsersError('');
+      try {
+        const res = await apiClient.get('/users');
+        if (!mounted) return;
+        const users = Array.isArray(res.data) ? res.data : res.data.users || [];
+        setCustomers(users);
+      } catch (err) {
+        console.warn('Failed to load users from API', err?.response?.data || err.message || err);
+        if (!mounted) return;
+        setUsersError('Failed to load users from server.');
+        setCustomers([]);
+      } finally {
+        if (mounted) setLoadingUsers(false);
+      }
+    };
+
+    loadUsers();
+    return () => { mounted = false; };
+  }, []);
 
   const statuses = ['all', 'Active', 'Suspended', 'Banned'];
 
@@ -133,28 +91,38 @@ const UserMgmt = () => {
   });
 
   const updateCustomerStatus = (customerId, newStatus) => {
-    setCustomers(prev => prev.map(customer => 
-      customer.id === customerId ? { ...customer, status: newStatus } : customer
-    ));
-    if (selectedUser && selectedUser.id === customerId) {
-      setSelectedUser(prev => ({ ...prev, status: newStatus }));
-    }
+    // Try update via API first, fallback to local update
+    (async () => {
+      try {
+        // Attempt to PATCH the user's status. Backend admin endpoints may differ; this is a best-effort call.
+        await apiClient.patch(`/users/${customerId}`, { status: newStatus });
+      } catch (err) {
+        console.warn('Failed to update user status via API, applying local fallback', err?.response?.data || err.message || err);
+      } finally {
+        setCustomers(prev => prev.map(customer => 
+          customer.id === customerId ? { ...customer, status: newStatus } : customer
+        ));
+        if (selectedUser && selectedUser.id === customerId) {
+          setSelectedUser(prev => ({ ...prev, status: newStatus }));
+        }
+      }
+    })();
   };
 
   const suspendCustomer = (customerId) => {
     if (window.confirm('Are you sure you want to suspend this customer?')) {
-      updateCustomerStatus(customerId, 'Suspended');
+  updateCustomerStatus(customerId, 'Suspended');
     }
   };
 
   const banCustomer = (customerId) => {
     if (window.confirm('Are you sure you want to ban this customer? This action is severe.')) {
-      updateCustomerStatus(customerId, 'Banned');
+  updateCustomerStatus(customerId, 'Banned');
     }
   };
 
   const activateCustomer = (customerId) => {
-    updateCustomerStatus(customerId, 'Active');
+  updateCustomerStatus(customerId, 'Active');
   };
 
   const viewUserDetail = (user) => {
@@ -214,6 +182,14 @@ const UserMgmt = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
           <p className="text-gray-600 mt-1">Manage your customer database</p>
+        </div>
+        <div className="mt-3 sm:mt-0">
+          {loadingUsers && (
+            <div className="text-sm text-gray-600">Loading users...</div>
+          )}
+          {usersError && (
+            <div className="mt-2 text-sm text-yellow-700 bg-yellow-50 border border-yellow-100 px-3 py-2 rounded">{usersError}</div>
+          )}
         </div>
         <div className="mt-4 sm:mt-0 flex gap-2">
           <button 

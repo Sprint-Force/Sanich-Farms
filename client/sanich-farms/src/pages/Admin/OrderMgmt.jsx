@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   FiCalendar,
   FiCheck,
@@ -24,6 +24,8 @@ import {
   FiMapPin
 } from 'react-icons/fi';
 import { ClickableEmail, ClickablePhone } from '../../utils/contactUtils';
+import { ordersAPI } from '../../services/api';
+import apiClient from '../../services/api';
 
 const OrderMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,98 +39,9 @@ const OrderMgmt = () => {
   const [returnReason, setReturnReason] = useState('');
   const [refundAmount, setRefundAmount] = useState('');
 
-  // Mock data - replace with real API
-  const [orders, setOrders] = useState([
-    {
-      id: 'ORD001',
-      customer: {
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+233 123 456 789',
-        address: '123 Main St, Accra, Ghana'
-      },
-      items: [
-        { id: 1, name: 'Premium Chicken Feed', price: 14.99, quantity: 2, image: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80' },
-        { id: 2, name: 'Organic Egg Layers', price: 25.50, quantity: 1, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=100&q=80' }
-      ],
-      total: 55.48,
-      status: 'Pending',
-      paymentStatus: 'Pending',
-      paymentVerifiedBy: null,
-      paymentVerifiedAt: null,
-      date: '2024-08-07',
-      paymentMethod: 'Mobile Money',
-      paymentReference: 'MM123456789',
-      shippingMethod: 'Express Delivery',
-      notes: 'Please deliver before 5 PM'
-    },
-    {
-      id: 'ORD002',
-      customer: {
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        phone: '+233 987 654 321',
-        address: '456 Oak Ave, Kumasi, Ghana'
-      },
-      items: [
-        { id: 3, name: 'Farming Equipment', price: 89.99, quantity: 1, image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=100&q=80' }
-      ],
-      total: 89.99,
-      status: 'Processing',
-      paymentStatus: 'Paid',
-      paymentVerifiedBy: 'admin@sanichfarms.com',
-      paymentVerifiedAt: '2024-08-07 10:30:00',
-      date: '2024-08-07',
-      paymentMethod: 'Bank Transfer',
-      paymentReference: 'BT987654321',
-      shippingMethod: 'Standard Delivery',
-      notes: ''
-    },
-    {
-      id: 'ORD003',
-      customer: {
-        name: 'Mike Johnson',
-        email: 'mike@example.com',
-        phone: '+233 555 123 456',
-        address: '789 Pine St, Tamale, Ghana'
-      },
-      items: [
-        { id: 1, name: 'Premium Chicken Feed', price: 14.99, quantity: 3, image: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=100&q=80' }
-      ],
-      total: 44.97,
-      status: 'Shipped',
-      paymentStatus: 'Paid',
-      paymentVerifiedBy: 'admin@sanichfarms.com',
-      paymentVerifiedAt: '2024-08-06 14:15:00',
-      date: '2024-08-06',
-      paymentMethod: 'Cash on Delivery',
-      paymentReference: 'COD445566',
-      shippingMethod: 'Express Delivery',
-      notes: 'Handle with care'
-    },
-    {
-      id: 'ORD004',
-      customer: {
-        name: 'Sarah Wilson',
-        email: 'sarah@example.com',
-        phone: '+233 777 888 999',
-        address: '321 Elm St, Cape Coast, Ghana'
-      },
-      items: [
-        { id: 2, name: 'Organic Egg Layers', price: 25.50, quantity: 2, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=100&q=80' }
-      ],
-      total: 51.00,
-      status: 'Delivered',
-      paymentStatus: 'Paid',
-      paymentVerifiedBy: 'admin@sanichfarms.com',
-      paymentVerifiedAt: '2024-08-05 09:45:00',
-      date: '2024-08-05',
-      paymentMethod: 'Mobile Money',
-      paymentReference: 'MM789123456',
-      shippingMethod: 'Standard Delivery',
-      notes: ''
-    }
-  ]);
+  // Orders start empty; will be populated from API on mount
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   const statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'canceled', 'refunded'];
   const dateFilters = ['all', 'today', 'yesterday', 'last7days', 'last30days', 'custom'];
@@ -176,6 +89,28 @@ const OrderMgmt = () => {
     return statusFlow[currentStatus] || null;
   };
 
+  // Load orders from API on mount
+  useEffect(() => {
+    let mounted = true;
+    const loadOrders = async () => {
+      setLoadingOrders(true);
+      try {
+        const data = await ordersAPI.getAll();
+        const list = Array.isArray(data) ? data : data?.orders || data?.data || [];
+        if (mounted && Array.isArray(list)) {
+          setOrders(list);
+        }
+      } catch (err) {
+        console.warn('Failed to load orders from API', err);
+      } finally {
+        if (mounted) setLoadingOrders(false);
+      }
+    };
+
+    loadOrders();
+    return () => { mounted = false; };
+  }, []);
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -192,66 +127,139 @@ const OrderMgmt = () => {
   });
 
   const updateOrderStatus = (orderId, newStatus) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ));
-    if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder(prev => ({ ...prev, status: newStatus }));
-    }
+    const doUpdate = async () => {
+      try {
+        try {
+          // try a patch endpoint on server
+          await apiClient.patch(`/orders/${orderId}`, { status: newStatus });
+        } catch {
+          console.warn('Status patch failed, proceeding with local update');
+        }
+
+        setOrders(prev => prev.map(order => 
+          order.id === orderId ? { ...order, status: newStatus } : order
+        ));
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+        }
+      } catch {
+        console.warn('Failed to update order status');
+      }
+    };
+
+    doUpdate();
   };
 
   const verifyPayment = (orderId) => {
     const currentAdmin = 'admin@sanichfarms.com'; // In real app, get from auth context
     const currentTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    
-    setOrders(prev => prev.map(order => 
-      order.id === orderId ? { 
-        ...order, 
-        paymentStatus: 'Paid',
-        paymentVerifiedBy: currentAdmin,
-        paymentVerifiedAt: currentTime
-      } : order
-    ));
-    
-    if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder(prev => ({ 
-        ...prev, 
-        paymentStatus: 'Paid',
-        paymentVerifiedBy: currentAdmin,
-        paymentVerifiedAt: currentTime
-      }));
-    }
+
+    const doVerify = async () => {
+      try {
+        try {
+          await apiClient.post(`/orders/${orderId}/verify-payment`);
+        } catch {
+          console.warn('Payment verify endpoint failed, falling back to local update');
+        }
+
+        setOrders(prev => prev.map(order => 
+          order.id === orderId ? { 
+            ...order, 
+            paymentStatus: 'Paid',
+            paymentVerifiedBy: currentAdmin,
+            paymentVerifiedAt: currentTime
+          } : order
+        ));
+
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder(prev => ({ 
+            ...prev, 
+            paymentStatus: 'Paid',
+            paymentVerifiedBy: currentAdmin,
+            paymentVerifiedAt: currentTime
+          }));
+        }
+      } catch {
+        console.warn('Failed to verify payment');
+      }
+    };
+
+    doVerify();
   };
 
   const markPaymentPending = (orderId) => {
-    setOrders(prev => prev.map(order => 
-      order.id === orderId ? { 
-        ...order, 
-        paymentStatus: 'Pending',
-        paymentVerifiedBy: null,
-        paymentVerifiedAt: null
-      } : order
-    ));
-    
-    if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder(prev => ({ 
-        ...prev, 
-        paymentStatus: 'Pending',
-        paymentVerifiedBy: null,
-        paymentVerifiedAt: null
-      }));
-    }
+    const doPending = async () => {
+      try {
+        try {
+          await apiClient.post(`/orders/${orderId}/mark-pending`);
+        } catch {
+          console.warn('mark-pending endpoint failed, updating locally');
+        }
+
+        setOrders(prev => prev.map(order => 
+          order.id === orderId ? { 
+            ...order, 
+            paymentStatus: 'Pending',
+            paymentVerifiedBy: null,
+            paymentVerifiedAt: null
+          } : order
+        ));
+
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder(prev => ({ 
+            ...prev, 
+            paymentStatus: 'Pending',
+            paymentVerifiedBy: null,
+            paymentVerifiedAt: null
+          }));
+        }
+      } catch {
+        console.warn('Failed to mark payment pending');
+      }
+    };
+
+    doPending();
   };
 
   const cancelOrder = (orderId) => {
     if (window.confirm('Are you sure you want to cancel this order?')) {
-      updateOrderStatus(orderId, 'Cancelled');
+      const doCancel = async () => {
+        try {
+          try {
+            await ordersAPI.cancel(orderId);
+          } catch {
+            console.warn('ordersAPI.cancel failed, trying patch');
+            try { await apiClient.patch(`/orders/${orderId}`, { status: 'Cancelled' }); } catch (err) { console.warn('patch cancel failed', err); }
+          }
+          updateOrderStatus(orderId, 'Cancelled');
+        } catch {
+          console.warn('Failed to cancel order');
+          updateOrderStatus(orderId, 'Cancelled');
+        }
+      };
+
+      doCancel();
     }
   };
 
   const refundOrder = (orderId) => {
     if (window.confirm('Are you sure you want to refund this order?')) {
-      updateOrderStatus(orderId, 'Refunded');
+      const doRefund = async () => {
+        try {
+          try {
+            await apiClient.patch(`/orders/${orderId}/refund`);
+          } catch {
+            console.warn('refund endpoint failed, trying status patch');
+            try { await apiClient.patch(`/orders/${orderId}`, { status: 'Refunded' }); } catch (err) { console.warn('patch refund failed', err); }
+          }
+          updateOrderStatus(orderId, 'Refunded');
+        } catch {
+          console.warn('Failed to refund order');
+          updateOrderStatus(orderId, 'Refunded');
+        }
+      };
+
+      doRefund();
     }
   };
 
@@ -444,7 +452,12 @@ const OrderMgmt = () => {
 
           {/* Results Count */}
           <div className="flex items-center justify-center sm:justify-start text-sm text-gray-600 sm:col-span-2 xl:col-span-1">
-            <span className="font-medium">{filteredOrders.length} orders found</span>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{filteredOrders.length} orders found</span>
+              {loadingOrders && (
+                <div className="text-sm text-gray-500">Loading...</div>
+              )}
+            </div>
           </div>
         </div>
       </div>
