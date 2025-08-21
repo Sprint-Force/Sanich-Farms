@@ -85,11 +85,11 @@ const ProductMgmt = () => {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    // In real app, upload to server and get URLs
-    const imageUrls = files.map(file => URL.createObjectURL(file));
+    // store files for upload and previews
+    const previews = files.map(file => ({ file, url: URL.createObjectURL(file) }));
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, ...imageUrls]
+      images: [...prev.images, ...previews]
     }));
   };
 
@@ -184,19 +184,53 @@ const ProductMgmt = () => {
       seasonEndDate: formData.seasonEndDate,
       description: formData.description,
       tags: formData.tags.split(',').map(tag => tag.trim()),
-      images: formData.images
+  images: formData.images
     };
 
     const submit = async () => {
       try {
+        // Use admin endpoints with multipart form data when files are present
+        const buildForm = () => {
+          const fd = new FormData();
+          fd.append('name', newProduct.name);
+          fd.append('category', newProduct.category);
+          fd.append('price', newProduct.price);
+          if (newProduct.originalPrice) fd.append('originalPrice', newProduct.originalPrice);
+          if (newProduct.discount) fd.append('discount', newProduct.discount);
+          fd.append('stock_quantity', newProduct.stock);
+          fd.append('description', newProduct.description || '');
+          fd.append('tags', Array.isArray(newProduct.tags) ? newProduct.tags.join(',') : newProduct.tags);
+          fd.append('featured', newProduct.featured ? '1' : '0');
+          fd.append('is_available', newProduct.active ? '1' : '0');
+          // append file inputs
+          (formData.images || []).forEach((img) => {
+            // if stored as {file, url} it's a new file; if string it's an existing url
+            if (img && img.file) fd.append('file', img.file);
+          });
+          return fd;
+        };
+
         if (editingProduct) {
           const idToUse = editingProduct._id || editingProduct.id;
-          const updated = await productsAPI.update(idToUse, newProduct);
-          // prefer server-returned id/shape
-          setProducts(prev => prev.map(p => (p._id || p.id) === (updated._id || updated.id) ? updated : p));
+          const fd = buildForm();
+          try {
+            const updated = await productsAPI.updateAdmin(idToUse, fd);
+            setProducts(prev => prev.map(p => (p._id || p.id) === (updated._id || updated.id) ? updated : p));
+          } catch {
+            console.warn('Admin patch failed, trying regular update');
+            const updated = await productsAPI.update(idToUse, newProduct);
+            setProducts(prev => prev.map(p => (p._id || p.id) === (updated._id || updated.id) ? updated : p));
+          }
         } else {
-          const created = await productsAPI.create(newProduct);
-          setProducts(prev => [...prev, created]);
+          const fd = buildForm();
+          try {
+            const created = await productsAPI.createAdmin(fd);
+            setProducts(prev => [...prev, created]);
+          } catch {
+            console.warn('Admin create failed, falling back to public create');
+            const created = await productsAPI.create(newProduct);
+            setProducts(prev => [...prev, created]);
+          }
         }
       } catch (err) {
         // Surface the error to the developer/user instead of silently mutating local state
@@ -215,7 +249,12 @@ const ProductMgmt = () => {
       const remove = async () => {
         try {
           const idToUse = id && id._id ? id._id : id;
-          await productsAPI.remove(idToUse);
+          try {
+            await productsAPI.removeAdmin(idToUse);
+          } catch {
+            // fallback to generic delete
+            await productsAPI.remove(idToUse);
+          }
           setProducts(prev => prev.filter(p => (p._id || p.id) !== (idToUse)));
         } catch (err) {
           console.error('Failed to delete product', err);

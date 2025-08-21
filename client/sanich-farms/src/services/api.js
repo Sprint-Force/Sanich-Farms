@@ -95,7 +95,7 @@ export const productsAPI = {
   },
 
   create: async (productData) => {
-    const response = await apiClient.post('/products', productData);
+  const response = await apiClient.post('/products', productData);
     return response.data;
   },
 
@@ -119,6 +119,25 @@ export const productsAPI = {
 
   remove: async (id) => {
     const response = await apiClient.delete(`/products/${id}`);
+    return response.data;
+  },
+  // Admin endpoints (multipart/form-data where image upload is supported)
+  createAdmin: async (formData) => {
+    const response = await apiClient.post('/products/add', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  updateAdmin: async (id, formData) => {
+    const response = await apiClient.patch(`/products/${id}/edit`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  removeAdmin: async (id) => {
+    const response = await apiClient.delete(`/products/${id}/delete`);
     return response.data;
   },
 };
