@@ -1,16 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiCheckCircle, FiPackage, FiMapPin, FiCreditCard } from 'react-icons/fi';
-import { ordersData } from '../../data/ordersData'; // Import centralized orders data
+import { ordersAPI } from '../../services/api'; // USER SIDE FIX: Use real API instead of mock data
 
 const OrderDetailPage = () => {
   const { orderId } = useParams();
-  const order = ordersData.find(o => o.id === orderId);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!order) {
+  // USER SIDE FIX: Fetch order from API
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        setLoading(true);
+        const response = await ordersAPI.getById(orderId);
+        const orderData = response.order || response;
+        setOrder(orderData);
+      } catch (err) {
+        console.error('Failed to fetch order details:', err);
+        setError('Failed to load order details. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (orderId) {
+      fetchOrder();
+    }
+  }, [orderId]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-10">
+        <div className="text-gray-600 text-lg">Loading order details...</div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !order) {
     return (
       <div className="text-center py-10 text-gray-600 text-lg">
-        Order not found. <Link to="/dashboard/orders" className="text-green-600 hover:underline">Back to Orders</Link>
+        {error || 'Order not found.'} <Link to="/dashboard/orders" className="text-green-600 hover:underline">Back to Orders</Link>
       </div>
     );
   }
@@ -31,16 +64,18 @@ const OrderDetailPage = () => {
             <FiPackage className="text-green-600" /> Order Summary
           </h2>
           <div className="space-y-2 text-gray-700">
-            <p><strong>Order ID:</strong> {order.id}</p>
-            <p><strong>Date:</strong> {order.date}</p>
-            <p><strong>Total:</strong> {order.total}</p>
+            {/* USER SIDE FIX: Use real API response fields */}
+            <p><strong>Order ID:</strong> #{order.id}</p>
+            <p><strong>Date:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : order.ordered_at ? new Date(order.ordered_at).toLocaleDateString() : 'N/A'}</p>
+            <p><strong>Total:</strong> ₵{order.total_amount || order.total || '0.00'}</p>
             <p><strong>Status:</strong>
               <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
+                (order.status === 'delivered' || order.status === 'completed') ? 'bg-green-100 text-green-800' :
+                (order.status === 'processing' || order.status === 'pending') ? 'bg-yellow-100 text-yellow-800' :
+                order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                'bg-gray-100 text-gray-800'
               }`}>
-                {order.status}
+                {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
               </span>
             </p>
           </div>
@@ -49,13 +84,17 @@ const OrderDetailPage = () => {
         {/* Shipping Address Card */}
         <div className="lg:col-span-1 bg-white rounded-xl shadow-md p-6 border border-gray-100">
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <FiMapPin className="text-green-600" /> Shipping Address
+            <FiMapPin className="text-green-600" /> Delivery Address
           </h2>
           <div className="space-y-1 text-gray-700">
-            <p>{order.shippingAddress.name}</p>
-            <p>{order.shippingAddress.street}</p>
-            <p>{`${order.shippingAddress.city}, ${order.shippingAddress.region}`}</p>
-            <p>{`${order.shippingAddress.zip}, ${order.shippingAddress.country}`}</p>
+            {/* USER SIDE FIX: Use real API response fields */}
+            <p><strong>Name:</strong> {order.first_name} {order.last_name}</p>
+            {order.company_name && <p><strong>Company:</strong> {order.company_name}</p>}
+            <p><strong>Address:</strong> {order.delivery_address}</p>
+            <p><strong>Location:</strong> {order.state}, {order.country}</p>
+            {order.zipcode && <p><strong>Zip:</strong> {order.zipcode}</p>}
+            <p><strong>Phone:</strong> {order.phone_number}</p>
+            <p><strong>Email:</strong> {order.email}</p>
           </div>
         </div>
 
@@ -64,11 +103,18 @@ const OrderDetailPage = () => {
           <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
             <FiCreditCard className="text-green-600" /> Payment Method
           </h2>
-          <p className="text-gray-700">{order.paymentMethod}</p>
-          {order.notes && (
+          <p className="text-gray-700">
+            {order.payment_method === 'cash' ? 'Cash on Delivery' : 
+             order.payment_method === 'mobile_money' ? 'Mobile Money' : 
+             order.payment_method || 'N/A'}
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            Status: <span className="capitalize">{order.payment_status || 'Pending'}</span>
+          </p>
+          {order.note && (
             <div className="mt-4 pt-4 border-t border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Order Notes</h3>
-              <p className="text-gray-600 text-sm">{order.notes}</p>
+              <p className="text-gray-600 text-sm">{order.note}</p>
             </div>
           )}
         </div>
@@ -90,15 +136,23 @@ const OrderDetailPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {order.items.map((item) => (
-                <tr key={item.id}>
+              {/* USER SIDE FIX: Use real API response fields for order items */}
+              {(order.OrderItems || order.items || []).map((item, index) => (
+                <tr key={item.id || index}>
                   <td className="py-4 px-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center gap-3">
-                    <img src={item.image} alt={item.name} className="h-10 w-10 object-cover rounded-md" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/40x40/cccccc/333333?text=Item"; }} />
-                    {item.name}
+                    <img 
+                      src={item.Product?.image_url || item.image || "https://placehold.co/40x40/cccccc/333333?text=Item"} 
+                      alt={item.Product?.name || item.name || 'Product'} 
+                      className="h-10 w-10 object-cover rounded-md" 
+                      onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/40x40/cccccc/333333?text=Item"; }} 
+                    />
+                    {item.Product?.name || item.name || 'Unknown Product'}
                   </td>
                   <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-600">{item.quantity}</td>
-                  <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-600">{item.price}</td>
-                  <td className="py-4 px-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">{item.subtotal}</td>
+                  <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-600">₵{item.price || '0.00'}</td>
+                  <td className="py-4 px-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
+                    ₵{((item.quantity || 0) * (parseFloat(item.price) || 0)).toFixed(2)}
+                  </td>
                 </tr>
               ))}
             </tbody>
