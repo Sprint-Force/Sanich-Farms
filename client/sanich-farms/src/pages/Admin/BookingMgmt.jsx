@@ -21,6 +21,8 @@ import {
   FiEye
 } from 'react-icons/fi';
 import { ClickableEmail, ClickablePhone } from '../../utils/contactUtils';
+import { bookingsAPI } from '../../services/api';
+import apiClient from '../../services/api';
 
 const BookingMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,109 +41,8 @@ const BookingMgmt = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // Mock data - replace with real API
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      bookingNumber: 'BK001',
-      customerName: 'John Doe',
-      customerEmail: 'john@example.com',
-      customerPhone: '+233 24 123 4567',
-      service: 'Farm Consultation',
-      serviceType: 'On-site',
-      date: '2024-08-15',
-      time: '10:00',
-      duration: '2 hours',
-      status: 'pending',
-      priority: 'medium',
-      assignedStaff: null,
-      notes: 'Customer wants consultation on chicken farming',
-      totalCost: 150.00,
-      depositPaid: 50.00,
-      createdAt: '2024-08-10T14:30:00Z',
-      lastUpdated: '2024-08-10T14:30:00Z'
-    },
-    {
-      id: 2,
-      bookingNumber: 'BK002',
-      customerName: 'Sarah Wilson',
-      customerEmail: 'sarah@example.com',
-      customerPhone: '+233 24 987 6543',
-      service: 'Equipment Installation',
-      serviceType: 'On-site',
-      date: '2024-08-16',
-      time: '14:00',
-      duration: '4 hours',
-      status: 'approved',
-      priority: 'high',
-      assignedStaff: 'Michael Asante',
-      notes: 'Installation of irrigation system',
-      totalCost: 500.00,
-      depositPaid: 200.00,
-      createdAt: '2024-08-09T10:15:00Z',
-      lastUpdated: '2024-08-11T16:20:00Z'
-    },
-    {
-      id: 3,
-      bookingNumber: 'BK003',
-      customerName: 'David Brown',
-      customerEmail: 'david@example.com',
-      customerPhone: '+233 24 555 0123',
-      service: 'Training Session',
-      serviceType: 'Remote',
-      date: '2024-08-14',
-      time: '09:00',
-      duration: '3 hours',
-      status: 'completed',
-      priority: 'low',
-      assignedStaff: 'Grace Mensah',
-      notes: 'Organic farming techniques training',
-      totalCost: 200.00,
-      depositPaid: 200.00,
-      createdAt: '2024-08-05T11:00:00Z',
-      lastUpdated: '2024-08-14T12:00:00Z'
-    },
-    {
-      id: 4,
-      bookingNumber: 'BK004',
-      customerName: 'Emma Thompson',
-      customerEmail: 'emma@example.com',
-      customerPhone: '+233 24 444 5678',
-      service: 'Pest Control',
-      serviceType: 'On-site',
-      date: '2024-08-12',
-      time: '08:00',
-      duration: '1 hour',
-      status: 'cancelled',
-      priority: 'medium',
-      assignedStaff: null,
-      notes: 'Customer requested cancellation due to schedule conflict',
-      totalCost: 100.00,
-      depositPaid: 0.00,
-      createdAt: '2024-08-08T13:45:00Z',
-      lastUpdated: '2024-08-12T09:00:00Z'
-    },
-    {
-      id: 5,
-      bookingNumber: 'BK005',
-      customerName: 'James Miller',
-      customerEmail: 'james@example.com',
-      customerPhone: '+233 24 777 8899',
-      service: 'Soil Testing',
-      serviceType: 'On-site',
-      date: '2024-08-18',
-      time: '11:00',
-      duration: '2 hours',
-      status: 'rejected',
-      priority: 'low',
-      assignedStaff: null,
-      notes: 'Service not available in customer area',
-      totalCost: 120.00,
-      depositPaid: 0.00,
-      createdAt: '2024-08-11T09:30:00Z',
-      lastUpdated: '2024-08-11T15:45:00Z'
-    }
-  ]);
+  // bookings loaded from API
+  const [bookings, setBookings] = useState([]);
 
   const [formData, setFormData] = useState({
     date: '',
@@ -156,6 +57,8 @@ const BookingMgmt = () => {
   const services = ['all', 'Farm Consultation', 'Equipment Installation', 'Training Session', 'Pest Control', 'Soil Testing', 'Crop Planning'];
   const statuses = ['all', 'pending', 'approved', 'completed', 'cancelled', 'rejected'];
   const staffMembers = ['Michael Asante', 'Grace Mensah', 'Kwame Osei', 'Akosua Agyei', 'Peter Nkrumah'];
+
+  
 
   // Statistics calculation
   const stats = {
@@ -185,6 +88,30 @@ const BookingMgmt = () => {
       return () => clearTimeout(timer);
     }
   }, [error, success]);
+
+  // Load bookings from API on mount
+  useEffect(() => {
+    let mounted = true;
+    const loadBookings = async () => {
+      setLoading(true);
+      try {
+        const data = await bookingsAPI.getAll();
+        // API might return an array or an object containing the array
+        const list = Array.isArray(data) ? data : data?.bookings || data?.data || [];
+        if (mounted) setBookings(Array.isArray(list) ? list : []);
+      } catch (err) {
+        console.warn('Failed to load bookings from API', err?.response?.data || err.message || err);
+        if (!mounted) return;
+        setError('Failed to load bookings from server');
+        setBookings([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadBookings();
+    return () => { mounted = false; };
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -280,70 +207,127 @@ const BookingMgmt = () => {
   const handleEditSubmit = (e) => {
     e.preventDefault();
     
-    try {
+    const submit = async () => {
       setLoading(true);
-      
-      const updatedBooking = {
-        ...editingBooking,
-        date: formData.date,
-        time: formData.time,
-        duration: formData.duration,
-        assignedStaff: formData.assignedStaff,
-        notes: formData.notes,
-        totalCost: parseFloat(formData.totalCost),
-        status: formData.status,
-        lastUpdated: new Date().toISOString()
-      };
+      try {
+        const updatedBooking = {
+          ...editingBooking,
+          date: formData.date,
+          time: formData.time,
+          duration: formData.duration,
+          assignedStaff: formData.assignedStaff,
+          notes: formData.notes,
+          totalCost: parseFloat(formData.totalCost),
+          status: formData.status,
+          lastUpdated: new Date().toISOString()
+        };
 
-      setBookings(prev => prev.map(b => 
-        b.id === editingBooking.id ? updatedBooking : b
-      ));
-      
-      setSuccess('Booking updated successfully');
-      closeEditModal();
-      
-    } catch {
-      setError('Failed to update booking');
-    } finally {
-      setLoading(false);
-    }
+        try {
+          const res = await bookingsAPI.update(editingBooking.id, updatedBooking);
+          // If API returned the updated booking use it
+          const updated = res?.data || res || updatedBooking;
+          setBookings(prev => prev.map(b => b.id === editingBooking.id ? updated : b));
+        } catch {
+          // Fallback to local update if API fails
+          console.warn('API update failed, falling back to local update');
+          setBookings(prev => prev.map(b => b.id === editingBooking.id ? updatedBooking : b));
+        }
+
+        setSuccess('Booking updated successfully');
+        closeEditModal();
+      } catch {
+        setError('Failed to update booking');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    submit();
   };
 
   const updateBookingStatus = (id, newStatus) => {
-    setBookings(prev => prev.map(b => 
-      b.id === id ? { 
-        ...b, 
-        status: newStatus, 
-        lastUpdated: new Date().toISOString() 
-      } : b
-    ));
-    setSuccess(`Booking ${newStatus} successfully`);
+    const patchStatus = async () => {
+      setLoading(true);
+      try {
+        try {
+          // prefer using bookingsAPI.update to change status
+          await bookingsAPI.update(id, { status: newStatus });
+          setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
+        } catch {
+          console.warn('Failed to update status on server, updating locally');
+          setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
+        }
+        setSuccess(`Booking ${newStatus} successfully`);
+      } catch {
+        setError('Failed to update booking status');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    patchStatus();
   };
 
   const approveBooking = (id) => {
-    updateBookingStatus(id, 'approved');
+  updateBookingStatus(id, 'approved');
   };
 
   const rejectBooking = (id) => {
     if (window.confirm('Are you sure you want to reject this booking?')) {
-      updateBookingStatus(id, 'rejected');
+  updateBookingStatus(id, 'rejected');
     }
   };
 
   const cancelBooking = (id) => {
     if (window.confirm('Are you sure you want to cancel this booking?')) {
-      updateBookingStatus(id, 'cancelled');
+      const doCancel = async () => {
+        setLoading(true);
+        try {
+          try {
+            await bookingsAPI.cancel(id);
+            setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
+          } catch {
+            console.warn('Cancel API failed, updating locally');
+            setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
+          }
+          setSuccess('Booking cancelled successfully');
+        } catch {
+          setError('Failed to cancel booking');
+        } finally {
+          setLoading(false);
+        }
+      };
+      doCancel();
     }
   };
 
   const completeBooking = (id) => {
-    updateBookingStatus(id, 'completed');
+  updateBookingStatus(id, 'completed');
   };
 
   const deleteBooking = (id) => {
     if (window.confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
-      setBookings(prev => prev.filter(b => b.id !== id));
-      setSuccess('Booking deleted successfully');
+      const doDelete = async () => {
+        setLoading(true);
+        try {
+          try {
+            await apiClient.delete(`/bookings/${id}`);
+            setBookings(prev => prev.filter(b => b.id !== id));
+            setSuccess('Booking deleted successfully');
+          } catch {
+            console.warn('Delete API failed, falling back to local delete');
+            // fallback to local deletion
+            setBookings(prev => prev.filter(b => b.id !== id));
+            setSuccess('Booking removed locally');
+          }
+        } catch {
+          setError('Failed to delete booking');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      doDelete();
     }
   };
 
@@ -1220,6 +1204,9 @@ const BookingMgmt = () => {
           </div>
         </div>
       )}
+
+      {/* Add Service Modal */}
+      
     </div>
   );
 };

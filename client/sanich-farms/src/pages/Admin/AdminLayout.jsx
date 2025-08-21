@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   FiHome, 
@@ -16,7 +16,30 @@ import {
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [adminInfo, setAdminInfo] = useState({ name: 'Admin User', role: 'Administrator' });
   const location = useLocation();
+
+  useEffect(() => {
+    try {
+      const adminAuth = localStorage.getItem('adminAuth');
+      if (adminAuth) {
+        const parsed = JSON.parse(adminAuth);
+        setAdminInfo({ name: parsed.name || 'Admin User', role: parsed.role || 'Administrator' });
+        return;
+      }
+
+      // fallback to main user info
+      const user = localStorage.getItem('user');
+      if (user) {
+        const parsedUser = JSON.parse(user);
+        if (parsedUser.name && parsedUser.role) {
+          setAdminInfo({ name: parsedUser.name, role: parsedUser.role === 'admin' ? 'Administrator' : parsedUser.role });
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: FiHome },
@@ -137,8 +160,8 @@ const AdminLayout = () => {
                     <FiUser className="w-4 h-4 text-white" />
                   </div>
                   <div className="text-sm">
-                    <p className="font-medium text-gray-900">Admin User</p>
-                    <p className="text-gray-600">Administrator</p>
+                    <p className="font-medium text-gray-900">{adminInfo.name}</p>
+                    <p className="text-gray-600">{adminInfo.role}</p>
                   </div>
                 </Link>
               </div>

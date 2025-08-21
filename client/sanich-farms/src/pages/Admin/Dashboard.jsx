@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom'
 import { 
   FiUsers, 
@@ -17,6 +17,13 @@ import {
 const Dashboard = () => {
   const [timeRange, setTimeRange] = useState('7days');
   const navigate = useNavigate();
+
+  // Live data state
+  const [orders, setOrders] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loadingDashboard, setLoadingDashboard] = useState(false);
+  const [dashboardError, setDashboardError] = useState(null);
 
   // Quick action handlers
   const handleQuickAction = (action) => {
@@ -38,38 +45,141 @@ const Dashboard = () => {
     }
   };
 
-  // Mock data - replace with real API calls
-  const stats = {
-    totalUsers: 1248,
-    totalOrders: 856,
-    totalRevenue: 45678.90,
-    totalProducts: 234,
-    totalBookings: 342,
-    pendingOrders: 12,
-    pendingBookings: 18,
-    outOfStock: 8
+  // No hardcoded mock data: use live API data; fallbacks are empty/zero values
+
+  // Fetch live dashboard data on mount
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoadingDashboard(true);
+      setDashboardError(null);
+      try {
+        const [{ status: oStatus, value: oVal }, { status: bStatus, value: bVal }, { status: pStatus, value: pVal }] = await Promise.allSettled([
+          // lazy-import to avoid circulars
+          import('../../services/api').then(m => m.ordersAPI.getAll()),
+          import('../../services/api').then(m => m.bookingsAPI.getAll()),
+          import('../../services/api').then(m => m.productsAPI.getAll())
+        ]);
+
+        if (!mounted) return;
+
+        if (oStatus === 'fulfilled') {
+          const list = Array.isArray(oVal) ? oVal : oVal?.orders || oVal?.data || [];
+          setOrders(list);
+        }
+
+        if (bStatus === 'fulfilled') {
+          const list = Array.isArray(bVal) ? bVal : bVal?.bookings || bVal?.data || [];
+          setBookings(list);
+        }
+
+        if (pStatus === 'fulfilled') {
+          const list = Array.isArray(pVal) ? pVal : pVal?.products || pVal?.data || [];
+          setProducts(list);
+        }
+      } catch (e) {
+        console.warn('Failed to load dashboard data', e);
+        setDashboardError('Failed to load dashboard data');
+      } finally {
+        if (mounted) setLoadingDashboard(false);
+      }
+    };
+
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  // Derived display values (use live data when available, otherwise fallback to mocks)
+  const displayTotalOrders = orders.length;
+  const displayTotalBookings = bookings.length;
+  const displayTotalProducts = products.length;
+  const displayTotalUsers = 0;
+  const displayTotalRevenue = (
+    (orders.length > 0 && orders.reduce((s, o) => s + (o.total || o.amount || o.totalAmount || 0), 0)) ||
+    (bookings.length > 0 && bookings.reduce((s, b) => s + (b.totalCost || b.amount || 0), 0)) ||
+    0
+  );
+
+  const displayPendingOrders = orders.length > 0
+    ? orders.filter(o => (o.status || '').toString().toLowerCase() === 'pending').length
+    : 0;
+
+  const displayPendingBookings = bookings.length > 0
+    ? bookings.filter(b => (b.status || '').toString().toLowerCase() === 'pending').length
+  : 0;
+
+  const recentOrdersDisplay = orders.length > 0 ? orders.slice(0, 4).map(o => ({
+    id: o.id || o._id || o.orderNumber || 'N/A',
+    customer: o.customerName || o.user?.name || o.customer || o.email || 'Customer',
+    amount: o.total || o.amount || o.totalAmount || 0,
+    status: o.status || 'Unknown',
+    date: o.createdAt || o.date || new Date().toISOString()
+  })) : [];
+
+  const recentBookingsDisplay = bookings.length > 0 ? bookings.slice(0,4).map(b => ({
+    id: b.id || b._id || b.bookingNumber || 'BKG',
+    customer: b.customerName || b.user?.name || b.customer || 'Customer',
+    service: b.service || b.serviceName || 'Service',
+    status: b.status || 'Unknown',
+    date: b.date || b.createdAt || new Date().toISOString()
+  })) : [];
+
+  const topProductsDisplay = products.length > 0 ? products.slice(0,4).map((p, i) => ({
+    name: p.name || p.title || `Product ${i+1}`,
+    sales: p.sold || p.unitsSold || 0,
+    revenue: (p.price && (p.sold || p.unitsSold)) ? (p.price * (p.sold || p.unitsSold)) : (p.revenue || 0),
+    stock: p.stock || p.quantity || p.inventory || 0
+  })) : [];
+
+  const displayOutOfStock = products.length > 0
+    ? products.filter(p => (p.stock || p.quantity || p.inventory || 0) === 0).length
+    : 0;
+
+  // Helper: compute percent change between current and previous window
+  const rangeDays = {
+    '7days': 7,
+    '30days': 30,
+    '90days': 90
   };
 
-  const recentOrders = [
-    { id: 'ORD001', customer: 'John Doe', amount: 125.50, status: 'Completed', date: '2024-08-07' },
-    { id: 'ORD002', customer: 'Jane Smith', amount: 89.99, status: 'Pending', date: '2024-08-07' },
-    { id: 'ORD003', customer: 'Mike Johnson', amount: 234.75, status: 'Processing', date: '2024-08-06' },
-    { id: 'ORD004', customer: 'Sarah Wilson', amount: 67.25, status: 'Shipped', date: '2024-08-06' },
-  ];
+  const computeChange = (items, valueExtractor = () => 1, dateKeyCandidates = ['createdAt', 'date', 'created_at']) => {
+    const days = rangeDays[timeRange] || 7;
+    const now = Date.now();
+    const currentFrom = now - days * 24 * 60 * 60 * 1000;
+    const prevFrom = now - 2 * days * 24 * 60 * 60 * 1000;
+    const prevTo = currentFrom;
 
-  const recentBookings = [
-    { id: 'BKG001', customer: 'Alice Brown', service: 'Farm Consultation', status: 'Confirmed', date: '2024-08-10' },
-    { id: 'BKG002', customer: 'Bob Davis', service: 'Equipment Training', status: 'Pending', date: '2024-08-09' },
-    { id: 'BKG003', customer: 'Carol White', service: 'Crop Advisory', status: 'Completed', date: '2024-08-08' },
-    { id: 'BKG004', customer: 'David Lee', service: 'Soil Testing', status: 'Confirmed', date: '2024-08-08' },
-  ];
+    const extractTime = (it) => {
+      for (const k of dateKeyCandidates) {
+        if (it && it[k]) return Date.parse(it[k]);
+      }
+      return NaN;
+    };
 
-  const topProducts = [
-    { name: 'Product A', sales: 145, revenue: 2175.00, stock: 23 },
-    { name: 'Product B', sales: 98, revenue: 1470.00, stock: 45 },
-    { name: 'Product C', sales: 87, revenue: 1305.00, stock: 12 },
-    { name: 'Product D', sales: 76, revenue: 1140.00, stock: 34 },
-  ];
+    const currentItems = items.filter(i => {
+      const t = extractTime(i);
+      return !Number.isNaN(t) && t >= currentFrom;
+    });
+
+    const prevItems = items.filter(i => {
+      const t = extractTime(i);
+      return !Number.isNaN(t) && t >= prevFrom && t < prevTo;
+    });
+
+    const currentValue = currentItems.reduce((s, it) => s + (valueExtractor(it) || 0), 0);
+    const prevValue = prevItems.reduce((s, it) => s + (valueExtractor(it) || 0), 0);
+
+    if (prevValue > 0) {
+      return Math.round(((currentValue - prevValue) / prevValue) * 100);
+    }
+
+    return undefined;
+  };
+
+  const ordersChange = computeChange(orders, () => 1);
+  const revenueChange = computeChange(orders, o => (o.total || o.amount || o.totalAmount || 0));
+  const bookingsChange = computeChange(bookings, () => 1);
+  const productsChange = computeChange(products, () => 1);
 
   // eslint-disable-next-line no-unused-vars
   const StatCard = ({ icon: IconComponent, title, value, color, change }) => (
@@ -103,6 +213,19 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
+      {loadingDashboard && (
+        <div className="absolute inset-0 bg-white bg-opacity-60 z-50 flex items-center justify-center">
+          <div className="text-gray-700 font-medium">Loading dashboard...</div>
+        </div>
+      )}
+
+      {dashboardError && (
+        <div className="px-3 sm:px-4 lg:px-6 xl:px-8 py-3">
+          <div className="max-w-4xl mx-auto bg-red-50 border border-red-200 text-red-700 p-3 rounded">
+            <p className="text-sm">{dashboardError}</p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 px-3 sm:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 relative z-10">
         <div className="flex flex-col space-y-3 sm:space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
@@ -133,30 +256,30 @@ const Dashboard = () => {
           <StatCard
             icon={FiUsers}
             title="Total Users"
-            value={stats.totalUsers.toLocaleString()}
+            value={displayTotalUsers.toLocaleString()}
             color="bg-blue-500"
-            change={12.5}
+            // no change computed for users (backend needed)
           />
           <StatCard
             icon={FiShoppingBag}
             title="Total Orders"
-            value={stats.totalOrders.toLocaleString()}
+            value={displayTotalOrders.toLocaleString()}
             color="bg-green-500"
-            change={8.2}
+            change={ordersChange}
           />
           <StatCard
             icon={FiCalendar}
             title="Total Bookings"
-            value={stats.totalBookings.toLocaleString()}
+            value={displayTotalBookings.toLocaleString()}
             color="bg-teal-500"
-            change={18.7}
+            change={bookingsChange}
           />
           <StatCard
             icon={FiDollarSign}
             title="Total Revenue"
-            value={`GH₵${stats.totalRevenue.toLocaleString()}`}
+            value={`GH₵${displayTotalRevenue.toLocaleString()}`}
             color="bg-purple-500"
-            change={15.3}
+            change={revenueChange}
           />
         </div>
 
@@ -165,26 +288,26 @@ const Dashboard = () => {
           <StatCard
             icon={FiPackage}
             title="Total Products"
-            value={stats.totalProducts.toLocaleString()}
+            value={displayTotalProducts.toLocaleString()}
             color="bg-orange-500"
-            change={5.1}
+            change={productsChange}
           />
           <StatCard
             icon={FiTrendingUp}
             title="Pending Orders"
-            value={stats.pendingOrders}
+            value={displayPendingOrders}
             color="bg-yellow-500"
           />
           <StatCard
             icon={FiClock}
             title="Pending Bookings"
-            value={stats.pendingBookings}
+            value={displayPendingBookings}
             color="bg-cyan-500"
           />
           <StatCard
             icon={FiPackage}
             title="Out of Stock"
-            value={stats.outOfStock}
+            value={displayOutOfStock}
             color="bg-red-500"
           />
         </div>
@@ -208,7 +331,7 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {recentOrders.map((order) => (
+                  {recentOrdersDisplay.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
                       <td className="px-3 sm:px-4 py-3 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {order.id}
@@ -232,7 +355,7 @@ const Dashboard = () => {
 
             {/* Mobile/Tablet Card View */}
             <div className="lg:hidden divide-y divide-gray-200">
-              {recentOrders.map((order) => (
+              {recentOrdersDisplay.map((order) => (
                 <div key={order.id} className="p-3 sm:p-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-900">{order.id}</span>
@@ -272,7 +395,7 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {recentBookings.map((booking) => (
+                  {recentBookingsDisplay.map((booking) => (
                     <tr key={booking.id} className="hover:bg-gray-50">
                       <td className="px-3 sm:px-4 py-3 sm:py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {booking.id}
@@ -296,7 +419,7 @@ const Dashboard = () => {
 
             {/* Mobile/Tablet Card View */}
             <div className="lg:hidden divide-y divide-gray-200">
-              {recentBookings.map((booking) => (
+              {recentBookingsDisplay.map((booking) => (
                 <div key={booking.id} className="p-3 sm:p-4 hover:bg-gray-50">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-900">{booking.id}</span>
@@ -325,7 +448,7 @@ const Dashboard = () => {
             </div>
             <div className="p-4 sm:p-6">
               <div className="space-y-3 sm:space-y-4">
-                {topProducts.map((product, index) => (
+                {topProductsDisplay.map((product, index) => (
                   <div key={product.name} className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                       <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">

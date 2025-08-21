@@ -48,7 +48,7 @@ import ScrollToTop from './components/utils/ScrollToTop';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 import AdminLayout from './pages/Admin/AdminLayout'; // NEW: Import AdminLayout
-import RoleSelection from './pages/Admin/RoleSelection'; // Optional role selection
+// RoleSelection removed
 import AdminLogout from './pages/Admin/AdminLogout';
 import AdminProfile from './pages/Admin/AdminProfile';
 import AdminProtectedRoute from './pages/Admin/AdminProtectedRoute';
@@ -150,11 +150,6 @@ function App() {
               </Route>
 
               {/* Admin Routes */}
-              <Route path='/role-selection' element={
-                <ProtectedRoute>
-                  <RoleSelection />
-                </ProtectedRoute>
-              } />
               <Route path='/admin/logout' element={<AdminLogout />} />
               <Route path='/admin' element={
                 <AdminProtectedRoute>
