@@ -103,7 +103,18 @@ const ProductMgmt = () => {
   const openModal = (product = null) => {
     if (product) {
       setEditingProduct(product);
-      setFormData({
+    // Build images array from multiple possible fields returned by API
+    const imagesArr = [];
+    if (Array.isArray(product.images)) imagesArr.push(...product.images);
+    else if (product.images) imagesArr.push(product.images);
+    if (product.image_url) imagesArr.unshift(product.image_url);
+    if (product.image) imagesArr.unshift(product.image);
+    if (product.thumbnail) imagesArr.push(product.thumbnail);
+
+    // remove duplicates while preserving order
+    const uniqueImages = Array.from(new Set(imagesArr.filter(Boolean)));
+
+    setFormData({
   name: product.name || '',
   category: product.category || '',
   price: product.price != null ? String(product.price) : '',
@@ -120,8 +131,8 @@ const ProductMgmt = () => {
   bulkDiscount: product.bulkDiscount != null ? String(product.bulkDiscount) : '',
   seasonStartDate: product.seasonStartDate || '',
   seasonEndDate: product.seasonEndDate || '',
-  images: Array.isArray(product.images) ? product.images : (product.images ? [product.images] : [])
-      });
+  images: uniqueImages
+    });
     } else {
       setEditingProduct(null);
       setFormData({
@@ -179,19 +190,18 @@ const ProductMgmt = () => {
     const submit = async () => {
       try {
         if (editingProduct) {
-          const updated = await productsAPI.update(editingProduct.id, newProduct);
-          setProducts(prev => prev.map(p => p.id === editingProduct.id ? updated : p));
+          const idToUse = editingProduct._id || editingProduct.id;
+          const updated = await productsAPI.update(idToUse, newProduct);
+          // prefer server-returned id/shape
+          setProducts(prev => prev.map(p => (p._id || p.id) === (updated._id || updated.id) ? updated : p));
         } else {
           const created = await productsAPI.create(newProduct);
           setProducts(prev => [...prev, created]);
         }
-  } catch {
-        // Fallback to local manipulation
-        if (editingProduct) {
-          setProducts(prev => prev.map(p => p.id === editingProduct.id ? newProduct : p));
-        } else {
-          setProducts(prev => [...prev, { ...newProduct, id: Date.now() }]);
-        }
+      } catch (err) {
+        // Surface the error to the developer/user instead of silently mutating local state
+        console.error('Product save failed', err);
+        alert('Failed to save product. See console for details.');
       } finally {
         closeModal();
       }
@@ -204,11 +214,12 @@ const ProductMgmt = () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       const remove = async () => {
         try {
-          await productsAPI.remove(id);
-          setProducts(prev => prev.filter(p => p.id !== id));
-  } catch {
-          // fallback
-          setProducts(prev => prev.filter(p => p.id !== id));
+          const idToUse = id && id._id ? id._id : id;
+          await productsAPI.remove(idToUse);
+          setProducts(prev => prev.filter(p => (p._id || p.id) !== (idToUse)));
+        } catch (err) {
+          console.error('Failed to delete product', err);
+          alert('Failed to delete product. See console for details.');
         }
       };
       remove();
@@ -334,7 +345,7 @@ const ProductMgmt = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <img
-                            src={(product && product.images && product.images[0]) ? product.images[0] : ''}
+                            src={product?.images?.[0] || product?.image_url || product?.image || product?.thumbnail || ''}
                             alt={product && product.name ? product.name : 'product'}
                         className="w-10 h-10 rounded-lg object-cover"
                       />

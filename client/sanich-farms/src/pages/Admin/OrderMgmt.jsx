@@ -45,6 +45,26 @@ const OrderMgmt = () => {
   const statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'canceled', 'refunded'];
   const dateFilters = ['all', 'today', 'yesterday', 'last7days', 'last30days', 'custom'];
 
+  // Helpers to normalize customer info coming from different API shapes
+  const getCustomerName = (order) => {
+    if (!order) return '';
+    // possible shapes: order.customer = { name, email }, order.customer = 'Name', order.customerName, order.user?.name, order.email
+    if (typeof order.customer === 'string' && order.customer.trim()) return order.customer;
+    return order.customer?.name || order.customerName || order.user?.name || order.customer?.fullName || order.email || '';
+  };
+
+  const getCustomerEmail = (order) => {
+    if (!order) return '';
+    if (typeof order.customer === 'string' && /@/.test(order.customer)) return order.customer;
+    return order.customer?.email || order.customerEmail || order.email || '';
+  };
+
+  const getCustomerPhone = (order) => {
+    if (!order) return '';
+    if (typeof order.customer === 'string' && /^(\+|\d)/.test(order.customer)) return order.customer;
+    return order.customer?.phone || order.customerPhone || '';
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
@@ -111,9 +131,9 @@ const OrderMgmt = () => {
   }, []);
 
   const filteredOrders = orders.filter(order => {
-    const idStr = String(order?.id || order?._id || '').toLowerCase();
-    const customerName = String(order?.customer?.name || order?.customerName || '').toLowerCase();
-    const customerEmail = String(order?.customer?.email || order?.customerEmail || '').toLowerCase();
+  const idStr = String(order?.id || order?._id || '').toLowerCase();
+  const customerName = String(getCustomerName(order) || '').toLowerCase();
+  const customerEmail = String(getCustomerEmail(order) || '').toLowerCase();
     const search = searchTerm.toLowerCase();
 
     const matchesSearch = idStr.includes(search) || customerName.includes(search) || customerEmail.includes(search);
@@ -316,7 +336,11 @@ const OrderMgmt = () => {
     // In a real app, you would generate a PDF invoice
     const invoiceData = {
   orderNumber: selectedOrder?.id || selectedOrder?._id || '',
-  customer: selectedOrder?.customer || {},
+  customer: {
+    name: getCustomerName(selectedOrder),
+    email: getCustomerEmail(selectedOrder),
+    phone: getCustomerPhone(selectedOrder)
+  },
   items: selectedOrder?.items || selectedOrder?.orderItems || [],
   total: Number(selectedOrder?.total || selectedOrder?.amount || 0),
   date: selectedOrder?.date || '',
@@ -333,7 +357,7 @@ const OrderMgmt = () => {
     // In a real app, you would send to printer or generate printable format
     const receiptData = {
   orderNumber: selectedOrder?.id || selectedOrder?._id || '',
-  customer: selectedOrder?.customer?.name || selectedOrder?.customerName || '',
+  customer: getCustomerName(selectedOrder) || '',
   items: selectedOrder?.items || selectedOrder?.orderItems || [],
   total: Number(selectedOrder?.total || selectedOrder?.amount || 0),
   paymentMethod: selectedOrder?.paymentMethod || '',
@@ -349,12 +373,12 @@ const OrderMgmt = () => {
   const exportOrders = (format) => {
     if (format === 'csv') {
       // CSV export logic
-      const csvContent = [
+        const csvContent = [
         ['Order ID', 'Customer', 'Total', 'Status', 'Date'].join(','),
         ...filteredOrders.map(order => 
           [
             order?.id || order?._id || '',
-            (order?.customer?.name || order?.customerName || '').replace(/,/g, ' '),
+            (getCustomerName(order) || '').replace(/,/g, ' '),
             Number(order?.total || order?.amount || 0),
             order?.status || '',
             order?.date || ''
@@ -373,7 +397,7 @@ const OrderMgmt = () => {
         const headers = ['Order ID', 'Customer', 'Total', 'Status', 'Date'];
         const rows = filteredOrders.map(o => [
           o?.id || o?._id || '',
-          (o?.customer?.name || o?.customerName || '').replace(/</g, '&lt;'),
+          (getCustomerName(o) || '').replace(/</g, '&lt;'),
           `GH₵${Number(o?.total || o?.amount || 0).toFixed(2)}`,
           o?.status || '',
           o?.date || ''
@@ -545,13 +569,13 @@ const OrderMgmt = () => {
                     {String(order?.status || 'Unknown')}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-2">
                   <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
                     <FiUser className="w-3 h-3 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 truncate">{String(order?.customer?.name || order?.customerName || 'Customer')}</p>
-                    <p className="text-xs text-gray-500 truncate">{String(order?.customer?.email || order?.customerEmail || '')}</p>
+          <p className="text-sm font-medium text-gray-900 truncate">{String(getCustomerName(order) || 'Customer')}</p>
+          <p className="text-xs text-gray-500 truncate">{String(getCustomerEmail(order) || '')}</p>
                   </div>
                 </div>
               </div>
@@ -706,8 +730,8 @@ const OrderMgmt = () => {
                         <FiUser className="w-4 h-4 text-green-600" />
                       </div>
                       <div className="ml-3 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">{String(order?.customer?.name || order?.customerName || 'Customer')}</div>
-                        <div className="text-sm text-gray-500 truncate">{String(order?.customer?.email || order?.customerEmail || '')}</div>
+                        <div className="text-sm font-medium text-gray-900 truncate">{String(getCustomerName(order) || 'Customer')}</div>
+                        <div className="text-sm text-gray-500 truncate">{String(getCustomerEmail(order) || '')}</div>
                       </div>
                     </div>
                   </td>
@@ -837,10 +861,10 @@ const OrderMgmt = () => {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
                   <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Name:</span> {selectedOrder?.customer?.name || selectedOrder?.customerName || ''}</p>
-                    <p><span className="font-medium">Email:</span> <ClickableEmail email={selectedOrder?.customer?.email || selectedOrder?.customerEmail || ''} className="text-gray-900 hover:text-green-600" /></p>
-                    <p><span className="font-medium">Phone:</span> <ClickablePhone phone={selectedOrder?.customer?.phone || ''} className="text-gray-900 hover:text-green-600" /></p>
-                    <p><span className="font-medium">Address:</span> {selectedOrder?.customer?.address || ''}</p>
+                    <p><span className="font-medium">Name:</span> {getCustomerName(selectedOrder) || ''}</p>
+                    <p><span className="font-medium">Email:</span> <ClickableEmail email={getCustomerEmail(selectedOrder) || ''} className="text-gray-900 hover:text-green-600" /></p>
+                    <p><span className="font-medium">Phone:</span> <ClickablePhone phone={getCustomerPhone(selectedOrder) || ''} className="text-gray-900 hover:text-green-600" /></p>
+                    <p><span className="font-medium">Address:</span> {selectedOrder?.customer?.address || selectedOrder?.shippingAddress || ''}</p>
                   </div>
                 </div>
 
@@ -1022,9 +1046,9 @@ const OrderMgmt = () => {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-2">Bill To:</h4>
-                    <p className="text-sm text-gray-600">{selectedOrder.customer.name}</p>
-                    <p className="text-sm text-gray-600">{selectedOrder.customer.email}</p>
-                    <p className="text-sm text-gray-600">{selectedOrder.customer.phone}</p>
+                    <p className="text-sm text-gray-600">{getCustomerName(selectedOrder)}</p>
+                    <p className="text-sm text-gray-600">{getCustomerEmail(selectedOrder)}</p>
+                    <p className="text-sm text-gray-600">{getCustomerPhone(selectedOrder)}</p>
                   </div>
                   <div className="text-right">
                     <h4 className="font-semibold text-gray-900 mb-2">Invoice Details:</h4>
@@ -1130,7 +1154,7 @@ const OrderMgmt = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Customer:</span>
-                    <span>{selectedOrder.customer.name}</span>
+                    <span>{getCustomerName(selectedOrder)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Payment:</span>
@@ -1199,7 +1223,7 @@ const OrderMgmt = () => {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Order: #{selectedOrder.id}</p>
-                  <p className="text-sm text-gray-600 mb-4">Customer: {selectedOrder.customer.name}</p>
+                  <p className="text-sm text-gray-600 mb-4">Customer: {getCustomerName(selectedOrder)}</p>
                 </div>
 
                 <div>
