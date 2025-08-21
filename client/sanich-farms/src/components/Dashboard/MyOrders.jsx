@@ -154,20 +154,23 @@ const MyOrders = () => {
                   {/* Order Info */}
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-gray-800">Order {order.id}</h3>
+                      {/* USER SIDE FIX: Proper order ID and status display */}
+                      <h3 className="text-lg font-semibold text-gray-800">Order #{order.id}</h3>
                       <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                        order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                        order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
-                        order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                        'bg-red-100 text-red-800'
+                        (order.status === 'delivered' || order.status === 'Delivered') ? 'bg-green-100 text-green-800' :
+                        (order.status === 'processing' || order.status === 'Processing' || order.status === 'pending') ? 'bg-yellow-100 text-yellow-800' :
+                        (order.status === 'shipped' || order.status === 'Shipped') ? 'bg-blue-100 text-blue-800' :
+                        (order.status === 'cancelled' || order.status === 'Cancelled') ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
                       }`}>
-                        {order.status}
+                        {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600">
-                      <p><span className="font-medium">Date:</span> {order.date}</p>
-                      <p><span className="font-medium">Total:</span> {order.total}</p>
-                      <p><span className="font-medium">Items:</span> {order.items?.length || 1}</p>
+                      {/* USER SIDE FIX: Proper data mapping for order fields */}
+                      <p><span className="font-medium">Date:</span> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : order.date || 'N/A'}</p>
+                      <p><span className="font-medium">Total:</span> ₵{order.total_amount || order.total || '0.00'}</p>
+                      <p><span className="font-medium">Items:</span> {order.OrderItems?.length || order.items?.length || 1}</p>
                     </div>
                   </div>
 

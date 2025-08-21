@@ -161,15 +161,15 @@ export const bookingsAPI = {
   },
 };
 
-// User API methods
+// USER API methods
 export const userAPI = {
   getProfile: async () => {
-    const response = await apiClient.get('/user/profile');
+    const response = await apiClient.get('/auth/users/me');
     return response.data;
   },
 
   updateProfile: async (userData) => {
-    const response = await apiClient.put('/user/profile', userData);
+    const response = await apiClient.put('/auth/users/me', userData);
     return response.data;
   },
 };
@@ -225,8 +225,24 @@ export const wishlistAPI = {
   },
 };
 
-// DASHBOARD API INTEGRATION: Payments API methods
+// USER SIDE FIX: Payments API methods
 export const paymentsAPI = {
+  initializePayment: async (paymentData) => {
+    const response = await apiClient.post('/payments/initialize', paymentData);
+    return response.data;
+  },
+
+  verifyPayment: async (reference) => {
+    const response = await apiClient.get(`/payments/verify/${reference}`);
+    return response.data;
+  },
+
+  processPayment: async (paymentData) => {
+    const response = await apiClient.post('/payments/initialize', paymentData);
+    return response.data;
+  },
+
+  // Legacy methods for backwards compatibility
   getTransactions: async () => {
     const response = await apiClient.get('/payments/transactions');
     return response.data;
@@ -254,11 +270,6 @@ export const paymentsAPI = {
 
   addFunds: async (amount) => {
     const response = await apiClient.post('/user/wallet/add-funds', { amount });
-    return response.data;
-  },
-
-  processPayment: async (paymentData) => {
-    const response = await apiClient.post('/payments/process', paymentData);
     return response.data;
   }
 };
