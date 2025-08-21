@@ -95,26 +95,66 @@ const ServiceBookingPage = () => {
       return;
     }
 
+    // Validate that a service is selected
+    if (!selectedService?.id) {
+      addToast("Please select a valid service.", 'error');
+      return;
+    }
+
+    // Validate that the booking date is in the future
+    const selectedDate = new Date(formData.preferredDateTime);
+    const now = new Date();
+    if (selectedDate <= now) {
+      addToast("Please select a future date and time for your booking.", 'error');
+      return;
+    }
+
     setLoadingBooking(true);
     try {
       const bookingDetails = {
-        serviceId: selectedService?.id,
-        name: formData.customerName,
-        email: formData.email,
-        phone_number: formData.phone,
-        location: formData.customerLocation,
-        booking_date: formData.preferredDateTime,
-        note: formData.optionalMessage,
+        serviceId: selectedService.id, // Backend maps this to service_id
+        name: formData.customerName.trim(),
+        email: formData.email.trim(),
+        phone_number: formData.phone.trim(),
+        location: formData.customerLocation.trim(),
+        booking_date: formData.preferredDateTime, // ISO format from datetime-local
+        note: formData.optionalMessage.trim() || null,
       };
+
+      console.log('Submitting booking with data:', bookingDetails); // Debug log
 
       const response = await bookingsAPI.create(bookingDetails);
 
       const bookingId = response.booking?.id || response.id; // Handle different response formats
       addToast("Your service booking has been submitted! We will contact you shortly.", 'success');
-      navigate(bookingId ? `/booking-confirmation/${bookingId}` : '/dashboard/bookings');
+      
+      // Navigate to booking confirmation page with the booking data
+      if (bookingId) {
+        navigate(`/booking-confirmation/${bookingId}`, { 
+          state: { 
+            booking: response.booking || response,
+            type: 'booking' 
+          } 
+        });
+      } else {
+        navigate('/dashboard/bookings');
+      }
     } catch (err) {
       console.error("Failed to submit booking:", err);
-      const errorMessage = err.response?.data?.message || err.message || "Failed to submit your booking. Please try again.";
+      
+      // Enhanced error handling
+      let errorMessage = "Failed to submit your booking. Please try again.";
+      
+      if (err.response?.data) {
+        if (err.response.data.error) {
+          errorMessage = err.response.data.error;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       addToast(errorMessage, 'error');
     } finally {
       setLoadingBooking(false);
