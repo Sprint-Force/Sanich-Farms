@@ -50,7 +50,13 @@ const ProductMgmt = () => {
     return () => { mounted = false; };
   }, []);
 
-  const categories = ['all', 'Feed', 'Poultry', 'Equipment', 'Supplies', 'Tools', 'Seeds'];
+  const categories = ['all', 'feeds', 'poultry', 'equipment', 'supplies', 'tools', 'seeds'];
+
+  const formatCategoryLabel = (key) => {
+    if (!key) return '';
+    if (key === 'feeds') return 'Feeds';
+    return String(key).charAt(0).toUpperCase() + String(key).slice(1);
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -62,11 +68,11 @@ const ProductMgmt = () => {
   };
 
   const filteredProducts = products.filter(product => {
-  const name = (product && product.name) ? String(product.name) : '';
-  const category = (product && product.category) ? String(product.category) : '';
-  const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
-  const matchesCategory = filterCategory === 'all' || category === filterCategory;
-  return matchesSearch && matchesCategory;
+    const name = (product && product.name) ? String(product.name) : '';
+    const category = (product && product.category) ? String(product.category).toLowerCase() : '';
+    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory === 'all' || category === String(filterCategory).toLowerCase();
+    return matchesSearch && matchesCategory;
   });
 
   const handleInputChange = (e) => {
@@ -269,7 +275,7 @@ const ProductMgmt = () => {
               >
                 {categories.map(category => (
                   <option key={category} value={category}>
-                    {category === 'all' ? 'All Categories' : category}
+                    {category === 'all' ? 'All Categories' : formatCategoryLabel(category)}
                   </option>
                 ))}
               </select>
@@ -464,7 +470,7 @@ const ProductMgmt = () => {
                     >
                       <option value="">Select Category</option>
                       {categories.filter(cat => cat !== 'all').map(category => (
-                        <option key={category} value={category}>{category}</option>
+                        <option key={category} value={category}>{formatCategoryLabel(category)}</option>
                       ))}
                     </select>
                     <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
