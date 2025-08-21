@@ -99,6 +99,19 @@ const OrderMgmt = () => {
     }
   };
 
+  // Normalize order date from different API shapes and format
+  const getOrderDate = (order, withTime = false) => {
+    if (!order) return '';
+    const raw = order?.date || order?.orderDate || order?.createdAt || order?.created_at || order?.timestamp || order?.created || order?.order_date || '';
+    if (!raw) return '';
+    try {
+      const d = new Date(raw);
+      return withTime ? d.toLocaleString() : d.toLocaleDateString();
+    } catch {
+      return String(raw);
+    }
+  };
+
   const getNextStatus = (currentStatus) => {
     const statusFlow = {
       'Pending': 'Processing',
@@ -381,7 +394,7 @@ const OrderMgmt = () => {
             (getCustomerName(order) || '').replace(/,/g, ' '),
             Number(order?.total || order?.amount || 0),
             order?.status || '',
-            order?.date || ''
+            getOrderDate(order)
           ].join(',')
         )
       ].join('\n');
@@ -400,7 +413,7 @@ const OrderMgmt = () => {
           (getCustomerName(o) || '').replace(/</g, '&lt;'),
           `GH₵${Number(o?.total || o?.amount || 0).toFixed(2)}`,
           o?.status || '',
-          o?.date || ''
+          getOrderDate(o)
         ]);
 
         const tableHtml = `
@@ -581,7 +594,7 @@ const OrderMgmt = () => {
               </div>
               <div className="text-right ml-3">
                 <p className="text-lg font-bold text-gray-900">GH₵{Number(order?.total || order?.amount || 0).toFixed(2)}</p>
-                <p className="text-xs text-gray-500">{order?.date ? new Date(order.date).toLocaleDateString() : ''}</p>
+                <p className="text-xs text-gray-500">{getOrderDate(order)}</p>
               </div>
             </div>
 
@@ -786,7 +799,7 @@ const OrderMgmt = () => {
                     </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {order?.date ? new Date(order.date).toLocaleDateString() : ''}
+                    {getOrderDate(order)}
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
@@ -1054,7 +1067,7 @@ const OrderMgmt = () => {
                     <h4 className="font-semibold text-gray-900 mb-2">Invoice Details:</h4>
                     <p className="text-sm text-gray-600">Invoice #: INV-{selectedOrder.id}</p>
                     <p className="text-sm text-gray-600">Order #: {selectedOrder.id}</p>
-                    <p className="text-sm text-gray-600">Date: {selectedOrder.date}</p>
+                    <p className="text-sm text-gray-600">Date: {getOrderDate(selectedOrder)}</p>
                     <p className="text-sm text-gray-600">Payment: {selectedOrder.paymentMethod}</p>
                   </div>
                 </div>
@@ -1150,7 +1163,7 @@ const OrderMgmt = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Date:</span>
-                    <span>{selectedOrder.date}</span>
+                    <span>{getOrderDate(selectedOrder, true)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Customer:</span>
