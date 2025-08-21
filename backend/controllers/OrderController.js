@@ -18,7 +18,6 @@ export const createOrder = async (req, res) => {
     country,
     state,
     zipcode,
-    delivery_fee,
     payment_method,
     note
   } = req.body;
@@ -68,7 +67,7 @@ export const createOrder = async (req, res) => {
         country,
         state,
         zipcode,
-        delivery_fee: delivery_fee || 0,
+        delivery_fee: 0,
         total_amount: finalAmount,
         payment_method,
         status: 'pending',
