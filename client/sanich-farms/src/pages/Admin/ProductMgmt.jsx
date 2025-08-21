@@ -232,9 +232,9 @@ const ProductMgmt = () => {
             setProducts(prev => [...prev, created]);
           }
         }
-      } catch (err) {
+      } catch {
         // Surface the error to the developer/user instead of silently mutating local state
-        console.error('Product save failed', err);
+        console.error('Product save failed');
         alert('Failed to save product. See console for details.');
       } finally {
         closeModal();
@@ -256,8 +256,8 @@ const ProductMgmt = () => {
             await productsAPI.remove(idToUse);
           }
           setProducts(prev => prev.filter(p => (p._id || p.id) !== (idToUse)));
-        } catch (err) {
-          console.error('Failed to delete product', err);
+        } catch {
+          console.error('Failed to delete product');
           alert('Failed to delete product. See console for details.');
         }
       };
