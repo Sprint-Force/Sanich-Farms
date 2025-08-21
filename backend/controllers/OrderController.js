@@ -4,22 +4,14 @@ import { OrderItem } from '../models/OrderItem.js';
 import { Product } from '../models/Product.js';
 import { CartItem } from '../models/CartItem.js';
 import { User } from '../models/User.js';
+import axios from 'axios';
 
-// Create and order
+
+// Create an order
 export const createOrder = async (req, res) => {
   const userId = req.user.id;
-  const {
-    first_name,
-    last_name,
-    company_name,
-    email,
-    phone_number,
-    delivery_address,
-    country,
-    state,
-    zipcode,
-    payment_method,
-    note
+  const { first_name, last_name, company_name, email,phone_number,
+    delivery_address, country, state, zipcode, payment_method, note
   } = req.body;
 
   // Basic validation
@@ -34,9 +26,7 @@ export const createOrder = async (req, res) => {
     // Get cart items for the user
     const cartItems = await CartItem.findAll({
       where: { user_id: userId },
-      include: [{ 
-        model: Product,
-       }],
+      include: [{ model: Product }],
     });
 
     if (cartItems.length === 0) {
@@ -50,7 +40,8 @@ export const createOrder = async (req, res) => {
     });
 
     // Add delivery fee if provided
-    const finalAmount = totalAmount + (parseFloat(delivery_fee) || 0);
+    const delivery_fee = 0; // you can adjust this if dynamic
+    const finalAmount = totalAmount + delivery_fee;
 
     let createdOrder;
 
@@ -67,7 +58,7 @@ export const createOrder = async (req, res) => {
         country,
         state,
         zipcode,
-        delivery_fee: 0,
+        delivery_fee,
         total_amount: finalAmount,
         payment_method,
         status: 'pending',
@@ -92,17 +83,51 @@ export const createOrder = async (req, res) => {
       createdOrder = order;
     });
 
-    // Fetch full order with associated items and product info
+    // If payment method is mobile money, initialize Paystack payment
+    if (payment_method === 'mobile_money') {
+      try {
+        const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+        const callbackUrl = process.env.PAYSTACK_CALLBACK_URL;
+         
+        const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+          email,
+          amount: finalAmount * 100, // Paystack expects amount in kobo/pesewas
+          callback_url: callbackUrl,
+          channels: ['mobile_money'] // Ensures MoMo option
+        }, {
+          headers: {
+            Authorization: `Bearer ${paystackSecretKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.data.status) {
+          return res.status(200).json({
+            status: 'success',
+            message: 'Order created successfully. Redirect to Paystack for payment.',
+            order: createdOrder,
+            authorization_url: response.data.data.authorization_url
+          });
+        } else {
+          return res.status(500).json({ error: 'Failed to initialize payment with Paystack' });
+        }
+      } catch (err) {
+        console.error('Paystack init error:', err.response?.data || err.message);
+        return res.status(500).json({ error: 'Payment initialization failed' });
+      }
+    }
+
+    // If not mobile money, just return order details
     const fullOrder = await Order.findByPk(createdOrder.id, {
       include: [
         {
           model: OrderItem,
-          include: [{ model: Product,}],
+          include: [{ model: Product }],
         },
       ],
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       status: 'success',
       message: 'Order created successfully',
       order: fullOrder,
