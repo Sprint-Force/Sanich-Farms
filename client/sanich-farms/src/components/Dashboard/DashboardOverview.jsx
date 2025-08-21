@@ -119,108 +119,108 @@ const DashboardOverview = () => {
       </div>
 
       {/* DASHBOARD AUDIT FIX: Enhanced Quick Stats like Jumia/Amazon with real calculations */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-6 shadow-sm border border-green-200">
-          <div className="flex items-center gap-4">
-            <div className="bg-green-600 text-white p-3 rounded-full">
-              <FiShoppingBag size={24} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 lg:p-6 shadow-sm border border-green-200">
+          <div className="flex items-center gap-3 lg:gap-4">
+            <div className="bg-green-600 text-white p-2 lg:p-3 rounded-full flex-shrink-0">
+              <FiShoppingBag size={20} className="lg:w-6 lg:h-6" />
             </div>
-            <div>
-              <p className="text-sm text-green-700 font-medium">Total Orders</p>
-              <p className="text-2xl font-bold text-green-800">{orders.length}</p>
-              <p className="text-xs text-green-600">{activeOrders} active</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 shadow-sm border border-blue-200">
-          <div className="flex items-center gap-4">
-            <div className="bg-blue-600 text-white p-3 rounded-full">
-              <FiCalendar size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-blue-700 font-medium">Service Bookings</p>
-              <p className="text-2xl font-bold text-blue-800">{bookings.length}</p>
-              <p className="text-xs text-blue-600">{upcomingBookings.length} upcoming</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs lg:text-sm text-green-700 font-medium truncate">Total Orders</p>
+              <p className="text-xl lg:text-2xl font-bold text-green-800">{orders.length}</p>
+              <p className="text-xs text-green-600 truncate">{activeOrders} active</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-6 shadow-sm border border-purple-200">
-          <div className="flex items-center gap-4">
-            <div className="bg-purple-600 text-white p-3 rounded-full">
-              <FiCreditCard size={24} />
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 lg:p-6 shadow-sm border border-blue-200">
+          <div className="flex items-center gap-3 lg:gap-4">
+            <div className="bg-blue-600 text-white p-2 lg:p-3 rounded-full flex-shrink-0">
+              <FiCalendar size={20} className="lg:w-6 lg:h-6" />
             </div>
-            <div>
-              <p className="text-sm text-purple-700 font-medium">Total Spent</p>
-              <p className="text-2xl font-bold text-purple-800">GH₵{totalSpent.toFixed(2)}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs lg:text-sm text-blue-700 font-medium truncate">Service Bookings</p>
+              <p className="text-xl lg:text-2xl font-bold text-blue-800">{bookings.length}</p>
+              <p className="text-xs text-blue-600 truncate">{upcomingBookings.length} upcoming</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-4 lg:p-6 shadow-sm border border-purple-200">
+          <div className="flex items-center gap-3 lg:gap-4">
+            <div className="bg-purple-600 text-white p-2 lg:p-3 rounded-full flex-shrink-0">
+              <FiCreditCard size={20} className="lg:w-6 lg:h-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs lg:text-sm text-purple-700 font-medium truncate">Total Spent</p>
+              <p className="text-xl lg:text-2xl font-bold text-purple-800">GH₵{totalSpent.toFixed(2)}</p>
               <p className="text-xs text-purple-600">All time</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-6 shadow-sm border border-orange-200">
-          <div className="flex items-center gap-4">
-            <div className="bg-orange-600 text-white p-3 rounded-full">
-              <FiTrendingUp size={24} />
+        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 lg:p-6 shadow-sm border border-orange-200">
+          <div className="flex items-center gap-3 lg:gap-4">
+            <div className="bg-orange-600 text-white p-2 lg:p-3 rounded-full flex-shrink-0">
+              <FiTrendingUp size={20} className="lg:w-6 lg:h-6" />
             </div>
-            <div>
-              <p className="text-sm text-orange-700 font-medium">Success Rate</p>
-              <p className="text-2xl font-bold text-orange-800">{orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0}%</p>
-              <p className="text-xs text-orange-600">{completedOrders} delivered</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs lg:text-sm text-orange-700 font-medium truncate">Success Rate</p>
+              <p className="text-xl lg:text-2xl font-bold text-orange-800">{orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0}%</p>
+              <p className="text-xs text-orange-600 truncate">{completedOrders} delivered</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* DASHBOARD AUDIT FIX: Quick Actions Section like Amazon "Your Account" shortcuts */}
-      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Link to="/dashboard/orders" className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiShoppingBag className="w-8 h-8 text-green-600 mb-2" />
-            <span className="text-sm font-medium text-gray-700">Track Orders</span>
+      <div className="bg-white rounded-xl shadow-md p-4 lg:p-6 border border-gray-100">
+        <h2 className="text-lg lg:text-xl font-bold text-gray-800 mb-4 lg:mb-6">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 lg:gap-4">
+          <Link to="/dashboard/orders" className="flex flex-col items-center p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiShoppingBag className="w-6 h-6 lg:w-8 lg:h-8 text-green-600 mb-1 lg:mb-2" />
+            <span className="text-xs lg:text-sm font-medium text-gray-700">Track Orders</span>
           </Link>
-          <Link to="/shop" className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiRepeat className="w-8 h-8 text-blue-600 mb-2" />
-            <span className="text-sm font-medium text-gray-700">Reorder</span>
+          <Link to="/shop" className="flex flex-col items-center p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiRepeat className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600 mb-1 lg:mb-2" />
+            <span className="text-xs lg:text-sm font-medium text-gray-700">Reorder</span>
           </Link>
-          <Link to="/dashboard/bookings" className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiCalendar className="w-8 h-8 text-purple-600 mb-2" />
-            <span className="text-sm font-medium text-gray-700">Manage Bookings</span>
+          <Link to="/dashboard/bookings" className="flex flex-col items-center p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiCalendar className="w-6 h-6 lg:w-8 lg:h-8 text-purple-600 mb-1 lg:mb-2" />
+            <span className="text-xs lg:text-sm font-medium text-gray-700">Manage Bookings</span>
           </Link>
-          <Link to="/wishlist" className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiHeart className="w-8 h-8 text-red-600 mb-2" />
-            <span className="text-sm font-medium text-gray-700">Wishlist</span>
+          <Link to="/wishlist" className="flex flex-col items-center p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiHeart className="w-6 h-6 lg:w-8 lg:h-8 text-red-600 mb-1 lg:mb-2" />
+            <span className="text-xs lg:text-sm font-medium text-gray-700">Wishlist</span>
           </Link>
-          <Link to="/dashboard/profile" className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiUser className="w-8 h-8 text-yellow-600 mb-2" />
-            <span className="text-sm font-medium text-gray-700">Account Settings</span>
+          <Link to="/dashboard/profile" className="flex flex-col items-center p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiUser className="w-6 h-6 lg:w-8 lg:h-8 text-yellow-600 mb-1 lg:mb-2" />
+            <span className="text-xs lg:text-sm font-medium text-gray-700">Account Settings</span>
           </Link>
-          <Link to="/services" className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiShoppingCart className="w-8 h-8 text-indigo-600 mb-2" />
-            <span className="text-sm font-medium text-gray-700">Book Again</span>
+          <Link to="/services" className="flex flex-col items-center p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiShoppingCart className="w-6 h-6 lg:w-8 lg:h-8 text-indigo-600 mb-1 lg:mb-2" />
+            <span className="text-xs lg:text-sm font-medium text-gray-700">Book Again</span>
           </Link>
         </div>
       </div>
 
       {/* Recent Orders */}
-      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-        <div className="flex justify-between items-center mb-4 border-b pb-3 border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800">Recent Orders</h2>
-          <Link to="/dashboard/orders" className="text-green-600 hover:underline text-sm font-medium">View All Orders</Link>
+      <div className="bg-white rounded-xl shadow-md p-4 lg:p-6 border border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b pb-3 border-gray-200 gap-2">
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-800">Recent Orders</h2>
+          <Link to="/dashboard/orders" className="text-green-600 hover:underline text-sm font-medium self-start sm:self-center">View All Orders</Link>
         </div>
         {recentOrders.length > 0 ? (
           <ul className="divide-y divide-gray-200">
             {recentOrders.map(order => (
-              <li key={order.id} className="py-3 flex justify-between items-center">
-                <div>
-                  <p className="text-gray-800 font-medium">{order.id}</p>
+              <li key={order.id} className="py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                <div className="flex-1">
+                  <p className="text-gray-800 font-medium">Order #{order.id}</p>
                   <p className="text-sm text-gray-500">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : order.date}</p>
                 </div>
-                <div className="text-right">
+                <div className="flex flex-row sm:flex-col sm:text-right items-start sm:items-end gap-2 sm:gap-1">
                   <p className="text-gray-800 font-semibold">GH₵{order.total_amount || order.total}</p>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                     {order.status}
                   </span>
                 </div>
@@ -233,21 +233,21 @@ const DashboardOverview = () => {
       </div>
 
       {/* Upcoming Bookings */}
-      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-        <div className="flex justify-between items-center mb-4 border-b pb-3 border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800">Upcoming Bookings</h2>
-          <Link to="/dashboard/bookings" className="text-green-600 hover:underline text-sm font-medium">View All Bookings</Link>
+      <div className="bg-white rounded-xl shadow-md p-4 lg:p-6 border border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b pb-3 border-gray-200 gap-2">
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-800">Upcoming Bookings</h2>
+          <Link to="/dashboard/bookings" className="text-green-600 hover:underline text-sm font-medium self-start sm:self-center">View All Bookings</Link>
         </div>
         {upcomingBookings.length > 0 ? (
           <ul className="divide-y divide-gray-200">
             {upcomingBookings.map(booking => (
-              <li key={booking.id} className="py-3 flex justify-between items-center">
-                <div>
+              <li key={booking.id} className="py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                <div className="flex-1">
                   <p className="text-gray-800 font-medium">{booking.service || booking.service_name}</p>
                   <p className="text-sm text-gray-500">{booking.appointment_date ? new Date(booking.appointment_date).toLocaleDateString() : booking.date}</p>
                 </div>
-                <div className="text-right">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${booking.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                <div className="flex sm:justify-end">
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${booking.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
                     {booking.status}
                   </span>
                 </div>
