@@ -119,55 +119,71 @@ const DashboardOverview = () => {
       </div>
 
       {/* DASHBOARD AUDIT FIX: Enhanced Quick Stats like Jumia/Amazon with real calculations */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 2xl:gap-8">
-        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 lg:p-6 2xl:p-8 shadow-sm border border-green-200 min-h-[120px] lg:min-h-[140px]">
-          <div className="flex items-center gap-3 lg:gap-4 2xl:gap-6 h-full">
-            <div className="bg-green-600 text-white p-2 lg:p-3 2xl:p-4 rounded-full flex-shrink-0">
-              <FiShoppingBag size={20} className="lg:w-6 lg:h-6 2xl:w-8 2xl:h-8" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 lg:p-6 shadow-sm border border-green-200 min-h-[140px] xl:min-h-[160px]">
+          <div className="flex flex-col space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-green-600 text-white p-3 rounded-full flex-shrink-0">
+                <FiShoppingBag size={24} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-green-700 font-medium">Total Orders</p>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs lg:text-sm 2xl:text-base text-green-700 font-medium truncate">Total Orders</p>
-              <p className="text-xl lg:text-2xl 2xl:text-3xl font-bold text-green-800">{orders.length}</p>
-              <p className="text-xs lg:text-sm 2xl:text-base text-green-600 truncate">{activeOrders} active</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 lg:p-6 2xl:p-8 shadow-sm border border-blue-200 min-h-[120px] lg:min-h-[140px]">
-          <div className="flex items-center gap-3 lg:gap-4 2xl:gap-6 h-full">
-            <div className="bg-blue-600 text-white p-2 lg:p-3 2xl:p-4 rounded-full flex-shrink-0">
-              <FiCalendar size={20} className="lg:w-6 lg:h-6 2xl:w-8 2xl:h-8" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs lg:text-sm 2xl:text-base text-blue-700 font-medium truncate">Service Bookings</p>
-              <p className="text-xl lg:text-2xl 2xl:text-3xl font-bold text-blue-800">{bookings.length}</p>
-              <p className="text-xs lg:text-sm 2xl:text-base text-blue-600 truncate">{upcomingBookings.length} upcoming</p>
+            <div className="space-y-1">
+              <p className="text-2xl lg:text-3xl font-bold text-green-800">{orders.length}</p>
+              <p className="text-xs text-green-600">{activeOrders} active</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-4 lg:p-6 2xl:p-8 shadow-sm border border-purple-200 min-h-[120px] lg:min-h-[140px]">
-          <div className="flex items-center gap-3 lg:gap-4 2xl:gap-6 h-full">
-            <div className="bg-purple-600 text-white p-2 lg:p-3 2xl:p-4 rounded-full flex-shrink-0">
-              <FiCreditCard size={20} className="lg:w-6 lg:h-6 2xl:w-8 2xl:h-8" />
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 lg:p-6 shadow-sm border border-blue-200 min-h-[140px] xl:min-h-[160px]">
+          <div className="flex flex-col space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-600 text-white p-3 rounded-full flex-shrink-0">
+                <FiCalendar size={24} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-blue-700 font-medium">Service Bookings</p>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs lg:text-sm 2xl:text-base text-purple-700 font-medium truncate">Total Spent</p>
-              <p className="text-xl lg:text-2xl 2xl:text-3xl font-bold text-purple-800">GH₵{totalSpent.toFixed(2)}</p>
-              <p className="text-xs lg:text-sm 2xl:text-base text-purple-600">All time</p>
+            <div className="space-y-1">
+              <p className="text-2xl lg:text-3xl font-bold text-blue-800">{bookings.length}</p>
+              <p className="text-xs text-blue-600">{upcomingBookings.length} upcoming</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 lg:p-6 2xl:p-8 shadow-sm border border-orange-200 min-h-[120px] lg:min-h-[140px]">
-          <div className="flex items-center gap-3 lg:gap-4 2xl:gap-6 h-full">
-            <div className="bg-orange-600 text-white p-2 lg:p-3 2xl:p-4 rounded-full flex-shrink-0">
-              <FiTrendingUp size={20} className="lg:w-6 lg:h-6 2xl:w-8 2xl:h-8" />
+        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-4 lg:p-6 shadow-sm border border-purple-200 min-h-[140px] xl:min-h-[160px]">
+          <div className="flex flex-col space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-purple-600 text-white p-3 rounded-full flex-shrink-0">
+                <FiCreditCard size={24} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-purple-700 font-medium">Total Spent</p>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs lg:text-sm 2xl:text-base text-orange-700 font-medium truncate">Success Rate</p>
-              <p className="text-xl lg:text-2xl 2xl:text-3xl font-bold text-orange-800">{orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0}%</p>
-              <p className="text-xs lg:text-sm 2xl:text-base text-orange-600 truncate">{completedOrders} delivered</p>
+            <div className="space-y-1">
+              <p className="text-2xl lg:text-3xl font-bold text-purple-800">GH₵{totalSpent.toFixed(2)}</p>
+              <p className="text-xs text-purple-600">All time</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 lg:p-6 shadow-sm border border-orange-200 min-h-[140px] xl:min-h-[160px]">
+          <div className="flex flex-col space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-orange-600 text-white p-3 rounded-full flex-shrink-0">
+                <FiTrendingUp size={24} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-orange-700 font-medium">Success Rate</p>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-2xl lg:text-3xl font-bold text-orange-800">{orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0}%</p>
+              <p className="text-xs text-orange-600">{completedOrders} delivered</p>
             </div>
           </div>
         </div>
