@@ -3,6 +3,7 @@ import { Order } from '../models/Order.js';
 import { OrderItem } from '../models/OrderItem.js';
 import { Product } from '../models/Product.js';
 import { CartItem } from '../models/CartItem.js';
+import { User } from '../models/User.js';
 
 // Create and order
 export const createOrder = async (req, res) => {
@@ -115,65 +116,55 @@ export const createOrder = async (req, res) => {
 };
 
 
-// Get user's all orders
-export const getUserOrders = async (req, res) => {
+// Fetches all orders for both admin and user
+export const getOrders = async (req, res) => {
+  const { status, payment_status, delivery_status } = req.query;
+
+  // Build filters from query params
+  const filters = {};
+  if (status) filters.status = status;
+  if (payment_status) filters.payment_status = payment_status;
+  if (delivery_status) filters.delivery_status = delivery_status;
+
   try {
-    const userId = req.user.id;
-    const { page = 1, limit = 10, status } = req.query;
-
-    const offset = (page - 1) * limit;
-
-    const whereClause = {
-      user_id: userId,
-    };
-
-    if (status) {
-      whereClause.status = status;
+    if (req.user.role === 'admin') {
+      // Admin: can view all orders with optional filters
+      const orders = await Order.findAll({
+        where: filters,
+        include: [{ model: User, attributes: ['name', 'email'] }],
+        order: [['ordered_at', 'DESC']],
+      });
+      return res.status(200).json({ success: true, orders });
+    } else {
+      //  User: apply same filters + restrict to their own orders
+      const userFilters = { ...filters, user_id: req.user.id };
+      const orders = await Order.findAll({
+        where: userFilters,
+        order: [['ordered_at', 'DESC']],
+      });
+      return res.status(200).json({ success: true, orders });
     }
-
-    const { rows: orders, count } = await Order.findAndCountAll({
-      where: whereClause,
-      include: [
-        {
-          model: OrderItem,
-          include: [
-            {
-              model: Product,
-              attributes: ['id', 'name', 'price', 'image_url'],
-            },
-          ],
-        },
-      ],
-      order: [['ordered_at', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    });
-
-    return res.status(200).json({
-      success: 'success',
-      orders,
-      total: count,
-      page: parseInt(page),
-      pages: Math.ceil(count / limit),
-    });
   } catch (error) {
-    console.error('❌ Error fetching user orders:', error);
-    return res.status(500).json({ success: false, error: 'Server error' });
+    return res.status(500).json({
+      message: 'Failed to retrieve orders',
+      error: error.message,
+    });
   }
 };
 
 
-// Get a single order
+// View order details for both admin and user
 export const getSingleOrder = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const orderId  = req.params.id;
+    const { id: userId, role } = req.user;
+    const orderId = req.params.id;
+
+    const whereClause = role === 'admin'
+      ? { id: orderId }
+      : { id: orderId, user_id: userId };
 
     const order = await Order.findOne({
-      where: {
-        id: orderId,
-        user_id: userId
-      },
+      where: whereClause,
       include: [
         {
           model: OrderItem,
@@ -183,6 +174,10 @@ export const getSingleOrder = async (req, res) => {
               attributes: ['id', 'name', 'image_url', 'price']
             }
           ]
+        },
+        {
+          model: User,
+          attributes: ['id', 'name', 'email'] // so admin can see user info
         }
       ]
     });
@@ -197,5 +192,3 @@ export const getSingleOrder = async (req, res) => {
     res.status(500).json({ error: 'Something went wrong while retrieving the order.' });
   }
 };
-
-

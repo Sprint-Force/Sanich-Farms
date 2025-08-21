@@ -406,21 +406,5 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
-// Admin: Get all orders with optional filters
-export const getAllOrders = async (req, res) => {
-  const { status, payment_status, delivery_status } = req.query;
 
-  const filters = {};
-  if (status) filters.status = status;
-  if (payment_status) filters.payment_status = payment_status;
-  if (delivery_status) filters.delivery_status = delivery_status;
-
-  try {
-    const orders = await Order.findAll({ where: filters, order: [["created_at", "DESC"]] });
-    return res.status(200).json({ orders });
-  } catch (error) {
-    console.error("Get orders error:", error.message);
-    return res.status(500).json({ message: "Failed to retrieve orders", error: error.message });
-  }
-};
 

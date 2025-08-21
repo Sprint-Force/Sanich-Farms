@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { userAPI } from '../../services/api';
 import { 
   FiUser, 
   FiMail, 
@@ -43,23 +44,42 @@ const AdminProfile = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
-    // Load admin data from localStorage or API
-    const adminAuth = localStorage.getItem('adminAuth');
-    if (adminAuth) {
+    // Try to load profile from API, fallback to adminAuth in localStorage
+    let mounted = true;
+    const loadProfile = async () => {
       try {
-        const authData = JSON.parse(adminAuth);
-        setProfileData(prev => ({
-          ...prev,
-          email: authData.email
-        }));
-        setEditedData(prev => ({
-          ...prev,
-          email: authData.email
-        }));
+        const data = await userAPI.getProfile();
+        if (!mounted) return;
+        const profile = {
+          name: data.name || 'Admin User',
+          email: data.email || 'admin@sanichfarms.com',
+          phone: data.phone || '+1 (555) 123-4567',
+          address: data.address || '123 Farm Road, Agricultural District',
+          role: data.role || 'Administrator',
+          joinDate: data.joinDate || '2024-01-15',
+          avatar: data.avatar || null
+        };
+        setProfileData(profile);
+        setEditedData(profile);
       } catch (error) {
-        console.error('Error loading admin data:', error);
+        // Fallback to localStorage data
+        console.warn('Failed to load profile from API, falling back to local adminAuth', error);
+        const adminAuth = localStorage.getItem('adminAuth');
+        if (adminAuth) {
+          try {
+            const authData = JSON.parse(adminAuth);
+            setProfileData(prev => ({ ...prev, email: authData.email, name: authData.name || prev.name }));
+            setEditedData(prev => ({ ...prev, email: authData.email, name: authData.name || prev.name }));
+          } catch (e) {
+            console.error('Error loading admin data from localStorage:', e);
+          }
+        }
       }
-    }
+    };
+
+    loadProfile();
+
+    return () => { mounted = false; };
   }, []);
 
   const handleEdit = () => {
@@ -76,21 +96,25 @@ const AdminProfile = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setProfileData(editedData);
+      // Call API to update profile
+      const res = await userAPI.updateProfile(editedData);
+      setProfileData(prev => ({ ...prev, ...res }));
       setIsEditing(false);
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
-      
+
       // Update localStorage if needed
       const adminAuth = localStorage.getItem('adminAuth');
       if (adminAuth) {
-        const authData = JSON.parse(adminAuth);
-        localStorage.setItem('adminAuth', JSON.stringify({
-          ...authData,
-          email: editedData.email
-        }));
+        try {
+          const authData = JSON.parse(adminAuth);
+          localStorage.setItem('adminAuth', JSON.stringify({
+            ...authData,
+            email: editedData.email,
+            name: editedData.name
+          }));
+        } catch (e) {
+          console.warn('Failed to update adminAuth in localStorage', e);
+        }
       }
     } catch {
       setMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
@@ -112,18 +136,18 @@ const AdminProfile = () => {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+      // Call API to change password
+      await userAPI.changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
       });
+
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setIsChangingPassword(false);
       setMessage({ type: 'success', text: 'Password changed successfully!' });
-    } catch {
-      setMessage({ type: 'error', text: 'Failed to change password. Please try again.' });
+    } catch (e) {
+      const errMsg = e?.response?.data?.message || 'Failed to change password. Please try again.';
+      setMessage({ type: 'error', text: errMsg });
     } finally {
       setLoading(false);
     }

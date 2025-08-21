@@ -93,6 +93,21 @@ export const productsAPI = {
     const response = await apiClient.get(`/products/${id}`);
     return response.data;
   },
+
+  create: async (productData) => {
+    const response = await apiClient.post('/products', productData);
+    return response.data;
+  },
+
+  update: async (id, productData) => {
+    const response = await apiClient.put(`/products/${id}`, productData);
+    return response.data;
+  },
+
+  remove: async (id) => {
+    const response = await apiClient.delete(`/products/${id}`);
+    return response.data;
+  },
 };
 
 // Services API methods
@@ -172,6 +187,12 @@ export const userAPI = {
     const response = await apiClient.put('/auth/users/me', userData);
     return response.data;
   },
+  
+  changePassword: async (passwordData) => {
+    // passwordData: { currentPassword, newPassword }
+    const response = await apiClient.post('/user/change-password', passwordData);
+    return response.data;
+  }
 };
 
 // Cart API methods

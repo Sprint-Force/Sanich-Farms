@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FiTrendingUp, 
   FiDollarSign, 
@@ -20,315 +20,70 @@ import {
   FiChevronDown
 } from 'react-icons/fi';
 import { ClickableEmail } from '../../utils/contactUtils';
+import { ordersAPI, bookingsAPI, productsAPI, paymentsAPI } from '../../services/api';
 
 const Analytic = () => {
   const [timeRange, setTimeRange] = useState('7days');
   const [chartType, setChartType] = useState('revenue');
   const [reportType, setReportType] = useState('sales'); // New state for report type
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Mock data - replace with real API
-  const stats = {
-    totalRevenue: 45678.90,
-    revenueGrowth: 12.5,
-    totalOrders: 856,
-    ordersGrowth: 8.2,
-    avgOrderValue: 53.35,
-    avgOrderGrowth: 4.1,
-    repeatPurchaseRate: 68.5,
-    repeatPurchaseGrowth: 3.2
+  // API-derived state (nullable). If null, UI falls back to the existing mock data.
+  const [apiStats, setApiStats] = useState(null);
+  const [apiBookingStats, setApiBookingStats] = useState(null);
+  const [apiRevenueData, setApiRevenueData] = useState(null);
+  const [apiBookingData, setApiBookingData] = useState(null);
+  const [apiBestSellingProducts, setApiBestSellingProducts] = useState(null);
+  const [apiTopCustomers, setApiTopCustomers] = useState(null);
+  const [apiAbandonedCarts, setApiAbandonedCarts] = useState(null);
+
+  // API-driven derived values (no hardcoded mock data)
+  const stats = apiStats || {
+    totalRevenue: 0,
+    revenueGrowth: 0,
+    totalOrders: 0,
+    ordersGrowth: 0,
+    avgOrderValue: 0,
+    avgOrderGrowth: 0,
+    repeatPurchaseRate: 0,
+    repeatPurchaseGrowth: 0
   };
 
-  // Booking Statistics
-  const bookingStats = {
-    totalBookings: 342,
-    bookingsGrowth: 18.5,
-    pendingBookings: 45,
-    approvedBookings: 128,
-    completedBookings: 142,
-    cancelledBookings: 27,
-    totalBookingRevenue: 68450.90,
-    bookingRevenueGrowth: 22.3,
-    avgBookingValue: 200.15,
-    avgBookingGrowth: 8.7,
-    conversionRate: 78.5,
-    conversionGrowth: 5.2
+  const bookingStats = apiBookingStats || {
+    totalBookings: 0,
+    bookingsGrowth: 0,
+    pendingBookings: 0,
+    approvedBookings: 0,
+    completedBookings: 0,
+    cancelledBookings: 0,
+    totalBookingRevenue: 0,
+    bookingRevenueGrowth: 0,
+    avgBookingValue: 0,
+    avgBookingGrowth: 0,
+    conversionRate: 0,
+    conversionGrowth: 0
   };
 
-  // Booking data for charts
-  const bookingData = {
-    daily: [
-      { date: '2024-08-01', bookings: 12, revenue: 2400.50, completed: 8, cancelled: 1 },
-      { date: '2024-08-02', bookings: 15, revenue: 3200.75, completed: 11, cancelled: 2 },
-      { date: '2024-08-03', bookings: 8, revenue: 1680.25, completed: 6, cancelled: 0 },
-      { date: '2024-08-04', bookings: 18, revenue: 3890.90, completed: 14, cancelled: 1 },
-      { date: '2024-08-05', bookings: 14, revenue: 2890.40, completed: 10, cancelled: 2 },
-      { date: '2024-08-06', bookings: 22, revenue: 4250.60, completed: 18, cancelled: 1 },
-      { date: '2024-08-07', bookings: 19, revenue: 3680.30, completed: 15, cancelled: 2 }
-    ],
-    weekly: [
-      { period: 'Week 1', bookings: 68, revenue: 13500.40, completed: 52, cancelled: 8 },
-      { period: 'Week 2', bookings: 75, revenue: 15200.60, completed: 58, cancelled: 6 },
-      { period: 'Week 3', bookings: 82, revenue: 16890.30, completed: 65, cancelled: 7 },
-      { period: 'Week 4', bookings: 89, revenue: 18500.80, completed: 72, cancelled: 5 }
-    ],
-    monthly: [
-      { period: 'Jan 2024', bookings: 245, revenue: 48500.40, completed: 198, cancelled: 25 },
-      { period: 'Feb 2024', bookings: 268, revenue: 52200.60, completed: 215, cancelled: 22 },
-      { period: 'Mar 2024', bookings: 289, revenue: 58890.30, completed: 235, cancelled: 28 },
-      { period: 'Apr 2024', bookings: 312, revenue: 62500.80, completed: 252, cancelled: 24 },
-      { period: 'May 2024', bookings: 298, revenue: 59200.30, completed: 240, cancelled: 26 },
-      { period: 'Jun 2024', bookings: 325, revenue: 65600.90, completed: 268, cancelled: 23 },
-      { period: 'Jul 2024', bookings: 342, revenue: 68450.90, completed: 285, cancelled: 27 }
-    ]
-  };
+  const bookingData = apiBookingData || { daily: [], weekly: [], monthly: [] };
+  const revenueData = apiRevenueData || { daily: [], weekly: [], monthly: [] };
 
-  // Service performance data
-  const servicePerformance = [
-    {
-      service: 'Farm Consultation',
-      bookings: 89,
-      revenue: 13350.00,
-      avgDuration: '2.5 hours',
-      satisfaction: 4.8,
-      growth: 15.2
-    },
-    {
-      service: 'Equipment Installation',
-      bookings: 67,
-      revenue: 20100.00,
-      avgDuration: '4.0 hours',
-      satisfaction: 4.6,
-      growth: 8.7
-    },
-    {
-      service: 'Training Session',
-      bookings: 78,
-      revenue: 15600.00,
-      avgDuration: '3.0 hours',
-      satisfaction: 4.9,
-      growth: 22.5
-    },
-    {
-      service: 'Soil Testing',
-      bookings: 56,
-      revenue: 6720.00,
-      avgDuration: '1.5 hours',
-      satisfaction: 4.7,
-      growth: 5.8
-    },
-    {
-      service: 'Pest Control',
-      bookings: 52,
-      revenue: 5200.00,
-      avgDuration: '1.0 hour',
-      satisfaction: 4.5,
-      growth: -2.1
-    }
-  ];
+  // Service performance, peak hours, staff performance, best selling products, top customers and abandoned carts
+  // will come from API-derived state when available; otherwise default to empty arrays
+  const servicePerformance = apiBestSellingProducts ? apiBestSellingProducts.map((p, i) => ({
+    service: p.name || `Item ${i+1}`,
+    bookings: p.unitsSold || 0,
+    revenue: p.revenue || 0,
+    avgDuration: '-',
+    satisfaction: 0,
+    growth: p.growth || 0
+  })) : [];
 
-  // Peak hours data
-  const peakHours = [
-    { hour: '8:00 AM', bookings: 25, percentage: 12.5 },
-    { hour: '9:00 AM', bookings: 32, percentage: 16.0 },
-    { hour: '10:00 AM', bookings: 42, percentage: 21.0 },
-    { hour: '11:00 AM', bookings: 38, percentage: 19.0 },
-    { hour: '12:00 PM', bookings: 28, percentage: 14.0 },
-    { hour: '1:00 PM', bookings: 22, percentage: 11.0 },
-    { hour: '2:00 PM', bookings: 35, percentage: 17.5 },
-    { hour: '3:00 PM', bookings: 31, percentage: 15.5 },
-    { hour: '4:00 PM', bookings: 18, percentage: 9.0 },
-    { hour: '5:00 PM', bookings: 12, percentage: 6.0 }
-  ];
-
-  // Staff performance data
-  const staffPerformance = [
-    {
-      name: 'Michael Asante',
-      bookings: 78,
-      completed: 72,
-      rating: 4.9,
-      revenue: 15600.00,
-      efficiency: 92.3
-    },
-    {
-      name: 'Grace Mensah',
-      bookings: 65,
-      completed: 58,
-      rating: 4.7,
-      revenue: 11600.00,
-      efficiency: 89.2
-    },
-    {
-      name: 'Kwame Osei',
-      bookings: 52,
-      completed: 48,
-      rating: 4.6,
-      revenue: 9600.00,
-      efficiency: 92.3
-    },
-    {
-      name: 'Akosua Agyei',
-      bookings: 45,
-      completed: 42,
-      rating: 4.8,
-      revenue: 8400.00,
-      efficiency: 93.3
-    }
-  ];
-
-  // Revenue data for charts (existing)
-  const revenueData = {
-    daily: [
-      { date: '2024-08-01', revenue: 1250.50, orders: 15 },
-      { date: '2024-08-02', revenue: 1450.75, orders: 18 },
-      { date: '2024-08-03', revenue: 1180.25, orders: 12 },
-      { date: '2024-08-04', revenue: 1680.90, orders: 22 },
-      { date: '2024-08-05', revenue: 1520.40, orders: 19 },
-      { date: '2024-08-06', revenue: 1890.60, orders: 25 },
-      { date: '2024-08-07', revenue: 2100.30, orders: 28 }
-    ],
-    weekly: [
-      { period: 'Week 1', revenue: 8500.40, orders: 115 },
-      { period: 'Week 2', revenue: 9200.60, orders: 128 },
-      { period: 'Week 3', revenue: 8890.30, orders: 120 },
-      { period: 'Week 4', revenue: 10500.80, orders: 142 }
-    ],
-    monthly: [
-      { period: 'Jan 2024', revenue: 32500.40, orders: 420 },
-      { period: 'Feb 2024', revenue: 35200.60, orders: 465 },
-      { period: 'Mar 2024', revenue: 38890.30, orders: 510 },
-      { period: 'Apr 2024', revenue: 42500.80, orders: 565 },
-      { period: 'May 2024', revenue: 40200.30, orders: 535 },
-      { period: 'Jun 2024', revenue: 45600.90, orders: 598 },
-      { period: 'Jul 2024', revenue: 48900.40, orders: 642 }
-    ]
-  };
-
-  const bestSellingProducts = [
-    {
-      id: 1,
-      name: 'Premium Chicken Feed',
-      category: 'Feed',
-      unitsSold: 245,
-      revenue: 3675.55,
-      image: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=100&h=100&fit=crop',
-      growth: 15.2
-    },
-    {
-      id: 2,
-      name: 'Organic Egg Layers',
-      category: 'Poultry',
-      unitsSold: 189,
-      revenue: 4817.50,
-      image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=100&h=100&fit=crop',
-      growth: 8.7
-    },
-    {
-      id: 3,
-      name: 'Farm Equipment Set',
-      category: 'Equipment',
-      unitsSold: 156,
-      revenue: 14040.44,
-      image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=100&h=100&fit=crop',
-      growth: -2.1
-    },
-    {
-      id: 4,
-      name: 'Fertilizer Plus',
-      category: 'Supplies',
-      unitsSold: 134,
-      revenue: 2680.00,
-      image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=100&h=100&fit=crop',
-      growth: 22.5
-    },
-    {
-      id: 5,
-      name: 'Water Systems',
-      category: 'Equipment',
-      unitsSold: 98,
-      revenue: 8820.00,
-      image: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5e?w=100&h=100&fit=crop',
-      growth: 5.8
-    }
-  ];
-
-  const topCustomers = [
-    {
-      id: 1,
-      name: 'John Agriculture Ltd',
-      email: 'john@agriculture.com',
-      totalSpent: 12450.80,
-      orders: 28,
-      lastOrder: '2024-08-07',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
-    },
-    {
-      id: 2,
-      name: 'Green Farm Co.',
-      email: 'info@greenfarm.com',
-      totalSpent: 9870.60,
-      orders: 22,
-      lastOrder: '2024-08-06',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b9a4b8ba?w=100&h=100&fit=crop&crop=face'
-    },
-    {
-      id: 3,
-      name: 'Sustainable Farms',
-      email: 'contact@sustainable.com',
-      totalSpent: 8540.30,
-      orders: 19,
-      lastOrder: '2024-08-05',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
-    },
-    {
-      id: 4,
-      name: 'Eco Agriculture',
-      email: 'hello@ecoag.com',
-      totalSpent: 7230.90,
-      orders: 16,
-      lastOrder: '2024-08-04',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
-    }
-  ];
-
-  const abandonedCarts = [
-    {
-      id: 1,
-      customer: 'Mike Johnson',
-      email: 'mike@example.com',
-      items: 3,
-      value: 156.80,
-      lastActivity: '2024-08-07',
-      daysAbandoned: 1
-    },
-    {
-      id: 2,
-      customer: 'Sarah Wilson',
-      email: 'sarah@example.com',
-      items: 2,
-      value: 89.99,
-      lastActivity: '2024-08-06',
-      daysAbandoned: 2
-    },
-    {
-      id: 3,
-      customer: 'David Brown',
-      email: 'david@example.com',
-      items: 5,
-      value: 234.50,
-      lastActivity: '2024-08-05',
-      daysAbandoned: 3
-    },
-    {
-      id: 4,
-      customer: 'Lisa Davis',
-      email: 'lisa@example.com',
-      items: 1,
-      value: 45.30,
-      lastActivity: '2024-08-04',
-      daysAbandoned: 4
-    }
-  ];
+  const peakHours = [];
+  const staffPerformance = [];
+  const bestSellingProducts = apiBestSellingProducts || [];
+  const topCustomers = apiTopCustomers || [];
+  const abandonedCarts = apiAbandonedCarts || [];
 
   const StatCard = ({ icon: IconComponent, title, value, growth, color }) => (
     <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md border border-gray-100">
@@ -376,6 +131,119 @@ const Analytic = () => {
       </div>
     );
   };
+
+  // ---------- API integration: fetch data and compute simple aggregates ----------
+  useEffect(() => {
+    let mounted = true;
+
+    const getNumber = (v) => (typeof v === 'number' ? v : (Number(v) || 0));
+
+    const getOrderTotal = (order) => {
+      const keys = ['total', 'totalAmount', 'amount', 'grandTotal', 'totalPrice', 'price'];
+      for (const k of keys) {
+        if (order && Object.prototype.hasOwnProperty.call(order, k) && typeof order[k] === 'number') {
+          return order[k];
+        }
+      }
+      // try nested amount
+      if (order && order.payment && typeof order.payment.amount === 'number') return order.payment.amount;
+      return 0;
+    };
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [ordersResp, bookingsResp, productsResp, transactionsResp] = await Promise.all([
+          ordersAPI.getAll().catch((err) => { console.warn('ordersAPI failed', err); return null; }),
+          bookingsAPI.getAll().catch((err) => { console.warn('bookingsAPI failed', err); return null; }),
+          productsAPI.getAll().catch((err) => { console.warn('productsAPI failed', err); return null; }),
+          paymentsAPI.getTransactions().catch((err) => { console.warn('paymentsAPI failed', err); return null; }),
+        ]);
+
+        if (!mounted) return;
+
+        const orders = ordersResp ? (Array.isArray(ordersResp) ? ordersResp : (ordersResp.orders || ordersResp.data || [])) : [];
+        const bookings = bookingsResp ? (Array.isArray(bookingsResp) ? bookingsResp : (bookingsResp.bookings || bookingsResp.data || [])) : [];
+        const products = productsResp ? (Array.isArray(productsResp) ? productsResp : (productsResp.products || productsResp.data || [])) : [];
+  // transactions may be available from paymentsAPI but not used directly here; keep as a defensive parse
+  const _transactions = transactionsResp ? (Array.isArray(transactionsResp) ? transactionsResp : (transactionsResp.transactions || transactionsResp.data || [])) : [];
+
+        // Orders-derived stats
+        const totalRevenue = orders.reduce((sum, o) => sum + getNumber(getOrderTotal(o)), 0);
+        const totalOrders = orders.length;
+        const avgOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
+
+        // repeat purchase rate: simple heuristic using customer/user id or email
+        const customerKey = (o) => o.userId || o.customerId || o.user?.id || o.userId || o.email || o.customerEmail || o.buyerEmail || o.buyer?.email;
+        const custCounts = orders.reduce((map, o) => {
+          const k = customerKey(o) || (o.customer && o.customer.email) || 'unknown';
+          map[k] = (map[k] || 0) + 1;
+          return map;
+        }, {});
+        const customers = Object.keys(custCounts).filter(k => k && k !== 'unknown');
+        const repeaters = customers.filter(k => custCounts[k] > 1).length;
+        const repeatPurchaseRate = customers.length ? (repeaters / customers.length) * 100 : 0;
+
+        setApiStats({ totalRevenue, totalOrders, avgOrderValue, repeatPurchaseRate, revenueGrowth: null, ordersGrowth: null, avgOrderGrowth: null, repeatPurchaseGrowth: null });
+
+        // Bookings-derived stats
+        const totalBookingRevenue = bookings.reduce((s, b) => s + getNumber(b.revenue || b.total || b.amount || 0), 0);
+        const totalBookings = bookings.length;
+        const bookingPending = bookings.filter(b => b.status === 'pending' || b.status === 'PENDING').length;
+        const bookingApproved = bookings.filter(b => b.status === 'approved' || b.status === 'APPROVED').length;
+        const bookingCompleted = bookings.filter(b => b.status === 'completed' || b.status === 'COMPLETED' || b.status === 'done').length;
+        const bookingCancelled = bookings.filter(b => b.status === 'cancelled' || b.status === 'CANCELLED').length;
+
+        setApiBookingStats({ totalBookingRevenue, totalBookings, pendingBookings: bookingPending, approvedBookings: bookingApproved, completedBookings: bookingCompleted, cancelledBookings: bookingCancelled, bookingRevenueGrowth: null, avgBookingValue: totalBookings ? totalBookingRevenue / totalBookings : 0 });
+
+        // Basic revenue data for charts (use last N orders as fallback)
+        const revenueDaily = orders.slice(0, 7).map((o, i) => ({ date: (o.createdAt || o.created_at || o.date || `Day ${i+1}`).slice ? (o.createdAt || o.created_at || o.date).slice(0,10) : `Day ${i+1}`, revenue: getNumber(getOrderTotal(o)), orders: 1 }));
+        const bookingDaily = bookings.slice(0, 7).map((b, i) => ({ date: (b.createdAt || b.created_at || b.date || `Day ${i+1}`).slice ? (b.createdAt || b.created_at || b.date).slice(0,10) : `Day ${i+1}`, bookings: 1, revenue: getNumber(b.revenue || b.total || b.amount || 0), completed: b.status === 'completed' || b.status === 'COMPLETED' }));
+
+        setApiRevenueData({ daily: revenueDaily, weekly: revenueDaily, monthly: revenueDaily });
+        setApiBookingData({ daily: bookingDaily, weekly: bookingDaily, monthly: bookingDaily });
+
+        // Best selling products: if products provide unitsSold, use it; otherwise aggregate from orders (if items exist)
+        let bestProducts = [];
+        if (products && products.length && products[0].unitsSold) {
+          bestProducts = [...products].sort((a,b) => (b.unitsSold || 0) - (a.unitsSold || 0)).slice(0,5).map(p => ({ id: p.id, name: p.name, category: p.category, unitsSold: p.unitsSold, revenue: p.revenue || 0, image: p.image, growth: p.growth || 0 }));
+        } else if (orders && orders.length) {
+          const counts = {};
+          for (const o of orders) {
+            const items = o.items || o.orderItems || o.products || [];
+            for (const it of items) {
+              const pid = it.productId || it.product_id || (it.product && it.product.id) || it.id;
+              const qty = it.quantity || it.qty || 1;
+              counts[pid] = (counts[pid] || 0) + qty;
+            }
+          }
+          bestProducts = Object.entries(counts).map(([pid, unitsSold]) => {
+            const p = products.find(x => String(x.id) === String(pid)) || {};
+            return { id: pid, name: p.name || `Product ${pid}`, category: p.category || 'Unknown', unitsSold, revenue: (p.price || 0) * unitsSold, image: p.image || '', growth: 0 };
+          }).sort((a,b) => b.unitsSold - a.unitsSold).slice(0,5);
+        }
+        setApiBestSellingProducts(bestProducts);
+
+        // Top customers (aggregate by customer key)
+        const topCustomersList = Object.entries(custCounts).map(([k,v]) => ({ id: k, name: k, email: k.includes('@') ? k : '', totalSpent: 0, orders: v, lastOrder: '' })).slice(0,5);
+        setApiTopCustomers(topCustomersList);
+
+        // Abandoned carts: no standard admin endpoint available here, leave null or derive from transactions if possible
+        setApiAbandonedCarts(null);
+
+      } catch (err) {
+        console.warn('Failed to load analytics data', err);
+        if (mounted) setError('Failed to load analytics from server. Showing sample data.');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => { mounted = false; };
+  }, []);
 
   const exportData = (type) => {
     let csvContent = '';
@@ -508,34 +376,34 @@ const Analytic = () => {
       </div>
 
       {/* Key Metrics */}
-      {reportType === 'sales' ? (
+  {reportType === 'sales' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 lg:mb-8">
           <StatCard
             icon={FiDollarSign}
-            title="Total Revenue"
-            value={`GH₵${stats.totalRevenue.toLocaleString()}`}
-            growth={stats.revenueGrowth}
+    title="Total Revenue"
+    value={`GH₵${(apiStats ? apiStats.totalRevenue : stats.totalRevenue).toLocaleString()}`}
+    growth={apiStats ? apiStats.revenueGrowth ?? stats.revenueGrowth : stats.revenueGrowth}
             color="bg-green-500"
           />
           <StatCard
             icon={FiShoppingCart}
-            title="Total Orders"
-            value={stats.totalOrders.toLocaleString()}
-            growth={stats.ordersGrowth}
+    title="Total Orders"
+    value={(apiStats ? apiStats.totalOrders : stats.totalOrders).toLocaleString()}
+    growth={apiStats ? apiStats.ordersGrowth ?? stats.ordersGrowth : stats.ordersGrowth}
             color="bg-blue-500"
           />
           <StatCard
             icon={FiTrendingUp}
-            title="Avg Order Value"
-            value={`GH₵${stats.avgOrderValue}`}
-            growth={stats.avgOrderGrowth}
+    title="Avg Order Value"
+    value={`GH₵${(apiStats ? apiStats.avgOrderValue : stats.avgOrderValue).toFixed(2)}`}
+    growth={apiStats ? apiStats.avgOrderGrowth ?? stats.avgOrderGrowth : stats.avgOrderGrowth}
             color="bg-purple-500"
           />
           <StatCard
             icon={FiRefreshCw}
-            title="Repeat Purchase Rate"
-            value={`${stats.repeatPurchaseRate}%`}
-            growth={stats.repeatPurchaseGrowth}
+    title="Repeat Purchase Rate"
+    value={`${(apiStats ? apiStats.repeatPurchaseRate : stats.repeatPurchaseRate).toFixed(1)}%`}
+    growth={apiStats ? apiStats.repeatPurchaseGrowth ?? stats.repeatPurchaseGrowth : stats.repeatPurchaseGrowth}
             color="bg-orange-500"
           />
         </div>
@@ -543,33 +411,41 @@ const Analytic = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <StatCard
             icon={FiCalendar}
-            title="Total Bookings"
-            value={bookingStats.totalBookings.toLocaleString()}
-            growth={bookingStats.bookingsGrowth}
+    title="Total Bookings"
+    value={(apiBookingStats ? apiBookingStats.totalBookings : bookingStats.totalBookings).toLocaleString()}
+    growth={apiBookingStats ? apiBookingStats.bookingsGrowth ?? bookingStats.bookingsGrowth : bookingStats.bookingsGrowth}
             color="bg-blue-500"
           />
           <StatCard
             icon={FiDollarSign}
-            title="Booking Revenue"
-            value={`GH₵${bookingStats.totalBookingRevenue.toLocaleString()}`}
-            growth={bookingStats.bookingRevenueGrowth}
+    title="Booking Revenue"
+    value={`GH₵${(apiBookingStats ? apiBookingStats.totalBookingRevenue : bookingStats.totalBookingRevenue).toLocaleString()}`}
+    growth={apiBookingStats ? apiBookingStats.bookingRevenueGrowth ?? bookingStats.bookingRevenueGrowth : bookingStats.bookingRevenueGrowth}
             color="bg-green-500"
           />
           <StatCard
             icon={FiTrendingUp}
-            title="Avg Booking Value"
-            value={`GH₵${bookingStats.avgBookingValue}`}
-            growth={bookingStats.avgBookingGrowth}
+    title="Avg Booking Value"
+    value={`GH₵${(apiBookingStats ? apiBookingStats.avgBookingValue : bookingStats.avgBookingValue).toFixed(2)}`}
+    growth={apiBookingStats ? apiBookingStats.avgBookingGrowth ?? bookingStats.avgBookingGrowth : bookingStats.avgBookingGrowth}
             color="bg-purple-500"
           />
           <StatCard
             icon={FiCheckCircle}
-            title="Conversion Rate"
-            value={`${bookingStats.conversionRate}%`}
-            growth={bookingStats.conversionGrowth}
+    title="Conversion Rate"
+    value={`${(apiBookingStats ? apiBookingStats.conversionRate : bookingStats.conversionRate).toFixed(1)}%`}
+    growth={apiBookingStats ? apiBookingStats.conversionGrowth ?? bookingStats.conversionGrowth : bookingStats.conversionGrowth}
             color="bg-orange-500"
           />
         </div>
+      )}
+
+      {/* small loading / error banners */}
+      {loading && (
+        <div className="mb-4 p-2 bg-yellow-50 text-yellow-800 rounded text-sm">Loading analytics...</div>
+      )}
+      {error && (
+        <div className="mb-4 p-2 bg-red-50 text-red-800 rounded text-sm">{error}</div>
       )}
 
       {/* Booking Status Overview (only show for booking reports) */}
@@ -664,7 +540,7 @@ const Analytic = () => {
           </div>
         </div>
         <SimpleBarChart 
-          data={getCurrentData()} 
+          data={(reportType === 'bookings' ? (apiBookingData ? apiBookingData.daily : getCurrentData()) : (apiRevenueData ? apiRevenueData.daily : getCurrentData()))} 
           dataKey={chartType} 
           label={chartType === 'revenue' ? 'Revenue' : chartType} 
         />
@@ -689,7 +565,7 @@ const Analytic = () => {
               </div>
               <div className="p-4 sm:p-6">
                 <div className="space-y-4">
-                  {servicePerformance.map((service, index) => (
+                  {(apiBestSellingProducts ? apiBestSellingProducts : servicePerformance).map((service, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -887,7 +763,7 @@ const Analytic = () => {
               </div>
               <div className="p-4 sm:p-6">
                 <div className="space-y-4">
-                  {topCustomers.map((customer, index) => (
+                  {(apiTopCustomers || topCustomers).map((customer, index) => (
                     <div key={customer.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -943,7 +819,7 @@ const Analytic = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {abandonedCarts.map((cart) => (
+                  {(apiAbandonedCarts || abandonedCarts).map((cart) => (
                     <tr key={cart.id} className="hover:bg-gray-50">
                       <td className="px-4 sm:px-6 py-4">
                         <div>
