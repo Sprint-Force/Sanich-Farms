@@ -4,7 +4,7 @@ import { FiHome, FiChevronRight } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext'; // Import useToast context
 import { useAuthContext } from '../hooks/useAuthContext';
-import { ordersAPI, paymentsAPI } from '../services/api'; // USER SIDE FIX: Add paymentsAPI for MoMo processing
+import { ordersAPI } from '../services/api'; // USER SIDE FIX: Import orders API for checkout
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -94,18 +94,19 @@ const CheckoutPage = () => {
     }
 
     // Basic validation
-    // FIX: Remove zip code from required validation
-    if (!billingInfo.firstName || !billingInfo.lastName || !billingInfo.streetAddress || !billingInfo.email || !billingInfo.phone || !billingInfo.country || !billingInfo.state) {
-      addToast("Please fill in all required fields.", "error");
+    // USER SIDE FIX: Backend controller requires zipcode, so include it in validation
+    if (!billingInfo.firstName || !billingInfo.lastName || !billingInfo.streetAddress || !billingInfo.email || !billingInfo.phone || !billingInfo.country || !billingInfo.state || !billingInfo.zipCode) {
+      addToast("Please fill in all required fields including zip code.", "error");
       return;
     }
 
     setLoading(true);
 
+    // USER SIDE FIX: Match backend field names exactly
     const orderDetails = {
       first_name: billingInfo.firstName,
       last_name: billingInfo.lastName,
-      company_name: billingInfo.companyName,
+      company_name: billingInfo.companyName || '',
       email: billingInfo.email,
       phone_number: billingInfo.phone,
       delivery_address: billingInfo.streetAddress,
@@ -113,57 +114,26 @@ const CheckoutPage = () => {
       state: billingInfo.state,
       zipcode: billingInfo.zipCode,
       delivery_fee: 0, // No delivery fee for now
-      payment_method: paymentMethod,
-      note: orderNotes,
+      payment_method: paymentMethod, // Use the exact value from the form
+      note: orderNotes || '',
     };
 
     try {
-      // USER SIDE FIX: Handle payment method logic
-      if (paymentMethod === 'mobile_money') {
-        // For MoMo, we need to initialize payment first
-        const paymentData = {
-          order_id: null, // Will be set after order creation
-          amount: parseFloat(total),
-          payment_method: paymentMethod,
-          email: billingInfo.email
-        };
-        
-        // First create the order
-        const orderResponse = await ordersAPI.create(orderDetails);
-        
-        // Then initialize payment
-        try {
-          const paymentResponse = await paymentsAPI.processPayment({
-            ...paymentData,
-            order_id: orderResponse.order?.id || orderResponse.id
-          });
-          
-          if (paymentResponse.authorization_url) {
-            // Redirect to payment gateway
-            window.location.href = paymentResponse.authorization_url;
-            return;
-          }
-        } catch (paymentError) {
-          console.error("Payment initialization failed:", paymentError);
-          addToast("Payment initialization failed. Please try again.", "error");
-          return;
-        }
-      } else {
-        // For COD, create order directly
-        const response = await ordersAPI.create(orderDetails);
-        
-        console.log("Order placed successfully:", response);
-        addToast("Order placed successfully! You will pay on delivery.", "success");
-        
-        // Clear the cart on successful order
-        clearCart();
-        
-        // Navigate to order confirmation page
-        navigate('/order-confirmation', { state: { orderDetails: response } });
-      }
+      // USER SIDE FIX: Backend gets items from cart, no need to send items array
+      const response = await ordersAPI.create(orderDetails);
+      
+      console.log("Order placed successfully:", response);
+      addToast("Order placed successfully!", "success");
+      
+      // Clear the cart on successful order
+      clearCart();
+      
+      // Navigate to order confirmation page
+      navigate('/order-confirmation', { state: { orderDetails: response } });
+      
     } catch (error) {
       console.error("Failed to place order:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Failed to place order. Please try again.";
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Failed to place order. Please try again.";
       addToast(errorMessage, "error");
     } finally {
       setLoading(false);
@@ -332,7 +302,8 @@ const CheckoutPage = () => {
                     value={billingInfo.zipCode}
                     onChange={handleBillingInfoChange}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                    placeholder="Optional"
+                    placeholder="Enter zip code"
+                    required
                   />
                 </div>
                 <div className="sm:col-span-2 flex items-center mt-2">

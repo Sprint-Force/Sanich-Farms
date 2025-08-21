@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FiCheckCircle, FiHome, FiChevronRight } from 'react-icons/fi';
 import axios from 'axios';
 import { useToast } from '../context/ToastContext'; // Import useToast context
@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext'; // Import useToast context
 const OrderConfirmationPage = () => {
   const { orderId } = useParams(); // Get orderId from the URL parameters
   const { addToast } = useToast();
+  const navigate = useNavigate(); // USER SIDE FIX: Add navigate for thank you page
   const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -94,15 +95,27 @@ const OrderConfirmationPage = () => {
         )}
 
         <div className="flex flex-col sm:flex-row justify-center gap-4">
+          {/* USER SIDE FIX: Add confirm button to go to thank you page */}
+          <button
+            onClick={() => navigate('/thank-you', { 
+              state: { 
+                type: 'order', 
+                details: orderDetails 
+              } 
+            })}
+            className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md"
+          >
+            Confirm Order
+          </button>
           <Link
             to="/shop"
-            className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md"
+            className="bg-gray-200 text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md"
           >
             Continue Shopping
           </Link>
           <Link
-            to="/profile/orders" // Assuming you'll have an orders history page
-            className="bg-gray-200 text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md"
+            to="/dashboard/orders" // USER SIDE FIX: Updated to dashboard orders
+            className="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition duration-300 shadow-md"
           >
             View My Orders
           </Link>
