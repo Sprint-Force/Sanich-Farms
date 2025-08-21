@@ -131,7 +131,7 @@ const DashboardOverview = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl lg:text-3xl font-bold text-green-800">{orders.length}</p>
+              <p className="text-2xl lg:text-xl xl:text-2xl font-bold text-green-800">{orders.length}</p>
               <p className="text-xs text-green-600">{activeOrders} active</p>
             </div>
           </div>
@@ -148,7 +148,7 @@ const DashboardOverview = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl lg:text-3xl font-bold text-blue-800">{bookings.length}</p>
+              <p className="text-2xl lg:text-xl xl:text-2xl font-bold text-blue-800">{bookings.length}</p>
               <p className="text-xs text-blue-600">{upcomingBookings.length} upcoming</p>
             </div>
           </div>
@@ -165,7 +165,7 @@ const DashboardOverview = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl lg:text-3xl font-bold text-purple-800">GH₵{totalSpent.toFixed(2)}</p>
+              <p className="text-xl lg:text-lg xl:text-xl font-bold text-purple-800 break-words">GH₵{totalSpent.toFixed(2)}</p>
               <p className="text-xs text-purple-600">All time</p>
             </div>
           </div>
@@ -182,7 +182,7 @@ const DashboardOverview = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl lg:text-3xl font-bold text-orange-800">{orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0}%</p>
+              <p className="text-2xl lg:text-xl xl:text-2xl font-bold text-orange-800">{orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0}%</p>
               <p className="text-xs text-orange-600">{completedOrders} delivered</p>
             </div>
           </div>
