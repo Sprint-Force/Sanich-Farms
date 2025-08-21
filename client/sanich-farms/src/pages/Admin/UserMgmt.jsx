@@ -80,14 +80,16 @@ const UserMgmt = () => {
   };
 
   const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = 
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.includes(searchTerm);
-    
-    const matchesStatus = filterStatus === 'all' || customer.status === filterStatus;
-    
-    return matchesSearch && matchesStatus;
+  const name = String(customer?.name || '').toLowerCase();
+  const email = String(customer?.email || '').toLowerCase();
+  const phone = String(customer?.phone || '');
+  const search = String(searchTerm || '').toLowerCase();
+
+  const matchesSearch = name.includes(search) || email.includes(search) || phone.includes(search);
+
+  const matchesStatus = filterStatus === 'all' || String(customer?.status || '').toLowerCase() === String(filterStatus || '').toLowerCase();
+
+  return matchesSearch && matchesStatus;
   });
 
   const updateCustomerStatus = (customerId, newStatus) => {
@@ -407,7 +409,7 @@ const UserMgmt = () => {
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[calc(100vh-8rem)] overflow-y-auto my-4">
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-xl font-bold text-gray-900">
-                User Details - {selectedUser.name}
+                User Details - {selectedUser?.name || 'User'}
               </h2>
               <button
                 onClick={() => setShowUserDetail(false)}
@@ -424,15 +426,15 @@ const UserMgmt = () => {
                   <h3 className="font-semibold text-gray-900 mb-3">Personal Information</h3>
                   <div className="flex items-center gap-4 mb-4">
                     <img
-                      src={selectedUser.avatar}
-                      alt={selectedUser.name}
+                      src={selectedUser?.avatar || ''}
+                      alt={selectedUser?.name || 'user'}
                       className="w-16 h-16 rounded-full object-cover"
                     />
                     <div>
-                      <h4 className="font-medium text-gray-900">{selectedUser.name}</h4>
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedUser.status)}`}>
-                        {getStatusIcon(selectedUser.status)}
-                        {selectedUser.status}
+                      <h4 className="font-medium text-gray-900">{selectedUser?.name || ''}</h4>
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedUser?.status)}`}>
+                        {getStatusIcon(selectedUser?.status)}
+                        {selectedUser?.status || ''}
                       </span>
                     </div>
                   </div>
@@ -447,7 +449,7 @@ const UserMgmt = () => {
                     </p>
                     <p className="flex items-center gap-2">
                       <FiMapPin className="w-4 h-4 text-gray-400" />
-                      {selectedUser.address}
+                      {selectedUser?.address || ''}
                     </p>
                   </div>
                 </div>
@@ -457,24 +459,24 @@ const UserMgmt = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Registration Date:</span>
-                      <span className="text-sm font-medium">{new Date(selectedUser.registrationDate).toLocaleDateString()}</span>
+                      <span className="text-sm font-medium">{selectedUser?.registrationDate ? new Date(selectedUser.registrationDate).toLocaleDateString() : ''}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Last Activity:</span>
-                      <span className="text-sm font-medium">{calculateDaysSince(selectedUser.lastActivity)} days ago</span>
+                      <span className="text-sm font-medium">{selectedUser?.lastActivity ? `${calculateDaysSince(selectedUser.lastActivity)} days ago` : ''}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Total Orders:</span>
-                      <span className="text-sm font-medium">{selectedUser.totalOrders}</span>
+                      <span className="text-sm font-medium">{selectedUser?.totalOrders ?? 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Total Spent:</span>
-                      <span className="text-sm font-medium">GH₵{selectedUser.totalSpent.toFixed(2)}</span>
+                      <span className="text-sm font-medium">GH₵{Number(selectedUser?.totalSpent || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Average Order:</span>
                       <span className="text-sm font-medium">
-                        GH₵{selectedUser.totalOrders > 0 ? (selectedUser.totalSpent / selectedUser.totalOrders).toFixed(2) : '0.00'}
+                        GH₵{(selectedUser?.totalOrders > 0) ? (Number(selectedUser.totalSpent || 0) / Number(selectedUser.totalOrders)).toFixed(2) : '0.00'}
                       </span>
                     </div>
                   </div>
@@ -495,11 +497,11 @@ const UserMgmt = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {selectedUser.orderHistory.map((order, index) => (
+            {(selectedUser?.orderHistory || []).map((order, index) => (
                         <tr key={index}>
                           <td className="px-4 py-3 text-sm font-medium">{order.id}</td>
-                          <td className="px-4 py-3 text-sm">{new Date(order.date).toLocaleDateString()}</td>
-                          <td className="px-4 py-3 text-sm">GH₵{order.amount.toFixed(2)}</td>
+              <td className="px-4 py-3 text-sm">{order?.date ? new Date(order.date).toLocaleDateString() : ''}</td>
+              <td className="px-4 py-3 text-sm">GH₵{Number(order?.amount || 0).toFixed(2)}</td>
                           <td className="px-4 py-3 text-sm">
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
                               {order.status}
@@ -517,7 +519,7 @@ const UserMgmt = () => {
                 <h3 className="font-semibold text-gray-900 mb-3">Customer Actions</h3>
                 <div className="flex flex-wrap gap-3">
                   <button
-                    onClick={() => openEmailModal([selectedUser.email])}
+                    onClick={() => selectedUser?.email && openEmailModal([selectedUser.email])}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                   >
                     Send Email
@@ -525,13 +527,13 @@ const UserMgmt = () => {
                   {selectedUser.status === 'Active' && (
                     <>
                       <button
-                        onClick={() => suspendCustomer(selectedUser.id)}
+                        onClick={() => selectedUser?.id && suspendCustomer(selectedUser.id)}
                         className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                       >
                         Suspend Customer
                       </button>
                       <button
-                        onClick={() => banCustomer(selectedUser.id)}
+                        onClick={() => selectedUser?.id && banCustomer(selectedUser.id)}
                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                       >
                         Ban Customer
@@ -540,7 +542,7 @@ const UserMgmt = () => {
                   )}
                   {selectedUser.status !== 'Active' && (
                     <button
-                      onClick={() => activateCustomer(selectedUser.id)}
+                      onClick={() => selectedUser?.id && activateCustomer(selectedUser.id)}
                       className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                     >
                       Activate Customer

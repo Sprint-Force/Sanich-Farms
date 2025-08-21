@@ -103,7 +103,18 @@ const ProductMgmt = () => {
   const openModal = (product = null) => {
     if (product) {
       setEditingProduct(product);
-      setFormData({
+    // Build images array from multiple possible fields returned by API
+    const imagesArr = [];
+    if (Array.isArray(product.images)) imagesArr.push(...product.images);
+    else if (product.images) imagesArr.push(product.images);
+    if (product.image_url) imagesArr.unshift(product.image_url);
+    if (product.image) imagesArr.unshift(product.image);
+    if (product.thumbnail) imagesArr.push(product.thumbnail);
+
+    // remove duplicates while preserving order
+    const uniqueImages = Array.from(new Set(imagesArr.filter(Boolean)));
+
+    setFormData({
   name: product.name || '',
   category: product.category || '',
   price: product.price != null ? String(product.price) : '',
@@ -120,8 +131,8 @@ const ProductMgmt = () => {
   bulkDiscount: product.bulkDiscount != null ? String(product.bulkDiscount) : '',
   seasonStartDate: product.seasonStartDate || '',
   seasonEndDate: product.seasonEndDate || '',
-  images: Array.isArray(product.images) ? product.images : (product.images ? [product.images] : [])
-      });
+  images: uniqueImages
+    });
     } else {
       setEditingProduct(null);
       setFormData({
@@ -334,7 +345,7 @@ const ProductMgmt = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <img
-                            src={(product && product.images && product.images[0]) ? product.images[0] : ''}
+                            src={product?.images?.[0] || product?.image_url || product?.image || product?.thumbnail || ''}
                             alt={product && product.name ? product.name : 'product'}
                         className="w-10 h-10 rounded-lg object-cover"
                       />
