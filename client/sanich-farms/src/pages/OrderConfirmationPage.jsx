@@ -1,32 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FiCheckCircle, FiHome, FiChevronRight } from 'react-icons/fi';
-import axios from 'axios';
+import { ordersAPI } from '../services/api'; // USER SIDE FIX: Use configured API service
 import { useToast } from '../context/ToastContext'; // Import useToast context
 
 const OrderConfirmationPage = () => {
   const { orderId } = useParams(); // Get orderId from the URL parameters
+  const location = useLocation(); // USER SIDE FIX: Get state data from navigation
   const { addToast } = useToast();
   const navigate = useNavigate(); // USER SIDE FIX: Add navigate for thank you page
   const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Define your backend API URL
-  const BASE_URL = 'https://sanich-farms-tnac.onrender.com/api/orders';
-
+  // USER SIDE FIX: Use state data if available, otherwise fetch from API
   useEffect(() => {
-    const fetchOrderDetails = async () => {
-      if (!orderId) {
-        setLoading(false);
-        setError("Invalid order ID. Please go back to the homepage.");
-        addToast("Invalid order ID.", "error");
-        return;
-      }
+    const initializeOrderDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${BASE_URL}/${orderId}`);
-        setOrderDetails(response.data);
+        
+        // First check if order details were passed via state
+        const stateOrderDetails = location.state?.orderDetails;
+        if (stateOrderDetails) {
+          // Use the order data from state (from checkout page)
+          const orderData = stateOrderDetails.order || stateOrderDetails;
+          setOrderDetails(orderData);
+          setLoading(false);
+          return;
+        }
+
+        // If no state data and orderId exists, fetch from API
+        if (orderId) {
+          const response = await ordersAPI.getById(orderId);
+          const fetchedOrder = response.order || response;
+          setOrderDetails(fetchedOrder);
+        } else {
+          setError("No order information available. Please try placing your order again.");
+          addToast("No order information found.", "error");
+        }
       } catch (err) {
         console.error("Failed to fetch order details:", err);
         setError("Failed to load order details. Please contact support if this issue persists.");
@@ -36,8 +47,8 @@ const OrderConfirmationPage = () => {
       }
     };
 
-    fetchOrderDetails();
-  }, [orderId, addToast]); // Re-run effect if orderId changes
+    initializeOrderDetails();
+  }, [orderId, location.state, addToast]); // Re-run effect if orderId or state changes
 
   // Conditional rendering based on loading and error states
   if (loading) {
@@ -86,10 +97,13 @@ const OrderConfirmationPage = () => {
           <div className="bg-gray-50 p-6 rounded-lg text-left mb-8 border border-gray-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Order Details</h2>
             <div className="space-y-2 text-gray-700">
-              <p><strong>Order ID:</strong> #{orderDetails.orderId}</p>
-              <p><strong>Total:</strong> GH₵{parseFloat(orderDetails.total)?.toFixed(2) || '0.00'}</p>
-              <p><strong>Payment Method:</strong> {orderDetails.paymentMethod}</p>
-              <p><strong>Delivery Address:</strong> {orderDetails.billingInfo?.streetAddress}, {orderDetails.billingInfo?.state}, {orderDetails.billingInfo?.country}</p>
+              {/* USER SIDE FIX: Handle different response structures */}
+              <p><strong>Order ID:</strong> #{orderDetails.id}</p>
+              <p><strong>Total:</strong> ₵{orderDetails.total_amount || orderDetails.total || '0.00'}</p>
+              <p><strong>Payment Method:</strong> {orderDetails.payment_method === 'cash' ? 'Cash on Delivery' : orderDetails.payment_method === 'mobile_money' ? 'Mobile Money' : orderDetails.payment_method}</p>
+              <p><strong>Delivery Address:</strong> {orderDetails.delivery_address}</p>
+              <p><strong>Status:</strong> <span className="capitalize">{orderDetails.status || 'Pending'}</span></p>
+              {orderDetails.note && <p><strong>Notes:</strong> {orderDetails.note}</p>}
             </div>
           </div>
         )}
