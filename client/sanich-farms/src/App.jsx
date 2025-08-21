@@ -112,7 +112,7 @@ function App() {
                     <ServiceBookingPage />
                   </ProtectedRoute>
                 } />
-                <Route path='/booking-confirmation' element={
+                <Route path='/booking-confirmation/:bookingId' element={
                   <ProtectedRoute>
                     <BookingConfirmationPage />
                   </ProtectedRoute>
