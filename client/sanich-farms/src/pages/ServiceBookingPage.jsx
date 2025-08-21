@@ -2,16 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FiHome, FiChevronRight } from 'react-icons/fi';
 import { useToast } from '../context/ToastContext';
-import axios from 'axios';
+import { servicesAPI, bookingsAPI } from '../services/api'; // Use configured API services
+import { useAuthContext } from '../hooks/useAuthContext';
 
 const ServiceBookingPage = () => {
   const navigate = useNavigate();
   const { serviceId } = useParams();
   const { addToast } = useToast();
-
-  // Define your backend API URLs
-  const BASE_URL_SERVICES = 'https://sanich-farms-tnac.onrender.com/api/services';
-  const BASE_URL_BOOKINGS = 'https://sanich-farms-tnac.onrender.com/api/bookings';
+  const { isAuthenticated } = useAuthContext();
 
   const [selectedService, setSelectedService] = useState(null);
   const [allServices, setAllServices] = useState([]); // FIX: Add state for all available services
@@ -35,20 +33,18 @@ const ServiceBookingPage = () => {
       try {
         setLoading(true);
         
-        // Fetch all services for dropdown
-        const allServicesResponse = await axios.get(BASE_URL_SERVICES);
-        const servicesData = allServicesResponse.data.services || [];
-        setAllServices(servicesData);
+        // Fetch all services for dropdown using configured API
+        const servicesData = await servicesAPI.getAll();
+        setAllServices(servicesData.services || servicesData || []);
         
         // If serviceId is provided, fetch specific service
         if (serviceId) {
-          const response = await axios.get(`${BASE_URL_SERVICES}/${serviceId}`);
-          const fetchedService = response.data.service;
+          const fetchedService = await servicesAPI.getById(serviceId);
           if (fetchedService) {
-            setSelectedService(fetchedService);
+            setSelectedService(fetchedService.service || fetchedService);
             setFormData(prev => ({
               ...prev,
-              serviceType: fetchedService.name,
+              serviceType: (fetchedService.service || fetchedService).name,
             }));
           } else {
             setError("Service not found.");
@@ -87,6 +83,13 @@ const ServiceBookingPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      addToast("Please log in to book a service.", "error");
+      navigate('/login', { state: { from: { pathname: `/book-service/${serviceId || ''}` } } });
+      return;
+    }
+
     if (!formData.customerName || !formData.email || !formData.phone || !formData.customerLocation || !formData.preferredDateTime || !formData.serviceType) {
       addToast("Please fill in all required fields.", 'error');
       return;
@@ -95,19 +98,24 @@ const ServiceBookingPage = () => {
     setLoadingBooking(true);
     try {
       const bookingDetails = {
-        ...formData,
-        serviceId: selectedService.id,
-        servicePrice: selectedService.price,
+        serviceId: selectedService?.id,
+        name: formData.customerName,
+        email: formData.email,
+        phone_number: formData.phone,
+        location: formData.customerLocation,
+        booking_date: formData.preferredDateTime,
+        note: formData.optionalMessage,
       };
 
-      const response = await axios.post(BASE_URL_BOOKINGS, bookingDetails);
+      const response = await bookingsAPI.create(bookingDetails);
 
-      const bookingId = response.data.bookingId; // Assuming your API returns a bookingId
+      const bookingId = response.booking?.id || response.id; // Handle different response formats
       addToast("Your service booking has been submitted! We will contact you shortly.", 'success');
-      navigate(`/booking-confirmation/${bookingId}`);
+      navigate(bookingId ? `/booking-confirmation/${bookingId}` : '/dashboard/bookings');
     } catch (err) {
       console.error("Failed to submit booking:", err);
-      addToast("Failed to submit your booking. Please try again.", 'error');
+      const errorMessage = err.response?.data?.message || err.message || "Failed to submit your booking. Please try again.";
+      addToast(errorMessage, 'error');
     } finally {
       setLoadingBooking(false);
     }
