@@ -25,7 +25,7 @@ export const createOrder = async (req, res) => {
   // Basic validation
   if (
     !first_name || !last_name || !email || !phone_number ||
-    !delivery_address || !country || !state || !zipcode || !payment_method
+    !delivery_address || !country || !state || !payment_method
   ) {
     return res.status(400).json({ error: 'Please provide all required fields' });
   }
