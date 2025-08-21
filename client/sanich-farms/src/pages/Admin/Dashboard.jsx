@@ -321,7 +321,13 @@ const Dashboard = () => {
             
             {/* Desktop Table View */}
             <div className="hidden lg:block overflow-x-auto">
-              <table className="min-w-full">
+              {recentOrdersDisplay.length === 0 ? (
+                <div className="p-6 text-center">
+                  <FiPackage className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">No recent orders to display.</p>
+                </div>
+              ) : (
+                <table className="min-w-full">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
@@ -351,6 +357,7 @@ const Dashboard = () => {
                   ))}
                 </tbody>
               </table>
+              )}
             </div>
 
             {/* Mobile/Tablet Card View */}
@@ -385,7 +392,13 @@ const Dashboard = () => {
             
             {/* Desktop Table View */}
             <div className="hidden lg:block overflow-x-auto">
-              <table className="min-w-full">
+              {recentBookingsDisplay.length === 0 ? (
+                <div className="p-6 text-center">
+                  <FiCalendar className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">No recent bookings to display.</p>
+                </div>
+              ) : (
+                <table className="min-w-full">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking ID</th>
@@ -415,6 +428,7 @@ const Dashboard = () => {
                   ))}
                 </tbody>
               </table>
+              )}
             </div>
 
             {/* Mobile/Tablet Card View */}

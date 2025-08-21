@@ -18,7 +18,6 @@ export const createOrder = async (req, res) => {
     country,
     state,
     zipcode,
-    delivery_fee,
     payment_method,
     note
   } = req.body;
@@ -26,7 +25,7 @@ export const createOrder = async (req, res) => {
   // Basic validation
   if (
     !first_name || !last_name || !email || !phone_number ||
-    !delivery_address || !country || !state || !zipcode || !payment_method
+    !delivery_address || !country || !state || !payment_method
   ) {
     return res.status(400).json({ error: 'Please provide all required fields' });
   }
@@ -68,7 +67,7 @@ export const createOrder = async (req, res) => {
         country,
         state,
         zipcode,
-        delivery_fee: delivery_fee || 0,
+        delivery_fee: 0,
         total_amount: finalAmount,
         payment_method,
         status: 'pending',

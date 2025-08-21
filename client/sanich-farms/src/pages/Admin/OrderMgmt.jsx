@@ -112,17 +112,19 @@ const OrderMgmt = () => {
   }, []);
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === 'all' || 
-      order.status.toLowerCase() === filterStatus.toLowerCase();
-    
+    const idStr = String(order?.id || order?._id || '').toLowerCase();
+    const customerName = String(order?.customer?.name || order?.customerName || '').toLowerCase();
+    const customerEmail = String(order?.customer?.email || order?.customerEmail || '').toLowerCase();
+    const search = searchTerm.toLowerCase();
+
+    const matchesSearch = idStr.includes(search) || customerName.includes(search) || customerEmail.includes(search);
+
+    const statusStr = String(order?.status || '').toLowerCase();
+    const matchesStatus = filterStatus === 'all' || statusStr === filterStatus.toLowerCase();
+
     // Date filtering logic would go here
     const matchesDate = true; // Simplified for now
-    
+
     return matchesSearch && matchesStatus && matchesDate;
   });
 
@@ -465,14 +467,14 @@ const OrderMgmt = () => {
       {/* Mobile/Tablet Card View */}
       <div className="lg:hidden space-y-4 mb-6">
         {filteredOrders.map((order) => (
-          <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div key={order?.id || order?._id || Math.random()} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-bold text-gray-900">{order.id}</span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
-                    {getStatusIcon(order.status)}
-                    {order.status}
+                  <span className="text-sm font-bold text-gray-900">{String(order?.id || order?._id || 'N/A')}</span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order?.status)}`}>
+                    {getStatusIcon(order?.status)}
+                    {String(order?.status || 'Unknown')}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
@@ -480,42 +482,42 @@ const OrderMgmt = () => {
                     <FiUser className="w-3 h-3 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 truncate">{order.customer.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{order.customer.email}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">{String(order?.customer?.name || order?.customerName || 'Customer')}</p>
+                    <p className="text-xs text-gray-500 truncate">{String(order?.customer?.email || order?.customerEmail || '')}</p>
                   </div>
                 </div>
               </div>
               <div className="text-right ml-3">
-                <p className="text-lg font-bold text-gray-900">GH₵{order.total.toFixed(2)}</p>
-                <p className="text-xs text-gray-500">{new Date(order.date).toLocaleDateString()}</p>
+                <p className="text-lg font-bold text-gray-900">GH₵{Number(order?.total || order?.amount || 0).toFixed(2)}</p>
+                <p className="text-xs text-gray-500">{order?.date ? new Date(order.date).toLocaleDateString() : ''}</p>
               </div>
             </div>
 
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-1">
-                  {order.items.slice(0, 2).map((item, index) => (
+                  {(order?.items || order?.orderItems || []).slice(0, 2).map((item, index) => (
                     <img
                       key={index}
-                      src={item.image}
-                      alt={item.name}
+                      src={item?.image || item?.thumbnail || ''}
+                      alt={item?.name || ''}
                       className="w-6 h-6 rounded-full border border-white object-cover"
                     />
                   ))}
-                  {order.items.length > 2 && (
+                  {(order?.items || order?.orderItems || []).length > 2 && (
                     <div className="w-6 h-6 rounded-full bg-gray-200 border border-white flex items-center justify-center">
-                      <span className="text-xs text-gray-600">+{order.items.length - 2}</span>
+                      <span className="text-xs text-gray-600">+{(order?.items || order?.orderItems || []).length - 2}</span>
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-gray-500">{order.items.length} item(s)</span>
+                <span className="text-xs text-gray-500">{(order?.items || order?.orderItems || []).length} item(s)</span>
               </div>
 
-              <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
-                {order.paymentStatus === 'Paid' ? <FiCheck className="w-3 h-3" /> : 
-                 order.paymentStatus === 'Pending' ? <FiCreditCard className="w-3 h-3" /> : 
+              <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order?.paymentStatus)}`}>
+                {String(order?.paymentStatus || '').toLowerCase() === 'paid' ? <FiCheck className="w-3 h-3" /> : 
+                 String(order?.paymentStatus || '').toLowerCase() === 'pending' ? <FiCreditCard className="w-3 h-3" /> : 
                  <FiXCircle className="w-3 h-3" />}
-                {order.paymentStatus}
+                {String(order?.paymentStatus || '')}
               </span>
             </div>
 
@@ -542,7 +544,7 @@ const OrderMgmt = () => {
                 >
                   <FiPrinter className="w-4 h-4" />
                 </button>
-                {order.status === 'delivered' && (
+                {String(order?.status || '').toLowerCase() === 'delivered' && (
                   <button
                     onClick={() => handleReturn(order)}
                     className="text-orange-600 hover:text-orange-900 p-1"
@@ -554,7 +556,7 @@ const OrderMgmt = () => {
               </div>
               
               <div className="flex items-center gap-2">
-                {order.paymentStatus === 'Pending' && (
+                {String(order?.paymentStatus || '').toLowerCase() === 'pending' && (
                   <button
                     onClick={() => verifyPayment(order.id)}
                     className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-medium transition"
@@ -563,11 +565,11 @@ const OrderMgmt = () => {
                     Verify
                   </button>
                 )}
-                {getNextStatus(order.status) && (
+                {getNextStatus(order?.status) && (
                   <button
-                    onClick={() => updateOrderStatus(order.id, getNextStatus(order.status))}
+                    onClick={() => updateOrderStatus(order.id, getNextStatus(order?.status))}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium transition"
-                    title={`Update to ${getNextStatus(order.status)}`}
+                    title={`Update to ${getNextStatus(order?.status)}`}
                   >
                     Update
                   </button>
@@ -587,8 +589,15 @@ const OrderMgmt = () => {
 
       {/* Orders Table - Desktop View */}
       <div className="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+        {filteredOrders.length === 0 ? (
+          <div className="p-8 text-center">
+            <FiPackage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-1">No orders found</h3>
+            <p className="text-sm text-gray-500">Try adjusting your search or filter criteria.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -619,9 +628,9 @@ const OrderMgmt = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50">
+                <tr key={order?.id || order?._id || Math.random()} className="hover:bg-gray-50">
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{order.id}</div>
+                    <div className="text-sm font-medium text-gray-900">{String(order?.id || order?._id || 'N/A')}</div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -629,51 +638,51 @@ const OrderMgmt = () => {
                         <FiUser className="w-4 h-4 text-green-600" />
                       </div>
                       <div className="ml-3 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">{order.customer.name}</div>
-                        <div className="text-sm text-gray-500 truncate">{order.customer.email}</div>
+                        <div className="text-sm font-medium text-gray-900 truncate">{String(order?.customer?.name || order?.customerName || 'Customer')}</div>
+                        <div className="text-sm text-gray-500 truncate">{String(order?.customer?.email || order?.customerEmail || '')}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex -space-x-2">
-                        {order.items.slice(0, 3).map((item, index) => (
+                        {(order?.items || order?.orderItems || []).slice(0, 3).map((item, index) => (
                           <img
                             key={index}
-                            src={item.image}
-                            alt={item.name}
+                            src={item?.image || item?.thumbnail || ''}
+                            alt={item?.name || ''}
                             className="w-8 h-8 rounded-full border-2 border-white object-cover"
                           />
                         ))}
-                        {order.items.length > 3 && (
+                        {(order?.items || order?.orderItems || []).length > 3 && (
                           <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
-                            <span className="text-xs text-gray-600">+{order.items.length - 3}</span>
+                            <span className="text-xs text-gray-600">+{(order?.items || order?.orderItems || []).length - 3}</span>
                           </div>
                         )}
                       </div>
-                      <span className="ml-2 text-sm text-gray-500">{order.items.length} item(s)</span>
+                      <span className="ml-2 text-sm text-gray-500">{(order?.items || order?.orderItems || []).length} item(s)</span>
                     </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    GH₵{order.total.toFixed(2)}
+                    GH₵{Number(order?.total || order?.amount || 0).toFixed(2)}
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
-                        {getStatusIcon(order.status)}
-                        {order.status}
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order?.status)}`}>
+                        {getStatusIcon(order?.status)}
+                        {String(order?.status || '')}
                       </span>
                     </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
-                        {order.paymentStatus === 'Paid' ? <FiCheck className="w-3 h-3" /> : 
-                         order.paymentStatus === 'Pending' ? <FiCreditCard className="w-3 h-3" /> : 
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order?.paymentStatus)}`}>
+                        {String(order?.paymentStatus || '').toLowerCase() === 'paid' ? <FiCheck className="w-3 h-3" /> : 
+                         String(order?.paymentStatus || '').toLowerCase() === 'pending' ? <FiCreditCard className="w-3 h-3" /> : 
                          <FiXCircle className="w-3 h-3" />}
-                        {order.paymentStatus}
+                        {String(order?.paymentStatus || '')}
                       </span>
-                      {order.paymentStatus === 'Pending' && (
+                      {String(order?.paymentStatus || '').toLowerCase() === 'pending' && (
                         <button
                           onClick={() => verifyPayment(order.id)}
                           className="text-green-600 hover:text-green-900 p-1"
@@ -685,7 +694,7 @@ const OrderMgmt = () => {
                     </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(order.date).toLocaleDateString()}
+                    {order?.date ? new Date(order.date).toLocaleDateString() : ''}
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
@@ -710,7 +719,7 @@ const OrderMgmt = () => {
                       >
                         <FiPrinter className="w-4 h-4" />
                       </button>
-                      {order.status === 'delivered' && (
+                      {String(order?.status || '').toLowerCase() === 'delivered' && (
                         <button
                           onClick={() => handleReturn(order)}
                           className="text-orange-600 hover:text-orange-900 p-1"
@@ -719,11 +728,11 @@ const OrderMgmt = () => {
                           <FiRotateCcw className="w-4 h-4" />
                         </button>
                       )}
-                      {getNextStatus(order.status) && (
+                      {getNextStatus(order?.status) && (
                         <button
-                          onClick={() => updateOrderStatus(order.id, getNextStatus(order.status))}
+                          onClick={() => updateOrderStatus(order.id, getNextStatus(order?.status))}
                           className="text-green-600 hover:text-green-900 p-1"
-                          title={`Update to ${getNextStatus(order.status)}`}
+                          title={`Update to ${getNextStatus(order?.status)}`}
                         >
                           <FiEdit2 className="w-4 h-4" />
                         </button>
@@ -735,6 +744,7 @@ const OrderMgmt = () => {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Order Detail Modal */}
