@@ -45,7 +45,7 @@ export const Order = sequelize.define('Order', {
       notEmpty: true,
       len: [8, 20],
     },
-  },
+  }, 
   delivery_address: {
     type: DataTypes.TEXT,
     allowNull: false,
@@ -63,16 +63,10 @@ export const Order = sequelize.define('Order', {
   state: {
     type: DataTypes.STRING,
     allowNull: false,
-    validate: {
-      notEmpty: true,
-    },
   },
   zipcode: {
     type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: true,
-    },
+    allowNull: true,
   },
   delivery_fee: {
     type: DataTypes.DECIMAL(10, 2),
