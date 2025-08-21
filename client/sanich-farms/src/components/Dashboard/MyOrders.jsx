@@ -150,27 +150,61 @@ const MyOrders = () => {
           <div className="grid gap-4">
             {filteredOrders.map((order) => (
               <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition duration-200">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  {/* Order Info */}
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                  {/* Order Info - Fixed alignment and data mapping */}
                   <div className="flex-1">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
-                      {/* USER SIDE FIX: Proper order ID and status display */}
-                      <h3 className="text-lg font-semibold text-gray-800">Order #{order.id}</h3>
-                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                        (order.status === 'delivered' || order.status === 'Delivered') ? 'bg-green-100 text-green-800' :
-                        (order.status === 'processing' || order.status === 'Processing' || order.status === 'pending') ? 'bg-yellow-100 text-yellow-800' :
-                        (order.status === 'shipped' || order.status === 'Shipped') ? 'bg-blue-100 text-blue-800' :
-                        (order.status === 'cancelled' || order.status === 'Cancelled') ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600">
-                      {/* USER SIDE FIX: Proper data mapping for order fields */}
-                      <p><span className="font-medium">Date:</span> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : order.date || 'N/A'}</p>
-                      <p><span className="font-medium">Total:</span> ₵{order.total_amount || order.total || '0.00'}</p>
-                      <p><span className="font-medium">Items:</span> {order.OrderItems?.length || order.items?.length || 1}</p>
+                    <div className="flex flex-col space-y-4">
+                      {/* Order Header - Fixed alignment */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <h3 className="text-lg font-semibold text-gray-800">Order #{order.id}</h3>
+                        <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full w-fit ${
+                          (order.status === 'delivered' || order.status === 'Delivered') ? 'bg-green-100 text-green-800' :
+                          (order.status === 'processing' || order.status === 'Processing' || order.status === 'pending') ? 'bg-yellow-100 text-yellow-800' :
+                          (order.status === 'shipped' || order.status === 'Shipped') ? 'bg-blue-100 text-blue-800' :
+                          (order.status === 'cancelled' || order.status === 'Cancelled') ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
+                        </span>
+                      </div>
+
+                      {/* Order Details - Fixed alignment and data mapping */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Date</span>
+                          <span className="text-sm text-gray-900">
+                            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 
+                             order.ordered_at ? new Date(order.ordered_at).toLocaleDateString() :
+                             order.date ? new Date(order.date).toLocaleDateString() :
+                             order.updatedAt ? new Date(order.updatedAt).toLocaleDateString() : 
+                             'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total Amount</span>
+                          <span className="text-sm font-semibold text-gray-900">₵{order.total_amount || order.total || '0.00'}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Items</span>
+                          <span className="text-sm text-gray-900">
+                            {(() => {
+                              // Calculate total quantity from order items
+                              if (order.OrderItems && Array.isArray(order.OrderItems)) {
+                                return order.OrderItems.reduce((total, item) => total + (item.quantity || 1), 0);
+                              }
+                              if (order.items && Array.isArray(order.items)) {
+                                return order.items.reduce((total, item) => total + (item.quantity || 1), 0);
+                              }
+                              return order.quantity || 1;
+                            })()} item{(() => {
+                              const count = order.OrderItems ? order.OrderItems.reduce((total, item) => total + (item.quantity || 1), 0) :
+                                           order.items ? order.items.reduce((total, item) => total + (item.quantity || 1), 0) :
+                                           order.quantity || 1;
+                              return count !== 1 ? 's' : '';
+                            })()}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
