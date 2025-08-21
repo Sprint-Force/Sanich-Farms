@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { FiCheckCircle, FiHome, FiChevronRight } from 'react-icons/fi';
 import { bookingsAPI } from '../services/api'; // USER SIDE FIX: Use configured API service
 
 const BookingConfirmationPage = () => {
   const { bookingId } = useParams();
+  const navigate = useNavigate(); // USER SIDE FIX: Add navigate for thank you page
 
   const [bookingDetails, setBookingDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -94,17 +95,29 @@ const BookingConfirmationPage = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4">
+          {/* USER SIDE FIX: Add confirm button to go to thank you page */}
+          <button
+            onClick={() => navigate('/thank-you', { 
+              state: { 
+                type: 'booking', 
+                details: bookingDetails 
+              } 
+            })}
+            className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md"
+          >
+            Confirm Booking
+          </button>
           <Link
             to="/services"
-            className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md"
+            className="bg-gray-200 text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md"
           >
             Explore More Services
           </Link>
           <Link
-            to="/"
-            className="bg-gray-200 text-gray-800 px-8 py-3 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md"
+            to="/dashboard/bookings"
+            className="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition duration-300 shadow-md"
           >
-            Go to Homepage
+            View My Bookings
           </Link>
         </div>
       </div>

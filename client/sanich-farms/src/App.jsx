@@ -15,6 +15,7 @@ import WishlistPage from './pages/WishlistPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import PaymentCallbackPage from './pages/PaymentCallbackPage'; // USER SIDE FIX: Add payment callback page
+import ThankYouPage from './pages/ThankYouPage'; // USER SIDE FIX: Add thank you page
 import AboutUsPage from './pages/AboutUsPage';
 import ContactUsPage from './pages/ContactUsPage';
 import AllServicesPage from './pages/AllServicesPage';
@@ -99,6 +100,8 @@ function App() {
                 } />
                 {/* USER SIDE FIX: Add payment callback route for MoMo verification */}
                 <Route path='/payment-callback' element={<PaymentCallbackPage />} />
+                {/* USER SIDE FIX: Add thank you page route */}
+                <Route path='/thank-you' element={<ThankYouPage />} />
                 <Route path='/order-confirmation' element={
                   <ProtectedRoute>
                     <OrderConfirmationPage />
