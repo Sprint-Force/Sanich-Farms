@@ -24,8 +24,7 @@ import {
   FiMapPin
 } from 'react-icons/fi';
 import { ClickableEmail, ClickablePhone } from '../../utils/contactUtils';
-import { ordersAPI } from '../../services/api';
-import apiClient from '../../services/api';
+import apiClient, { ordersAPI, userAPI } from '../../services/api';
 
 const OrderMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -153,10 +152,20 @@ const OrderMgmt = () => {
   };
 
   const verifyPayment = (orderId) => {
-    const currentAdmin = 'admin@sanichfarms.com'; // In real app, get from auth context
-    const currentTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
     const doVerify = async () => {
+      // Resolve current admin email from profile API when available
+      let currentAdmin = 'admin@sanichfarms.com';
+      try {
+        const profile = await userAPI.getProfile();
+        // profile may be direct object or wrapped
+        const email = profile?.email || profile?.data?.email || profile?.user?.email || '';
+        if (email) currentAdmin = email;
+      } catch (err) {
+        console.warn('Failed to fetch admin profile for payment verify, using fallback', err);
+      }
+
+      const currentTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
       try {
         try {
           await apiClient.post(`/orders/${orderId}/verify-payment`);
@@ -181,8 +190,8 @@ const OrderMgmt = () => {
             paymentVerifiedAt: currentTime
           }));
         }
-      } catch {
-        console.warn('Failed to verify payment');
+      } catch (err) {
+        console.warn('Failed to verify payment', err);
       }
     };
 
@@ -286,7 +295,7 @@ const OrderMgmt = () => {
       return;
     }
 
-    const refundValue = refundAmount || selectedOrder.total;
+  const refundValue = refundAmount || Number(selectedOrder?.total || 0);
     
     // Process the return/refund
     updateOrderStatus(selectedOrder.id, 'Refunded');
@@ -306,12 +315,12 @@ const OrderMgmt = () => {
   const downloadInvoice = () => {
     // In a real app, you would generate a PDF invoice
     const invoiceData = {
-      orderNumber: selectedOrder.id,
-      customer: selectedOrder.customer,
-      items: selectedOrder.items,
-      total: selectedOrder.total,
-      date: selectedOrder.date,
-      paymentMethod: selectedOrder.paymentMethod
+  orderNumber: selectedOrder?.id || selectedOrder?._id || '',
+  customer: selectedOrder?.customer || {},
+  items: selectedOrder?.items || selectedOrder?.orderItems || [],
+  total: Number(selectedOrder?.total || selectedOrder?.amount || 0),
+  date: selectedOrder?.date || '',
+  paymentMethod: selectedOrder?.paymentMethod || ''
     };
     
     // For demo purposes, we'll just log the invoice data
@@ -323,12 +332,12 @@ const OrderMgmt = () => {
   const printReceipt = () => {
     // In a real app, you would send to printer or generate printable format
     const receiptData = {
-      orderNumber: selectedOrder.id,
-      customer: selectedOrder.customer.name,
-      items: selectedOrder.items,
-      total: selectedOrder.total,
-      paymentMethod: selectedOrder.paymentMethod,
-      date: selectedOrder.date
+  orderNumber: selectedOrder?.id || selectedOrder?._id || '',
+  customer: selectedOrder?.customer?.name || selectedOrder?.customerName || '',
+  items: selectedOrder?.items || selectedOrder?.orderItems || [],
+  total: Number(selectedOrder?.total || selectedOrder?.amount || 0),
+  paymentMethod: selectedOrder?.paymentMethod || '',
+  date: selectedOrder?.date || ''
     };
     
     // For demo purposes, we'll just log the receipt data
@@ -343,7 +352,13 @@ const OrderMgmt = () => {
       const csvContent = [
         ['Order ID', 'Customer', 'Total', 'Status', 'Date'].join(','),
         ...filteredOrders.map(order => 
-          [order.id, order.customer.name, order.total, order.status, order.date].join(',')
+          [
+            order?.id || order?._id || '',
+            (order?.customer?.name || order?.customerName || '').replace(/,/g, ' '),
+            Number(order?.total || order?.amount || 0),
+            order?.status || '',
+            order?.date || ''
+          ].join(',')
         )
       ].join('\n');
       
@@ -354,8 +369,61 @@ const OrderMgmt = () => {
       a.download = 'orders.csv';
       a.click();
     } else if (format === 'pdf') {
-      // PDF export would use a library like jsPDF
-      alert('PDF export functionality would be implemented here');
+      try {
+        const headers = ['Order ID', 'Customer', 'Total', 'Status', 'Date'];
+        const rows = filteredOrders.map(o => [
+          o?.id || o?._id || '',
+          (o?.customer?.name || o?.customerName || '').replace(/</g, '&lt;'),
+          `GH₵${Number(o?.total || o?.amount || 0).toFixed(2)}`,
+          o?.status || '',
+          o?.date || ''
+        ]);
+
+        const tableHtml = `
+          <html>
+            <head>
+              <title>Orders Export</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                body{font-family: Arial, Helvetica, sans-serif; padding:20px; color:#111}
+                h1{font-size:18px; margin-bottom:16px}
+                table{width:100%; border-collapse:collapse}
+                th,td{border:1px solid #ddd; padding:8px; text-align:left}
+                th{background:#f3f4f6}
+              </style>
+            </head>
+            <body>
+              <h1>Orders Export</h1>
+              <table>
+                <thead>
+                  <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </body>
+          </html>
+        `;
+
+        const w = window.open('', '_blank');
+        if (!w) {
+          alert('Popup blocked. Please allow popups for this site to export PDF.');
+          return;
+        }
+        w.document.write(tableHtml);
+        w.document.close();
+        w.focus();
+        // Give the browser a moment to render then open print dialog
+        setTimeout(() => {
+          try { w.print(); } catch (e) { console.warn('Print failed', e); }
+          // close the window shortly after
+          setTimeout(() => { try { w.close(); } catch { /* ignore */ } }, 800);
+        }, 300);
+      } catch (err) {
+        console.warn('PDF export failed', err);
+        alert('PDF export failed.');
+      }
     }
   };
 
@@ -752,8 +820,8 @@ const OrderMgmt = () => {
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 pt-16 z-[60] overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[calc(100vh-8rem)] overflow-y-auto my-4">
             <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold text-gray-900">
-                Order Details - {selectedOrder.id}
+                <h2 className="text-xl font-bold text-gray-900">
+                Order Details - {selectedOrder?.id || selectedOrder?._id || ''}
               </h2>
               <button 
                 onClick={() => setShowOrderDetail(false)} 
@@ -769,21 +837,21 @@ const OrderMgmt = () => {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
                   <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Name:</span> {selectedOrder.customer.name}</p>
-                    <p><span className="font-medium">Email:</span> <ClickableEmail email={selectedOrder.customer.email} className="text-gray-900 hover:text-green-600" /></p>
-                    <p><span className="font-medium">Phone:</span> <ClickablePhone phone={selectedOrder.customer.phone} className="text-gray-900 hover:text-green-600" /></p>
-                    <p><span className="font-medium">Address:</span> {selectedOrder.customer.address}</p>
+                    <p><span className="font-medium">Name:</span> {selectedOrder?.customer?.name || selectedOrder?.customerName || ''}</p>
+                    <p><span className="font-medium">Email:</span> <ClickableEmail email={selectedOrder?.customer?.email || selectedOrder?.customerEmail || ''} className="text-gray-900 hover:text-green-600" /></p>
+                    <p><span className="font-medium">Phone:</span> <ClickablePhone phone={selectedOrder?.customer?.phone || ''} className="text-gray-900 hover:text-green-600" /></p>
+                    <p><span className="font-medium">Address:</span> {selectedOrder?.customer?.address || ''}</p>
                   </div>
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-900 mb-3">Order Information</h3>
                   <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Order ID:</span> {selectedOrder.id}</p>
-                    <p><span className="font-medium">Date:</span> {new Date(selectedOrder.date).toLocaleDateString()}</p>
-                    <p><span className="font-medium">Payment:</span> {selectedOrder.paymentMethod}</p>
-                    <p><span className="font-medium">Payment Ref:</span> {selectedOrder.paymentReference}</p>
-                    <p><span className="font-medium">Shipping:</span> {selectedOrder.shippingMethod}</p>
+                    <p><span className="font-medium">Order ID:</span> {selectedOrder?.id || selectedOrder?._id || ''}</p>
+                    <p><span className="font-medium">Date:</span> {selectedOrder?.date ? new Date(selectedOrder.date).toLocaleDateString() : ''}</p>
+                    <p><span className="font-medium">Payment:</span> {selectedOrder?.paymentMethod || ''}</p>
+                    <p><span className="font-medium">Payment Ref:</span> {selectedOrder?.paymentReference || ''}</p>
+                    <p><span className="font-medium">Shipping:</span> {selectedOrder?.shippingMethod || ''}</p>
                     {selectedOrder.notes && (
                       <p><span className="font-medium">Notes:</span> {selectedOrder.notes}</p>
                     )}
@@ -827,22 +895,22 @@ const OrderMgmt = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {selectedOrder.items.map((item, index) => (
+                      {(selectedOrder?.items || selectedOrder?.orderItems || []).map((item, index) => (
                         <tr key={index}>
                           <td className="px-4 py-3">
                             <div className="flex items-center">
                               <img
-                                src={item.image}
-                                alt={item.name}
+                                src={item?.image || item?.thumbnail || ''}
+                                alt={item?.name || ''}
                                 className="w-10 h-10 rounded object-cover"
                               />
-                              <span className="ml-3 text-sm font-medium">{item.name}</span>
+                              <span className="ml-3 text-sm font-medium">{item?.name || ''}</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm">GH₵{item.price.toFixed(2)}</td>
-                          <td className="px-4 py-3 text-sm">{item.quantity}</td>
+                          <td className="px-4 py-3 text-sm">GH₵{Number(item?.price || 0).toFixed(2)}</td>
+                          <td className="px-4 py-3 text-sm">{item?.quantity || 0}</td>
                           <td className="px-4 py-3 text-sm font-medium">
-                            GH₵{(item.price * item.quantity).toFixed(2)}
+                            GH₵{(Number(item?.price || 0) * Number(item?.quantity || 0)).toFixed(2)}
                           </td>
                         </tr>
                       ))}
@@ -850,7 +918,7 @@ const OrderMgmt = () => {
                     <tfoot className="bg-gray-100">
                       <tr>
                         <td colSpan="3" className="px-4 py-3 text-sm font-medium text-right">Total:</td>
-                        <td className="px-4 py-3 text-sm font-bold">GH₵{selectedOrder.total.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-sm font-bold">GH₵{Number(selectedOrder?.total || selectedOrder?.amount || 0).toFixed(2)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -887,16 +955,16 @@ const OrderMgmt = () => {
                 {/* Payment Management */}
                 <h4 className="font-semibold text-gray-900 mb-3">Payment Verification</h4>
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 text-sm font-medium rounded-full ${getPaymentStatusColor(selectedOrder.paymentStatus)}`}>
-                    {selectedOrder.paymentStatus === 'Paid' ? <FiCheck className="w-3 h-3" /> : 
-                     selectedOrder.paymentStatus === 'Pending' ? <FiCreditCard className="w-3 h-3" /> : 
+                  <span className={`inline-flex items-center gap-1 px-3 py-1 text-sm font-medium rounded-full ${getPaymentStatusColor(selectedOrder?.paymentStatus)}`}>
+                    {String(selectedOrder?.paymentStatus || '').toLowerCase() === 'paid' ? <FiCheck className="w-3 h-3" /> : 
+                     String(selectedOrder?.paymentStatus || '').toLowerCase() === 'pending' ? <FiCreditCard className="w-3 h-3" /> : 
                      <FiXCircle className="w-3 h-3" />}
-                    {selectedOrder.paymentStatus}
+                    {selectedOrder?.paymentStatus || ''}
                   </span>
                   
-                  {selectedOrder.paymentStatus === 'Pending' && (
+                  {String(selectedOrder?.paymentStatus || '').toLowerCase() === 'pending' && (
                     <button
-                      onClick={() => verifyPayment(selectedOrder.id)}
+                      onClick={() => verifyPayment(selectedOrder?.id)}
                       className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
                     >
                       <FiCheck className="w-4 h-4" />
@@ -904,9 +972,9 @@ const OrderMgmt = () => {
                     </button>
                   )}
                   
-                  {selectedOrder.paymentStatus === 'Paid' && (
+                  {String(selectedOrder?.paymentStatus || '').toLowerCase() === 'paid' && (
                     <button
-                      onClick={() => markPaymentPending(selectedOrder.id)}
+                      onClick={() => markPaymentPending(selectedOrder?.id)}
                       className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
                     >
                       <FiCreditCard className="w-4 h-4" />
