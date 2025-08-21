@@ -190,19 +190,18 @@ const ProductMgmt = () => {
     const submit = async () => {
       try {
         if (editingProduct) {
-          const updated = await productsAPI.update(editingProduct.id, newProduct);
-          setProducts(prev => prev.map(p => p.id === editingProduct.id ? updated : p));
+          const idToUse = editingProduct._id || editingProduct.id;
+          const updated = await productsAPI.update(idToUse, newProduct);
+          // prefer server-returned id/shape
+          setProducts(prev => prev.map(p => (p._id || p.id) === (updated._id || updated.id) ? updated : p));
         } else {
           const created = await productsAPI.create(newProduct);
           setProducts(prev => [...prev, created]);
         }
-  } catch {
-        // Fallback to local manipulation
-        if (editingProduct) {
-          setProducts(prev => prev.map(p => p.id === editingProduct.id ? newProduct : p));
-        } else {
-          setProducts(prev => [...prev, { ...newProduct, id: Date.now() }]);
-        }
+      } catch (err) {
+        // Surface the error to the developer/user instead of silently mutating local state
+        console.error('Product save failed', err);
+        alert('Failed to save product. See console for details.');
       } finally {
         closeModal();
       }
@@ -215,11 +214,12 @@ const ProductMgmt = () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       const remove = async () => {
         try {
-          await productsAPI.remove(id);
-          setProducts(prev => prev.filter(p => p.id !== id));
-  } catch {
-          // fallback
-          setProducts(prev => prev.filter(p => p.id !== id));
+          const idToUse = id && id._id ? id._id : id;
+          await productsAPI.remove(idToUse);
+          setProducts(prev => prev.filter(p => (p._id || p.id) !== (idToUse)));
+        } catch (err) {
+          console.error('Failed to delete product', err);
+          alert('Failed to delete product. See console for details.');
         }
       };
       remove();

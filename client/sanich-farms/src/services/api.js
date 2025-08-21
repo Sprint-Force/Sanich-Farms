@@ -100,8 +100,21 @@ export const productsAPI = {
   },
 
   update: async (id, productData) => {
-    const response = await apiClient.put(`/products/${id}`, productData);
-    return response.data;
+    try {
+      const response = await apiClient.put(`/products/${id}`, productData);
+      return response.data;
+    } catch (err) {
+      // If PUT returned 404, try PATCH as a fallback (some backends expect PATCH)
+      if (err.response?.status === 404) {
+        try {
+          const resp = await apiClient.patch(`/products/${id}`, productData);
+          return resp.data;
+        } catch {
+          // fall through to rethrow original error
+        }
+      }
+      throw err;
+    }
   },
 
   remove: async (id) => {
