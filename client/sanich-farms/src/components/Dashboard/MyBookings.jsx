@@ -82,7 +82,7 @@ const MyBookings = () => {
     }
   };
 
-  const statusOptions = ['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'];
+  const statusOptions = ['All', 'pending', 'scheduled', 'completed', 'cancelled']; // USER SIDE FIX: Use lowercase status values
 
   // DASHBOARD API INTEGRATION: Loading state
   if (loading) {
@@ -160,21 +160,31 @@ const MyBookings = () => {
                   {/* Booking Info */}
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-gray-800">{booking.service}</h3>
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {/* USER SIDE FIX: Display service name from API response */}
+                        {booking.Service?.name || booking.service || 'Service Booking'}
+                      </h3>
                       <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                        booking.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                        booking.status === 'Confirmed' ? 'bg-blue-100 text-blue-800' :
-                        booking.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                        booking.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        booking.status === 'scheduled' || booking.status === 'Confirmed' ? 'bg-blue-100 text-blue-800' :
+                        booking.status === 'pending' || booking.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
                       }`}>
-                        {booking.status}
+                        {booking.status || 'pending'}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-600">
-                      <p><span className="font-medium">Booking ID:</span> {booking.id}</p>
-                      <p><span className="font-medium">Date:</span> {booking.date}</p>
-                      <p><span className="font-medium">Time:</span> {booking.time}</p>
+                      <p><span className="font-medium">Booking ID:</span> #{booking.id}</p>
+                      <p><span className="font-medium">Date:</span> {booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : (booking.date || 'N/A')}</p>
+                      <p><span className="font-medium">Location:</span> {booking.location || booking.time || 'N/A'}</p>
                     </div>
+                    {/* USER SIDE FIX: Display service description and price */}
+                    {booking.Service?.description && (
+                      <p className="text-sm text-gray-500 mt-2">{booking.Service.description}</p>
+                    )}
+                    {booking.Service?.price && (
+                      <p className="text-lg font-semibold text-green-600 mt-1">GH₵{parseFloat(booking.Service.price).toFixed(2)}</p>
+                    )}
                   </div>
 
                   {/* DASHBOARD AUDIT FIX: Amazon-style action buttons for bookings */}

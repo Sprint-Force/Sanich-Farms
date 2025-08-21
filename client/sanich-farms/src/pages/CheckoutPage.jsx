@@ -4,7 +4,7 @@ import { FiHome, FiChevronRight } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext'; // Import useToast context
 import { useAuthContext } from '../hooks/useAuthContext';
-import { ordersAPI } from '../services/api'; // Use the configured API service
+import { ordersAPI, paymentsAPI } from '../services/api'; // USER SIDE FIX: Add paymentsAPI for MoMo processing
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const CheckoutPage = () => {
     zipCode: '',
     shipToDifferentAddress: false,
   });
-  const [paymentMethod, setPaymentMethod] = useState('cashOnDelivery');
+  const [paymentMethod, setPaymentMethod] = useState('cash'); // USER SIDE FIX: Default to cash
   const [orderNotes, setOrderNotes] = useState('');
 
   // Calculate order summary - FIX: Remove shipping, replace with delivery note
@@ -118,18 +118,49 @@ const CheckoutPage = () => {
     };
 
     try {
-      // Use the configured API service with authentication
-      const response = await ordersAPI.create(orderDetails);
-
-      console.log("Order placed successfully:", response);
-      addToast("Order placed successfully!", "success");
-      
-      // Clear the cart on successful order
-      clearCart();
-      
-      // Navigate to an order confirmation page
-      navigate('/order-confirmation', { state: { orderDetails: response } });
-
+      // USER SIDE FIX: Handle payment method logic
+      if (paymentMethod === 'mobile_money') {
+        // For MoMo, we need to initialize payment first
+        const paymentData = {
+          order_id: null, // Will be set after order creation
+          amount: parseFloat(total),
+          payment_method: paymentMethod,
+          email: billingInfo.email
+        };
+        
+        // First create the order
+        const orderResponse = await ordersAPI.create(orderDetails);
+        
+        // Then initialize payment
+        try {
+          const paymentResponse = await paymentsAPI.processPayment({
+            ...paymentData,
+            order_id: orderResponse.order?.id || orderResponse.id
+          });
+          
+          if (paymentResponse.authorization_url) {
+            // Redirect to payment gateway
+            window.location.href = paymentResponse.authorization_url;
+            return;
+          }
+        } catch (paymentError) {
+          console.error("Payment initialization failed:", paymentError);
+          addToast("Payment initialization failed. Please try again.", "error");
+          return;
+        }
+      } else {
+        // For COD, create order directly
+        const response = await ordersAPI.create(orderDetails);
+        
+        console.log("Order placed successfully:", response);
+        addToast("Order placed successfully! You will pay on delivery.", "success");
+        
+        // Clear the cart on successful order
+        clearCart();
+        
+        // Navigate to order confirmation page
+        navigate('/order-confirmation', { state: { orderDetails: response } });
+      }
     } catch (error) {
       console.error("Failed to place order:", error);
       const errorMessage = error.response?.data?.message || error.message || "Failed to place order. Please try again.";
@@ -386,37 +417,26 @@ const CheckoutPage = () => {
                       type="radio"
                       id="cashOnDelivery"
                       name="paymentMethod"
-                      value="cashOnDelivery"
-                      checked={paymentMethod === 'cashOnDelivery'}
+                      value="cash"
+                      checked={paymentMethod === 'cash'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     />
-                    <label htmlFor="cashOnDelivery" className="ml-3 text-base font-medium text-gray-900">Cash on Delivery</label>
+                    <label htmlFor="cashOnDelivery" className="ml-3 text-base font-medium text-gray-900">Cash on Delivery (COD)</label>
                   </div>
                   <div className="flex items-center">
                     <input
                       type="radio"
                       id="momo"
                       name="paymentMethod"
-                      value="momo"
-                      checked={paymentMethod === 'momo'}
+                      value="mobile_money"
+                      checked={paymentMethod === 'mobile_money'}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     />
                     <label htmlFor="momo" className="ml-3 text-base font-medium text-gray-900">Mobile Money (MoMo)</label>
                   </div>
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      id="bank"
-                      name="paymentMethod"
-                      value="bank"
-                      checked={paymentMethod === 'bank'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                    />
-                    <label htmlFor="bank" className="ml-3 text-base font-medium text-gray-900">Bank Transfer</label>
-                  </div>
+                  {/* USER SIDE FIX: Remove bank transfer option */}
                 </div>
               </div>
 

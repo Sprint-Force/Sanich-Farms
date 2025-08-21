@@ -14,6 +14,7 @@ import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
+import PaymentCallbackPage from './pages/PaymentCallbackPage'; // USER SIDE FIX: Add payment callback page
 import AboutUsPage from './pages/AboutUsPage';
 import ContactUsPage from './pages/ContactUsPage';
 import AllServicesPage from './pages/AllServicesPage';
@@ -96,6 +97,8 @@ function App() {
                     <CheckoutPage />
                   </ProtectedRoute>
                 } />
+                {/* USER SIDE FIX: Add payment callback route for MoMo verification */}
+                <Route path='/payment-callback' element={<PaymentCallbackPage />} />
                 <Route path='/order-confirmation' element={
                   <ProtectedRoute>
                     <OrderConfirmationPage />

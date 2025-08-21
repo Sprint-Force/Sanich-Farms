@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FiCheckCircle, FiHome, FiChevronRight } from 'react-icons/fi';
-import axios from 'axios';
+import { bookingsAPI } from '../services/api'; // USER SIDE FIX: Use configured API service
 
 const BookingConfirmationPage = () => {
   const { bookingId } = useParams();
-
-  // Define your backend API URL
-  const BASE_URL = 'https://sanich-farms-tnac.onrender.com/api/bookings';
 
   const [bookingDetails, setBookingDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Effect to fetch booking details from the API
+  // USER SIDE FIX: Use configured API service instead of direct axios
   useEffect(() => {
     const fetchBookingDetails = async () => {
       if (!bookingId) {
@@ -23,8 +20,8 @@ const BookingConfirmationPage = () => {
       }
       try {
         setLoading(true);
-        const response = await axios.get(`${BASE_URL}/${bookingId}`);
-        const fetchedBookingDetails = response.data;
+        const response = await bookingsAPI.getById(bookingId);
+        const fetchedBookingDetails = response.booking || response;
         if (fetchedBookingDetails) {
           setBookingDetails(fetchedBookingDetails);
         } else {
@@ -84,12 +81,14 @@ const BookingConfirmationPage = () => {
           <h2 className="text-xl font-bold text-gray-800 mb-4">Booking Details</h2>
           <div className="space-y-2 text-gray-700">
             <p><strong>Booking ID:</strong> {bookingDetails.id || 'N/A'}</p>
-            <p><strong>Service Type:</strong> {bookingDetails.serviceType || 'N/A'}</p>
-            <p><strong>Customer Name:</strong> {bookingDetails.customerName || 'N/A'}</p>
+            <p><strong>Service:</strong> {bookingDetails.Service?.name || bookingDetails.serviceType || 'N/A'}</p>
+            <p><strong>Customer Name:</strong> {bookingDetails.name || bookingDetails.customerName || 'N/A'}</p>
             <p><strong>Email:</strong> {bookingDetails.email || 'N/A'}</p>
-            <p><strong>Phone:</strong> {bookingDetails.phone || 'N/A'}</p>
-            <p><strong>Location:</strong> {bookingDetails.customerLocation || 'N/A'}</p>
-            <p><strong>Preferred Date/Time:</strong> {bookingDetails.preferredDateTime ? new Date(bookingDetails.preferredDateTime).toLocaleString() : 'N/A'}</p>
+            <p><strong>Phone:</strong> {bookingDetails.phone_number || bookingDetails.phone || 'N/A'}</p>
+            <p><strong>Location:</strong> {bookingDetails.location || bookingDetails.customerLocation || 'N/A'}</p>
+            <p><strong>Booking Date:</strong> {bookingDetails.booking_date ? new Date(bookingDetails.booking_date).toLocaleString() : (bookingDetails.preferredDateTime ? new Date(bookingDetails.preferredDateTime).toLocaleString() : 'N/A')}</p>
+            <p><strong>Status:</strong> <span className={`px-2 py-1 rounded text-sm ${bookingDetails.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>{bookingDetails.status || 'Pending'}</span></p>
+            {bookingDetails.note && <p><strong>Notes:</strong> {bookingDetails.note}</p>}
             {bookingDetails.optionalMessage && <p><strong>Notes:</strong> {bookingDetails.optionalMessage}</p>}
           </div>
         </div>
