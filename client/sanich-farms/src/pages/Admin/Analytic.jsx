@@ -105,29 +105,37 @@ const Analytic = () => {
     </div>
   );
 
-  const SimpleBarChart = ({ data, dataKey }) => {
-    const maxValue = Math.max(...data.map(item => item[dataKey]));
-    
+  const SimpleBarChart = ({ data = [], dataKey }) => {
+    // Normalize numeric values and guard against missing keys or non-numeric values.
+    const safeValues = data.map(item => Number(item?.[dataKey] ?? 0));
+    const maxValue = safeValues.length ? Math.max(...safeValues, 0) : 0;
+
     return (
       <div className="space-y-3">
-        {data.map((item, index) => (
-          <div key={index} className="flex items-center gap-3">
-            <div className="w-20 text-xs text-gray-600 truncate">
-              {item.period || item.date || `Day ${index + 1}`}
-            </div>
-            <div className="flex-1 relative">
-              <div className="bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${(item[dataKey] / maxValue) * 100}%` }}
-                />
+        {data.map((item, index) => {
+          const raw = item?.[dataKey];
+          const value = Number(raw ?? 0) || 0;
+          const widthPercent = maxValue > 0 ? Math.min(100, (value / maxValue) * 100) : 0;
+
+          return (
+            <div key={index} className="flex items-center gap-3">
+              <div className="w-20 text-xs text-gray-600 truncate">
+                {item?.period || item?.date || `Day ${index + 1}`}
+              </div>
+              <div className="flex-1 relative">
+                <div className="bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${widthPercent}%` }}
+                  />
+                </div>
+              </div>
+              <div className="w-20 text-xs font-medium text-right">
+                {dataKey === 'revenue' ? `GH\u20b5${value.toFixed(0)}` : String(value)}
               </div>
             </div>
-            <div className="w-20 text-xs font-medium text-right">
-              {dataKey === 'revenue' ? `GH₵${item[dataKey].toFixed(0)}` : item[dataKey]}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
