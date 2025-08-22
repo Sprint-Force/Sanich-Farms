@@ -127,12 +127,20 @@ const Dashboard = () => {
     date: b.date || b.createdAt || new Date().toISOString()
   })) : [];
 
-  const topProductsDisplay = products.length > 0 ? products.slice(0,4).map((p, i) => ({
-    name: p.name || p.title || `Product ${i+1}`,
-    sales: p.sold || p.unitsSold || 0,
-    revenue: (p.price && (p.sold || p.unitsSold)) ? (p.price * (p.sold || p.unitsSold)) : (p.revenue || 0),
-    stock: p.stock || p.quantity || p.inventory || 0
-  })) : [];
+  const topProductsDisplay = products.length > 0 ? products.slice(0,4).map((p, i) => {
+    const name = p.name || p.title || `Product ${i+1}`;
+    const price = Number(p.price ?? p.originalPrice ?? p.amount ?? 0) || 0;
+    const stock = p.stock_quantity ?? p.stock ?? p.quantity ?? p.inventory ?? 0;
+    const featured = !!p.featured;
+    const isAvailable = p.is_available !== false;
+    return {
+      name,
+      price,
+      stock,
+      featured,
+      isAvailable
+    };
+  }) : [];
 
   const displayOutOfStock = products.length > 0
     ? products.filter(p => (p.stock || p.quantity || p.inventory || 0) === 0).length
@@ -466,18 +474,18 @@ const Dashboard = () => {
             <div className="p-4 sm:p-6">
               <div className="space-y-3 sm:space-y-4">
                 {topProductsDisplay.map((product, index) => (
-                  <div key={product.name} className="flex items-center justify-between">
+                  <div key={`${product.name}-${index}`} className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${product.featured ? 'bg-yellow-100' : 'bg-green-100'}`}>
                         <span className="text-green-600 font-semibold text-xs sm:text-sm">{index + 1}</span>
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{product.name}</p>
-                        <p className="text-xs sm:text-sm text-gray-500">{product.sales} sales</p>
+                        <p className="text-xs sm:text-sm text-gray-500">GH₵{product.price.toFixed(2)}</p>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <p className="font-semibold text-gray-900 text-sm sm:text-base">GH₵{product.revenue}</p>
+                      <p className="font-semibold text-gray-900 text-sm sm:text-base">{product.isAvailable ? 'Active' : 'Inactive'}</p>
                       <p className="text-xs sm:text-sm text-gray-500">{product.stock} in stock</p>
                     </div>
                   </div>
