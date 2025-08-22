@@ -169,7 +169,7 @@ const TrackOrderPage = () => {
                             {order.status}
                           </span>
                           <span className="text-lg font-semibold text-gray-900">
-                            GH₵{(order.total_amount || order.totalAmount || 0).toFixed(2)}
+                            GH₵{(parseFloat(order.total_amount || order.totalAmount || 0) || 0).toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -186,7 +186,7 @@ const TrackOrderPage = () => {
                               <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                             </div>
                             <p className="font-semibold text-gray-800">
-                              GH₵{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                              GH₵{(parseFloat((item.price || 0) * (item.quantity || 0)) || 0).toFixed(2)}
                             </p>
                           </div>
                         ))}
