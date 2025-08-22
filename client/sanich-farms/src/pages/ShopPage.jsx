@@ -48,6 +48,8 @@ const ShopPage = () => {
       const productsData = Array.isArray(response) ? response : (response?.products || response?.data || []);
       setProducts(productsData);
       setTotalProducts(response?.totalCount || productsData.length || 0);
+      // Update the fetch timestamp for cache invalidation tracking
+      localStorage.setItem('productsFetchedAt', Date.now().toString());
     } catch (err) {
       console.error('Failed to fetch products:', err);
       setError('Failed to load products. Please try again later.');
@@ -91,6 +93,29 @@ const ShopPage = () => {
     if (selectedRating !== 'All Ratings') filters.push(`Rating: ${selectedRating}`);
     setActiveFilters(filters);
   }, [selectedCategory, selectedPriceRange, selectedRating]);
+
+  // Effect to check for cache invalidation from admin changes
+  useEffect(() => {
+    const checkCacheInvalidation = () => {
+      const lastInvalidated = localStorage.getItem('productCacheInvalidated');
+      const lastFetched = localStorage.getItem('productsFetchedAt');
+      
+      if (lastInvalidated && (!lastFetched || parseInt(lastInvalidated) > parseInt(lastFetched))) {
+        // Cache was invalidated after last fetch, refresh products
+        localStorage.setItem('productsFetchedAt', Date.now().toString());
+        fetchProducts();
+      }
+    };
+
+    // Check on mount
+    checkCacheInvalidation();
+
+    // Also check when window gets focus (user comes back from admin)
+    const handleFocus = () => checkCacheInvalidation();
+    window.addEventListener('focus', handleFocus);
+    
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchProducts]);
 
   // Function to remove an active filter
   const removeFilter = (filterText) => {
