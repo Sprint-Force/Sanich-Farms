@@ -48,6 +48,8 @@ const OrderMgmt = () => {
   // Helpers to normalize customer info coming from different API shapes
   const getCustomerName = (order) => {
     if (!order) return '';
+    // BACKEND FIELD FIX: Handle backend fields first_name + last_name first
+    if (order.first_name && order.last_name) return `${order.first_name} ${order.last_name}`;
     // possible shapes: order.customer = { name, email }, order.customer = 'Name', order.customerName, order.user?.name, order.email
     if (typeof order.customer === 'string' && order.customer.trim()) return order.customer;
     return order.customer?.name || order.customerName || order.user?.name || order.customer?.fullName || order.email || '';
@@ -61,6 +63,8 @@ const OrderMgmt = () => {
 
   const getCustomerPhone = (order) => {
     if (!order) return '';
+    // BACKEND FIELD FIX: Handle backend field phone_number first
+    if (order.phone_number) return order.phone_number;
     if (typeof order.customer === 'string' && /^(\+|\d)/.test(order.customer)) return order.customer;
     return order.customer?.phone || order.customerPhone || '';
   };

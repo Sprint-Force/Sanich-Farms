@@ -77,26 +77,13 @@ const CheckoutPage = () => {
     );
   }
 
-  const handlePlaceOrder = async (e) => {
+    const handlePlaceOrder = async (e) => {
     e.preventDefault();
 
-    if (cartItems.length === 0) {
-      addToast("Your cart is empty. Please add items before placing an order.", "error");
-      navigate('/shop');
-      return;
-    }
-
-    // Check if user is authenticated
-    if (!isAuthenticated) {
-      addToast("Please log in to place an order.", "error");
-      navigate('/login', { state: { from: { pathname: '/checkout' } } });
-      return;
-    }
-
-    // Basic validation
-    // USER SIDE FIX: Backend controller requires zipcode, so include it in validation
-    if (!billingInfo.firstName || !billingInfo.lastName || !billingInfo.streetAddress || !billingInfo.email || !billingInfo.phone || !billingInfo.country || !billingInfo.state || !billingInfo.zipCode) {
-      addToast("Please fill in all required fields including zip code.", "error");
+    // Validate required fields
+    if (!billingInfo.firstName || !billingInfo.lastName || !billingInfo.email || 
+        !billingInfo.phone || !billingInfo.streetAddress) {
+      addToast("Please fill in all required fields.", "error");
       return;
     }
 
@@ -119,17 +106,38 @@ const CheckoutPage = () => {
     };
 
     try {
-      // USER SIDE FIX: Backend gets items from cart, no need to send items array
-      const response = await ordersAPI.create(orderDetails);
-      
-      console.log("Order placed successfully:", response);
-      addToast("Order placed successfully!", "success");
-      
-      // Clear the cart on successful order
-      clearCart();
-      
-      // Navigate to order confirmation page
-      navigate('/order-confirmation', { state: { orderDetails: response } });
+      // MOMO FLOW FIX: Different flow for MOMO vs Cash
+      if (paymentMethod === 'mobile_money') {
+        // For MOMO: Create order but don't process payment yet, go to confirmation
+        const response = await ordersAPI.create({
+          ...orderDetails,
+          status: 'pending' // Keep order pending until payment
+        });
+        
+        console.log("Order created for MOMO payment:", response);
+        
+        // Navigate to order confirmation page with payment flow
+        navigate('/order-confirmation', { 
+          state: { 
+            orderDetails: response,
+            paymentRequired: true,
+            paymentMethod: 'mobile_money'
+          } 
+        });
+        
+      } else {
+        // For Cash: Process normally
+        const response = await ordersAPI.create(orderDetails);
+        
+        console.log("Order placed successfully:", response);
+        addToast("Order placed successfully!", "success");
+        
+        // Clear the cart on successful order
+        clearCart();
+        
+        // Navigate to order confirmation page
+        navigate('/order-confirmation', { state: { orderDetails: response } });
+      }
       
     } catch (error) {
       console.error("Failed to place order:", error);

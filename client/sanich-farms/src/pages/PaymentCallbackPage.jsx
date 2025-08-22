@@ -55,6 +55,21 @@ const PaymentCallbackPage = () => {
           // Show success toast
           addToast('Payment successful! Your order is being processed.', 'success');
           
+          // MOMO FLOW FIX: Redirect to thank you page after 2 seconds
+          setTimeout(() => {
+            navigate('/thank-you', { 
+              state: { 
+                type: 'payment',
+                details: paymentResult.metadata?.order_id ? {
+                  id: paymentResult.metadata.order_id,
+                  total_amount: paymentResult.amount ? (paymentResult.amount / 100) : 0,
+                  payment_method: 'mobile_money'
+                } : null,
+                paymentSuccess: true 
+              } 
+            });
+          }, 2000);
+          
         } else {
           setStatus('failed');
           setMessage(paymentResult.message || 'Payment verification failed. Please contact support.');
@@ -70,7 +85,7 @@ const PaymentCallbackPage = () => {
     };
 
     verifyPayment();
-  }, [searchParams, clearCart, addToast]);
+  }, [searchParams, clearCart, addToast, navigate]);
 
   const handleGoHome = () => {
     navigate('/');

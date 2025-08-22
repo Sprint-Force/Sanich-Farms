@@ -83,7 +83,7 @@ const UserMgmt = () => {
   const filteredCustomers = customers.filter(customer => {
   const name = String(customer?.name || '').toLowerCase();
   const email = String(customer?.email || '').toLowerCase();
-  const phone = String(customer?.phone || '');
+  const phone = String(customer?.phone_number || customer?.phone || '');
   const search = String(searchTerm || '').toLowerCase();
 
   const matchesSearch = name.includes(search) || email.includes(search) || phone.includes(search);
@@ -156,7 +156,7 @@ const UserMgmt = () => {
         [
           customer.name,
           customer.email,
-          customer.phone,
+          customer.phone_number || customer.phone,
           customer.status,
           customer.registrationDate,
           customer.totalOrders,
@@ -329,7 +329,7 @@ const UserMgmt = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{customer.email}</div>
-                    <div className="text-sm text-gray-500">{customer.phone}</div>
+                    <div className="text-sm text-gray-500">{customer.phone_number || customer.phone}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div className="flex items-center gap-1">
@@ -446,7 +446,7 @@ const UserMgmt = () => {
                     </p>
                     <p className="flex items-center gap-2">
                       <FiPhone className="w-4 h-4 text-gray-400" />
-                      <ClickablePhone phone={selectedUser.phone} className="text-gray-900 hover:text-green-600" />
+                      <ClickablePhone phone={selectedUser.phone_number || selectedUser.phone} className="text-gray-900 hover:text-green-600" />
                     </p>
                     <p className="flex items-center gap-2">
                       <FiMapPin className="w-4 h-4 text-gray-400" />
