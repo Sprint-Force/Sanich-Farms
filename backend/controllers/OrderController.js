@@ -47,6 +47,9 @@ export const createOrder = async (req, res) => {
 
     // Create order within a transaction
     await sequelize.transaction(async (t) => {
+
+      // Update order status to processing if payment method is cash
+      const orderStatus = payment_method === 'cash' ? 'processing' : 'pending';
       const order = await Order.create({
         user_id: userId,
         first_name,
@@ -61,7 +64,7 @@ export const createOrder = async (req, res) => {
         delivery_fee,
         total_amount: finalAmount,
         payment_method,
-        status: 'pending',
+        status: orderStatus, // updated logic for cash payment
         payment_status: 'unpaid',
         note: note || null,
         ordered_at: new Date()
