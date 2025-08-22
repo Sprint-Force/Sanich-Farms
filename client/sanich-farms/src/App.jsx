@@ -99,8 +99,9 @@ function App() {
                     <CheckoutPage />
                   </ProtectedRoute>
                 } />
-                {/* USER SIDE FIX: Add payment callback route for MoMo verification */}
+                {/* USER SIDE FIX: Add payment callback routes for MoMo verification */}
                 <Route path='/payment-callback' element={<PaymentCallbackPage />} />
+                <Route path='/payment-success' element={<PaymentCallbackPage />} />
                 {/* USER SIDE FIX: Add thank you page route */}
                 <Route path='/thank-you' element={<ThankYouPage />} />
                 <Route path='/order-confirmation' element={

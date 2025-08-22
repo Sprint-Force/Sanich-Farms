@@ -32,18 +32,25 @@ const PaymentCallbackPage = () => {
 
         // Verify payment with backend
         const paymentResult = await paymentsAPI.verifyPayment(paymentRef);
+        console.log('Payment verification result:', paymentResult);
 
-        if (paymentResult.success && paymentResult.status === 'success') {
+        // PAYMENT CALLBACK FIX: Match backend PaymentController response structure
+        if (paymentResult.payment && paymentResult.payment.status === 'paid') {
           // Payment successful, get order details
-          const orderId = paymentResult.metadata?.order_id;
+          const orderId = paymentResult.order?.id || paymentResult.payment?.order_id;
           
           if (orderId) {
             try {
               const order = await ordersAPI.getById(orderId);
-              setOrderDetails(order);
+              setOrderDetails(order.order || order);
             } catch (orderErr) {
               console.error('Failed to fetch order details:', orderErr);
+              // Use order from payment result if fetch fails
+              setOrderDetails(paymentResult.order);
             }
+          } else {
+            // Use order from payment result directly
+            setOrderDetails(paymentResult.order);
           }
 
           setStatus('success');
@@ -60,11 +67,11 @@ const PaymentCallbackPage = () => {
             navigate('/thank-you', { 
               state: { 
                 type: 'payment',
-                details: paymentResult.metadata?.order_id ? {
-                  id: paymentResult.metadata.order_id,
-                  total_amount: paymentResult.amount ? (paymentResult.amount / 100) : 0,
+                details: paymentResult.order || {
+                  id: paymentResult.payment?.order_id,
+                  total_amount: paymentResult.payment?.amount || 0,
                   payment_method: 'mobile_money'
-                } : null,
+                },
                 paymentSuccess: true 
               } 
             });
