@@ -31,6 +31,9 @@ const Dashboard = () => {
       case 'add-product':
         navigate('/admin/products');
         break;
+      case 'manage-services':  // ADMIN SERVICES FIX: Add services quick action
+        navigate('/admin/services');
+        break;
       case 'manage-orders':
         navigate('/admin/orders');
         break;
@@ -501,6 +504,12 @@ const Dashboard = () => {
               Add New Product
             </button>
             <button 
+              onClick={() => handleQuickAction('manage-services')}
+              className="bg-teal-500 hover:bg-teal-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium transition text-sm sm:text-base"
+            >
+              Manage Services
+            </button>
+            <button 
               onClick={() => handleQuickAction('manage-orders')}
               className="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium transition text-sm sm:text-base"
             >
@@ -508,15 +517,9 @@ const Dashboard = () => {
             </button>
             <button 
               onClick={() => handleQuickAction('manage-bookings')}
-              className="bg-teal-500 hover:bg-teal-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium transition text-sm sm:text-base"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium transition text-sm sm:text-base"
             >
               Manage Bookings
-            </button>
-            <button 
-              onClick={() => handleQuickAction('view-analytics')}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium transition text-sm sm:text-base"
-            >
-              View Analytics
             </button>
           </div>
         </div>

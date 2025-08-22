@@ -59,6 +59,7 @@ import BookingMgmt from './pages/Admin/BookingMgmt';
 import Dashboard from './pages/Admin/Dashboard';
 import OrderMgmt from './pages/Admin/OrderMgmt';
 import ProductMgmt from './pages/Admin/ProductMgmt';
+import ServiceMgmt from './pages/Admin/ServiceMgmt'; // ADMIN SERVICES FIX: Import ServiceMgmt
 import Settings from './pages/Admin/Settings';
 import UserMgmt from './pages/Admin/UserMgmt';
 
@@ -167,6 +168,7 @@ function App() {
                 <Route path='orders' element={<OrderMgmt />} />
                 <Route path='bookings' element={<BookingMgmt />} />
                 <Route path='products' element={<ProductMgmt />} />
+                <Route path='services' element={<ServiceMgmt />} /> {/* ADMIN SERVICES FIX: Add services route */}
                 <Route path='users' element={<UserMgmt />} />
                 <Route path='settings' element={<Settings />} />
                 <Route path='profile' element={<AdminProfile />} />
