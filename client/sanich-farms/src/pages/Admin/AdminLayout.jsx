@@ -11,7 +11,8 @@ import {
   FiX,
   FiLogOut,
   FiBook,
-  FiUser
+  FiUser,
+  FiTool
 } from 'react-icons/fi';
 
 const AdminLayout = () => {
@@ -21,6 +22,7 @@ const AdminLayout = () => {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: FiHome },
     { name: 'Products', href: '/admin/products', icon: FiPackage },
+    { name: 'Services', href: '/admin/services', icon: FiTool }, // ADMIN SERVICES FIX: Add Services navigation
     { name: 'Orders', href: '/admin/orders', icon: FiShoppingBag },
     { name: 'Bookings', href: '/admin/bookings', icon: FiBook },
     { name: 'Users', href: '/admin/users', icon: FiUsers },

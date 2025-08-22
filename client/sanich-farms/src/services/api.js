@@ -153,6 +153,26 @@ export const servicesAPI = {
     const response = await apiClient.get(`/services/${id}`);
     return response.data;
   },
+
+  // ADMIN SERVICES FIX: Admin endpoints for service management
+  createAdmin: async (formData) => {
+    const response = await apiClient.post('/services/add', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  updateAdmin: async (id, formData) => {
+    const response = await apiClient.patch(`/services/${id}/edit`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  removeAdmin: async (id) => {
+    const response = await apiClient.delete(`/services/${id}/delete`);
+    return response.data;
+  },
 };
 
 // Orders API methods
