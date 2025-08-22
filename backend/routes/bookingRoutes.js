@@ -1,6 +1,6 @@
 import express from 'express';
 import { auth } from '../middlewares/auth.js';
-import { cancelBooking, createBooking, getSingleBooking, getUserBookings, updateBooking } from '../controllers/BookingController.js';
+import { cancelBooking, createBooking, getSingleBooking, getBookings, updateBooking } from '../controllers/BookingController.js';
 import { isAdmin } from '../middlewares/authorize.js';
 import { approveBooking, completeBooking, markBookingAsPaid, rejectBooking } from '../controllers/AdminController.js';
 
@@ -10,7 +10,7 @@ bookingRoutes.use(auth);
 
 // Routes
 bookingRoutes.post('/', createBooking);
-bookingRoutes.get('/', getUserBookings);
+bookingRoutes.get('/', getBookings);
 bookingRoutes.get('/:id', getSingleBooking);
 bookingRoutes.patch('/:id', updateBooking);
 bookingRoutes.patch('/:id/cancel', cancelBooking);

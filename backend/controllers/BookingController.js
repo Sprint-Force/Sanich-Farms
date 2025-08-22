@@ -1,5 +1,6 @@
 import { Booking } from '../models/Booking.js'; 
 import { Service } from '../models/Service.js';
+import { User } from '../models/User.js';
 
 
 // Create booking
@@ -114,30 +115,60 @@ export const cancelBooking = async (req, res) => {
   }  
 }
 
-// View bookings
-export const getUserBookings = async (req, res) => {
+
+// Fetch bookings based on roles (Admin/User)
+export const getBookings = async (req, res) => {
+  const { status } = req.query; // Optional filter for booking status
+
+  const filters = {};
+  if (status) filters.status = status;
+
   try {
-    const userId = req.user.id;
+    let bookings;
 
-    const bookings = await Booking.findAll({
-      where: { user_id: userId },
-      include: [
-         {
-          model: Service,
-          attributes: ['id', 'name', 'description', 'price', 'image_url']
-        }
-      ],
-      order: [['created_at', 'DESC']]
-    });
+    if (req.user.role === 'admin') {
+      // Admin can view all bookings with optional filters
+      bookings = await Booking.findAll({
+        where: filters,
+        include: [
+          {
+            model: Service,
+            attributes: ['id', 'name', 'description', 'price', 'image_url'],
+          },
+          {
+            model: User,
+            attributes: ['id', 'name', 'email', 'phone_number'],
+          },
+        ],
+        order: [['created_at', 'DESC']],
+      });
+    } else {
+      // User can only view their own bookings
+      const userFilters = { ...filters, user_id: req.user.id };
+      bookings = await Booking.findAll({
+        where: userFilters,
+        include: [
+          {
+            model: Service,
+            attributes: ['id', 'name', 'description', 'price', 'image_url'],
+          },
+        ],
+        order: [['created_at', 'DESC']],
+      });
+    }
 
-    res.status(200).json({
-      status: "success",
-      bookings
+    return res.status(200).json({
+      status: 'success',
+      bookings,
     });
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch bookings" });
+    return res.status(500).json({
+      error: 'Failed to fetch bookings',
+      details: error.message,
+    });
   }
-}
+};
+
 
 // View a single booking
 export const getSingleBooking = async (req, res) => {
