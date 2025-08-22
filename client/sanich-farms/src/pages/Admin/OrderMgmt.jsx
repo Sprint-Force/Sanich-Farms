@@ -66,37 +66,73 @@ const OrderMgmt = () => {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      case 'Processing': return 'bg-blue-100 text-blue-800';
-      case 'Shipped': return 'bg-purple-100 text-purple-800';
-      case 'Delivered': return 'bg-green-100 text-green-800';
-      case 'Cancelled': return 'bg-red-100 text-red-800';
-      case 'Refunded': return 'bg-gray-100 text-gray-800';
+    const s = String(status || '').toLowerCase();
+    switch (s) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'processing': return 'bg-blue-100 text-blue-800';
+      case 'shipped': return 'bg-purple-100 text-purple-800';
+      case 'delivered': return 'bg-green-100 text-green-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      case 'refunded': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getPaymentStatusColor = (status) => {
-    switch (status) {
-      case 'Paid': return 'bg-green-100 text-green-800';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      case 'Failed': return 'bg-red-100 text-red-800';
-      case 'Refunded': return 'bg-gray-100 text-gray-800';
+    const s = String(status || '').toLowerCase();
+    switch (s) {
+      case 'paid': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'failed': return 'bg-red-100 text-red-800';
+      case 'refunded': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Pending': return <FiCalendar className="w-4 h-4" />;
-      case 'Processing': return <FiRefreshCw className="w-4 h-4" />;
-      case 'Shipped': return <FiTruck className="w-4 h-4" />;
-      case 'Delivered': return <FiCheck className="w-4 h-4" />;
-      case 'Cancelled': return <FiXCircle className="w-4 h-4" />;
-      case 'Refunded': return <FiXCircle className="w-4 h-4" />;
+    const s = String(status || '').toLowerCase();
+    switch (s) {
+      case 'pending': return <FiCalendar className="w-4 h-4" />;
+      case 'processing': return <FiRefreshCw className="w-4 h-4" />;
+      case 'shipped': return <FiTruck className="w-4 h-4" />;
+      case 'delivered': return <FiCheck className="w-4 h-4" />;
+      case 'cancelled': return <FiXCircle className="w-4 h-4" />;
+      case 'refunded': return <FiXCircle className="w-4 h-4" />;
       default: return <FiPackage className="w-4 h-4" />;
     }
+  };
+
+  // Normalize items for an order so UI can assume an array of items with {id,name,image,price,quantity}
+  const getOrderItems = (order) => {
+    if (!order) return [];
+    const raw = order.items || order.orderItems || order.products || order.items_list || [];
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+      return raw.map(it => ({
+        id: it?.id || it?._id || it?.productId || it?.product_id || it?.product?.id,
+        name: it?.name || it?.title || it?.product?.name || it?.product?.title || '',
+        image: it?.image || it?.thumbnail || it?.product?.image || it?.product?.thumbnail || '',
+        price: Number(it?.price ?? it?.unitPrice ?? it?.product?.price ?? 0) || 0,
+        quantity: Number(it?.quantity ?? it?.qty ?? it?.count ?? it?.product?.quantity ?? 1) || 1
+      }));
+    }
+    // If raw is an object map, convert to array
+    if (typeof raw === 'object') {
+      return Object.values(raw).map(it => ({
+        id: it?.id || it?._id || it?.productId || it?.product?.id,
+        name: it?.name || it?.title || it?.product?.name || '',
+        image: it?.image || it?.thumbnail || it?.product?.image || '',
+        price: Number(it?.price ?? it?.unitPrice ?? it?.product?.price ?? 0) || 0,
+        quantity: Number(it?.quantity ?? it?.qty ?? it?.count ?? 1) || 1
+      }));
+    }
+    return [];
+  };
+
+  const matchesOrderId = (order, id) => {
+    if (!order) return false;
+    const ids = [order.id, order._id, order.orderNumber, order.bookingNumber].filter(Boolean).map(String);
+    return ids.includes(String(id));
   };
 
   // Normalize order date from different API shapes and format
@@ -113,12 +149,13 @@ const OrderMgmt = () => {
   };
 
   const getNextStatus = (currentStatus) => {
+    const s = String(currentStatus || '').toLowerCase();
     const statusFlow = {
-      'Pending': 'Processing',
-      'Processing': 'Shipped',
-      'Shipped': 'Delivered'
+      pending: 'Processing',
+      processing: 'Shipped',
+      shipped: 'Delivered'
     };
-    return statusFlow[currentStatus] || null;
+    return statusFlow[s] || null;
   };
 
   // Load orders from API on mount
@@ -171,9 +208,9 @@ const OrderMgmt = () => {
         }
 
         setOrders(prev => prev.map(order => 
-          order.id === orderId ? { ...order, status: newStatus } : order
+          matchesOrderId(order, orderId) ? { ...order, status: newStatus } : order
         ));
-        if (selectedOrder && selectedOrder.id === orderId) {
+        if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
           setSelectedOrder(prev => ({ ...prev, status: newStatus }));
         }
       } catch {
@@ -207,7 +244,7 @@ const OrderMgmt = () => {
         }
 
         setOrders(prev => prev.map(order => 
-          order.id === orderId ? { 
+          matchesOrderId(order, orderId) ? { 
             ...order, 
             paymentStatus: 'Paid',
             paymentVerifiedBy: currentAdmin,
@@ -215,7 +252,7 @@ const OrderMgmt = () => {
           } : order
         ));
 
-        if (selectedOrder && selectedOrder.id === orderId) {
+        if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
           setSelectedOrder(prev => ({ 
             ...prev, 
             paymentStatus: 'Paid',
@@ -241,7 +278,7 @@ const OrderMgmt = () => {
         }
 
         setOrders(prev => prev.map(order => 
-          order.id === orderId ? { 
+          matchesOrderId(order, orderId) ? { 
             ...order, 
             paymentStatus: 'Pending',
             paymentVerifiedBy: null,
@@ -249,7 +286,7 @@ const OrderMgmt = () => {
           } : order
         ));
 
-        if (selectedOrder && selectedOrder.id === orderId) {
+        if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
           setSelectedOrder(prev => ({ 
             ...prev, 
             paymentStatus: 'Pending',
@@ -354,8 +391,8 @@ const OrderMgmt = () => {
     email: getCustomerEmail(selectedOrder),
     phone: getCustomerPhone(selectedOrder)
   },
-  items: selectedOrder?.items || selectedOrder?.orderItems || [],
-  total: Number(selectedOrder?.total || selectedOrder?.amount || 0),
+  items: getOrderItems(selectedOrder).map(it => ({ id: it.id, name: it.name, qty: it.quantity, price: it.price })),
+  total: Number(selectedOrder?.total || selectedOrder?.amount || getOrderItems(selectedOrder).reduce((s,it)=>s + (it.price * it.quantity),0) || 0),
   date: selectedOrder?.date || '',
   paymentMethod: selectedOrder?.paymentMethod || ''
     };
@@ -371,8 +408,8 @@ const OrderMgmt = () => {
     const receiptData = {
   orderNumber: selectedOrder?.id || selectedOrder?._id || '',
   customer: getCustomerName(selectedOrder) || '',
-  items: selectedOrder?.items || selectedOrder?.orderItems || [],
-  total: Number(selectedOrder?.total || selectedOrder?.amount || 0),
+  items: getOrderItems(selectedOrder).map(it => ({ id: it.id, name: it.name, qty: it.quantity, price: it.price })),
+  total: Number(selectedOrder?.total || selectedOrder?.amount || getOrderItems(selectedOrder).reduce((s,it)=>s + (it.price * it.quantity),0) || 0),
   paymentMethod: selectedOrder?.paymentMethod || '',
   date: selectedOrder?.date || ''
     };
@@ -601,7 +638,7 @@ const OrderMgmt = () => {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-1">
-                  {(order?.items || order?.orderItems || []).slice(0, 2).map((item, index) => (
+                  {getOrderItems(order).slice(0, 2).map((item, index) => (
                     <img
                       key={index}
                       src={item?.image || item?.thumbnail || ''}
@@ -609,13 +646,13 @@ const OrderMgmt = () => {
                       className="w-6 h-6 rounded-full border border-white object-cover"
                     />
                   ))}
-                  {(order?.items || order?.orderItems || []).length > 2 && (
+                  {getOrderItems(order).length > 2 && (
                     <div className="w-6 h-6 rounded-full bg-gray-200 border border-white flex items-center justify-center">
-                      <span className="text-xs text-gray-600">+{(order?.items || order?.orderItems || []).length - 2}</span>
+                      <span className="text-xs text-gray-600">+{getOrderItems(order).length - 2}</span>
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-gray-500">{(order?.items || order?.orderItems || []).length} item(s)</span>
+                <span className="text-xs text-gray-500">{getOrderItems(order).length} item(s)</span>
               </div>
 
               <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order?.paymentStatus)}`}>
@@ -751,7 +788,7 @@ const OrderMgmt = () => {
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex -space-x-2">
-                        {(order?.items || order?.orderItems || []).slice(0, 3).map((item, index) => (
+                        {getOrderItems(order).slice(0, 3).map((item, index) => (
                           <img
                             key={index}
                             src={item?.image || item?.thumbnail || ''}
@@ -759,13 +796,13 @@ const OrderMgmt = () => {
                             className="w-8 h-8 rounded-full border-2 border-white object-cover"
                           />
                         ))}
-                        {(order?.items || order?.orderItems || []).length > 3 && (
+                        {getOrderItems(order).length > 3 && (
                           <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
-                            <span className="text-xs text-gray-600">+{(order?.items || order?.orderItems || []).length - 3}</span>
+                            <span className="text-xs text-gray-600">+{getOrderItems(order).length - 3}</span>
                           </div>
                         )}
                       </div>
-                      <span className="ml-2 text-sm text-gray-500">{(order?.items || order?.orderItems || []).length} item(s)</span>
+                      <span className="ml-2 text-sm text-gray-500">{getOrderItems(order).length} item(s)</span>
                     </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -932,7 +969,7 @@ const OrderMgmt = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {(selectedOrder?.items || selectedOrder?.orderItems || []).map((item, index) => (
+                      {getOrderItems(selectedOrder).map((item, index) => (
                         <tr key={index}>
                           <td className="px-4 py-3">
                             <div className="flex items-center">
@@ -1084,7 +1121,7 @@ const OrderMgmt = () => {
                       </tr>
                     </thead>
                     <tbody>
-                            {(selectedOrder?.items || selectedOrder?.orderItems || []).map((item, index) => (
+                            {getOrderItems(selectedOrder).map((item, index) => (
                               <tr key={index} className="border-t border-gray-200">
                                 <td className="px-4 py-2 text-sm text-gray-900">{item?.name || ''}</td>
                                 <td className="px-4 py-2 text-sm text-gray-600 text-center">{item?.quantity || 0}</td>
@@ -1177,7 +1214,7 @@ const OrderMgmt = () => {
 
                 {/* Items */}
                 <div className="border-t border-b py-3 space-y-2">
-                  {(selectedOrder?.items || selectedOrder?.orderItems || []).map((item, index) => (
+                  {getOrderItems(selectedOrder).map((item, index) => (
                     <div key={index} className="flex justify-between">
                       <span className="flex-1">{item?.name || ''} x{item?.quantity || 0}</span>
                       <span className="font-medium">GH₵{(Number(item?.price || 0) * Number(item?.quantity || 0)).toFixed(2)}</span>
