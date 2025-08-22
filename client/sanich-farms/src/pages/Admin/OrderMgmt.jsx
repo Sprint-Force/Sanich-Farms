@@ -524,7 +524,7 @@ const OrderMgmt = () => {
                 {statuses.map(status => (
                   <option key={status} value={status}>
                     {status === 'all' ? 'All Statuses' : 
-                     status === 'canceled' ? 'Canceled' :
+                     status === 'cancelled' ? 'Cancelled' :
                      status.charAt(0).toUpperCase() + status.slice(1)}
                   </option>
                 ))}
