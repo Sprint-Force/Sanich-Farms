@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { productsAPI } from '../../services/api';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiFilter, FiEye, FiStar, FiToggleLeft, FiToggleRight, FiX, FiUpload, FiTag, FiChevronDown } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiFilter, FiStar, FiToggleLeft, FiToggleRight, FiX, FiUpload, FiTag, FiChevronDown } from 'react-icons/fi';
 
 const ProductMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
