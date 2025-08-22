@@ -136,7 +136,8 @@ const BookingMgmt = () => {
   }, []);
 
   const getStatusColor = (status) => {
-    switch (status) {
+    const s = toLower(status);
+    switch (s) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'approved': return 'bg-blue-100 text-blue-800';
       case 'completed': return 'bg-green-100 text-green-800';
@@ -147,7 +148,8 @@ const BookingMgmt = () => {
   };
 
   const getPriorityColor = (priority) => {
-    switch (priority) {
+    const p = toLower(priority);
+    switch (p) {
       case 'high': return 'text-red-600';
       case 'medium': return 'text-yellow-600';
       case 'low': return 'text-green-600';
@@ -244,18 +246,22 @@ const BookingMgmt = () => {
         };
 
         try {
-          const res = await bookingsAPI.update(editingBooking.id, updatedBooking);
+          const id = resolveId(editingBooking);
+          const res = await bookingsAPI.update(id, updatedBooking);
           // If API returned the updated booking use it
           const updated = res?.data || res || updatedBooking;
-          setBookings(prev => prev.map(b => b.id === editingBooking.id ? updated : b));
+          setBookings(prev => prev.map(b => (getBookingId(b) === id) ? updated : b));
         } catch {
           // Fallback to local update if API fails
           console.warn('API update failed, falling back to local update');
-          setBookings(prev => prev.map(b => b.id === editingBooking.id ? updatedBooking : b));
+          const id = resolveId(editingBooking);
+          setBookings(prev => prev.map(b => (getBookingId(b) === id) ? updatedBooking : b));
         }
 
-        setSuccess('Booking updated successfully');
-        closeEditModal();
+  setSuccess('Booking updated successfully');
+  // notify other pages (dashboard) that bookings changed
+  try { const resolvedId = resolveId(editingBooking); window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: resolvedId, action: 'updated' } })); } catch { /* ignore */ }
+  closeEditModal();
       } catch {
         setError('Failed to update booking');
       } finally {
@@ -269,16 +275,19 @@ const BookingMgmt = () => {
   const updateBookingStatus = (id, newStatus) => {
     const patchStatus = async () => {
       setLoading(true);
-      try {
         try {
-          // prefer using bookingsAPI.update to change status
-          await bookingsAPI.update(id, { status: newStatus });
-          setBookings(prev => prev.map(b => (getBookingId(b) === resolveId(id)) ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
-        } catch {
-          console.warn('Failed to update status on server, updating locally');
-          setBookings(prev => prev.map(b => (getBookingId(b) === resolveId(id)) ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
-        }
-        setSuccess(`Booking ${newStatus} successfully`);
+          try {
+            // prefer using bookingsAPI.update to change status
+            const resolved = resolveId(id);
+            await bookingsAPI.update(resolved, { status: newStatus });
+            setBookings(prev => prev.map(b => (getBookingId(b) === resolved) ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
+          } catch {
+            console.warn('Failed to update status on server, updating locally');
+            const resolved = resolveId(id);
+            setBookings(prev => prev.map(b => (getBookingId(b) === resolved) ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
+          }
+  setSuccess(`Booking ${newStatus} successfully`);
+  try { window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: (typeof id === 'object' ? getBookingId(id) : resolveId(id)), action: 'status-change', status: newStatus } })); } catch { /* ignore */ }
       } catch {
         setError('Failed to update booking status');
       } finally {
@@ -304,14 +313,17 @@ const BookingMgmt = () => {
       const doCancel = async () => {
         setLoading(true);
         try {
-          try {
-            await bookingsAPI.cancel(id);
-            setBookings(prev => prev.map(b => (getBookingId(b) === resolveId(id)) ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
+            try {
+            const resolved = resolveId(id);
+            await bookingsAPI.cancel(resolved);
+            setBookings(prev => prev.map(b => (getBookingId(b) === resolved) ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
           } catch {
             console.warn('Cancel API failed, updating locally');
-            setBookings(prev => prev.map(b => (getBookingId(b) === resolveId(id)) ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
+            const resolved = resolveId(id);
+            setBookings(prev => prev.map(b => (getBookingId(b) === resolved) ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
           }
           setSuccess('Booking cancelled successfully');
+          try { window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: resolveId(id), action: 'cancelled' } })); } catch { /* ignore */ }
         } catch {
           setError('Failed to cancel booking');
         } finally {
@@ -331,15 +343,19 @@ const BookingMgmt = () => {
       const doDelete = async () => {
         setLoading(true);
         try {
-          try {
-            await apiClient.delete(`/bookings/${id}`);
-            setBookings(prev => prev.filter(b => getBookingId(b) !== resolveId(id)));
+            try {
+            const resolved = resolveId(id);
+            await apiClient.delete(`/bookings/${resolved}`);
+            setBookings(prev => prev.filter(b => getBookingId(b) !== resolved));
             setSuccess('Booking deleted successfully');
+            try { window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: resolved, action: 'deleted' } })); } catch { /* ignore */ }
           } catch {
             console.warn('Delete API failed, falling back to local delete');
             // fallback to local deletion
-            setBookings(prev => prev.filter(b => getBookingId(b) !== resolveId(id)));
+            const resolved = resolveId(id);
+            setBookings(prev => prev.filter(b => getBookingId(b) !== resolved));
             setSuccess('Booking removed locally');
+            try { const resolved = resolveId(id); window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: resolved, action: 'deleted-local' } })); } catch { /* ignore */ }
           }
         } catch {
           setError('Failed to delete booking');
@@ -608,7 +624,7 @@ const BookingMgmt = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredBookings.map((booking) => (
-                <tr key={booking.id} className="hover:bg-gray-50">
+                <tr key={getBookingId(booking)} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{booking.bookingNumber}</div>
@@ -640,7 +656,7 @@ const BookingMgmt = () => {
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(safeStr(booking?.status))}`}>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(toLower(booking?.status))}`}>
                       {(safeStr(booking?.status).charAt(0).toUpperCase() + safeStr(booking?.status).slice(1))}
                     </span>
                   </td>
@@ -666,14 +682,14 @@ const BookingMgmt = () => {
                       {toLower(booking?.status) === 'pending' && (
                         <>
                           <button
-                            onClick={() => approveBooking(booking.id)}
+                            onClick={() => approveBooking(getBookingId(booking))}
                             className="text-green-600 hover:text-green-900 p-1"
                             title="Approve"
                           >
                             <FiCheck className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => rejectBooking(booking.id)}
+                            onClick={() => rejectBooking(getBookingId(booking))}
                             className="text-red-600 hover:text-red-900 p-1"
                             title="Reject"
                           >
@@ -684,7 +700,7 @@ const BookingMgmt = () => {
                       
                       {toLower(booking?.status) === 'approved' && (
                         <button
-                          onClick={() => completeBooking(booking.id)}
+                          onClick={() => completeBooking(getBookingId(booking))}
                           className="text-green-600 hover:text-green-900 p-1"
                           title="Mark as Completed"
                         >
@@ -719,7 +735,7 @@ const BookingMgmt = () => {
                       
                       {!(toLower(booking?.status) === 'cancelled') && !(toLower(booking?.status) === 'completed') && (
                         <button
-                          onClick={() => cancelBooking(booking.id)}
+                          onClick={() => cancelBooking(getBookingId(booking))}
                           className="text-yellow-600 hover:text-yellow-900 p-1"
                           title="Cancel"
                         >
@@ -728,7 +744,7 @@ const BookingMgmt = () => {
                       )}
                       
                       <button
-                        onClick={() => deleteBooking(booking.id)}
+                        onClick={() => deleteBooking(getBookingId(booking))}
                         className="text-red-600 hover:text-red-900 p-1"
                         title="Delete"
                       >
@@ -966,7 +982,7 @@ const BookingMgmt = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Status</label>
-                    <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedBooking.status)}`}>
+                    <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(toLower(selectedBooking?.status))}`}>
                       {(safeStr(selectedBooking?.status).charAt(0).toUpperCase() + safeStr(selectedBooking?.status).slice(1))}
                     </span>
                   </div>

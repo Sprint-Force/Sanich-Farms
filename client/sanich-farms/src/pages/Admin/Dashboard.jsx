@@ -89,6 +89,18 @@ const Dashboard = () => {
     };
 
     load();
+    // Listen for external booking changes (admin actions) and refresh bookings
+  const onBookingsChanged = async () => {
+      try {
+        const m = await import('../../services/api');
+        const data = await m.bookingsAPI.getAll();
+        const list = Array.isArray(data) ? data : data?.bookings || data?.data || [];
+        if (mounted) setBookings(Array.isArray(list) ? list : []);
+      } catch {
+        /* ignore refresh errors */
+      }
+    };
+    window.addEventListener('bookings:changed', onBookingsChanged);
     return () => { mounted = false; };
   }, []);
 
