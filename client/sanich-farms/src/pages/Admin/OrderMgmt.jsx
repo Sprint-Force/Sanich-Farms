@@ -42,7 +42,7 @@ const OrderMgmt = () => {
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
 
-  const statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'canceled', 'refunded'];
+  const statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
   const dateFilters = ['all', 'today', 'yesterday', 'last7days', 'last30days', 'custom'];
 
   // Helpers to normalize customer info coming from different API shapes
