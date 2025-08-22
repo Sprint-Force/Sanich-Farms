@@ -134,13 +134,14 @@ const BookingMgmt = () => {
   };
 
   const filteredBookings = bookings.filter(booking => {
+    const term = (searchTerm || '').toLowerCase();
     const matchesSearch = 
-      booking.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.bookingNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.service.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === 'all' || booking.status === filterStatus;
-    const matchesService = filterService === 'all' || booking.service === filterService;
+      (booking.customerName || '').toLowerCase().includes(term) ||
+      (booking.bookingNumber || '').toLowerCase().includes(term) ||
+      (booking.service || '').toLowerCase().includes(term);
+
+    const matchesStatus = filterStatus === 'all' || ((booking.status || '').toLowerCase() === (filterStatus || '').toLowerCase());
+    const matchesService = filterService === 'all' || ((booking.service || '').toLowerCase() === (filterService || '').toLowerCase());
     
     // Date range filter
     let matchesDate = true;
@@ -586,7 +587,7 @@ const BookingMgmt = () => {
                     <div>
                       <div className="text-sm font-medium text-gray-900">{booking.bookingNumber}</div>
                       <div className={`text-xs font-medium ${getPriorityColor(booking.priority)}`}>
-                        {booking.priority.toUpperCase()} PRIORITY
+                        {(booking.priority || '').toUpperCase()} PRIORITY
                       </div>
                     </div>
                   </td>
@@ -614,7 +615,7 @@ const BookingMgmt = () => {
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
-                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      {((booking.status || '').charAt(0).toUpperCase() + (booking.status || '').slice(1))}
                     </span>
                   </td>
                   
@@ -626,9 +627,9 @@ const BookingMgmt = () => {
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">GH₵{booking.totalCost.toFixed(2)}</div>
-                      {booking.depositPaid > 0 && (
-                        <div className="text-xs text-green-600">Deposit: GH₵{booking.depositPaid.toFixed(2)}</div>
+                      <div className="text-sm font-medium text-gray-900">GH₵{(Number(booking.totalCost) || 0).toFixed(2)}</div>
+                      {Number(booking.depositPaid) > 0 && (
+                        <div className="text-xs text-green-600">Deposit: GH₵{(Number(booking.depositPaid) || 0).toFixed(2)}</div>
                       )}
                     </div>
                   </td>
@@ -940,13 +941,13 @@ const BookingMgmt = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Status</label>
                     <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedBooking.status)}`}>
-                      {selectedBooking.status.charAt(0).toUpperCase() + selectedBooking.status.slice(1)}
+                      {((selectedBooking.status || '').charAt(0).toUpperCase() + (selectedBooking.status || '').slice(1))}
                     </span>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Priority</label>
                     <span className={`text-sm font-medium ${getPriorityColor(selectedBooking.priority)}`}>
-                      {selectedBooking.priority.toUpperCase()}
+                      {(selectedBooking.priority || '').toUpperCase()}
                     </span>
                   </div>
                   <div>
@@ -966,15 +967,15 @@ const BookingMgmt = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Total Cost</label>
-                    <p className="text-sm text-gray-900">GH₵{selectedBooking.totalCost.toFixed(2)}</p>
+                    <p className="text-sm text-gray-900">GH₵{(Number(selectedBooking.totalCost) || 0).toFixed(2)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Deposit Paid</label>
-                    <p className="text-sm text-gray-900">GH₵{selectedBooking.depositPaid.toFixed(2)}</p>
+                    <p className="text-sm text-gray-900">GH₵{(Number(selectedBooking.depositPaid) || 0).toFixed(2)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Balance Due</label>
-                    <p className="text-sm text-gray-900">GH₵{(selectedBooking.totalCost - selectedBooking.depositPaid).toFixed(2)}</p>
+                    <p className="text-sm text-gray-900">GH₵{(Number(selectedBooking.totalCost) - Number(selectedBooking.depositPaid) || 0).toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -1133,11 +1134,11 @@ const BookingMgmt = () => {
                     <div className="text-sm text-gray-600">Completed</div>
                   </div>
                   <div className="bg-blue-50 rounded-lg p-4">
-                    <div className="text-2xl font-bold text-blue-600">GH₵{stats.totalRevenue.toFixed(0)}</div>
+                    <div className="text-2xl font-bold text-blue-600">GH₵{(Number(stats.totalRevenue) || 0).toFixed(0)}</div>
                     <div className="text-sm text-gray-600">Total Revenue</div>
                   </div>
                   <div className="bg-purple-50 rounded-lg p-4">
-                    <div className="text-2xl font-bold text-purple-600">GH₵{stats.avgBookingValue.toFixed(0)}</div>
+                    <div className="text-2xl font-bold text-purple-600">GH₵{(Number(stats.avgBookingValue) || 0).toFixed(0)}</div>
                     <div className="text-sm text-gray-600">Avg. Booking Value</div>
                   </div>
                 </div>
@@ -1184,7 +1185,7 @@ const BookingMgmt = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium text-gray-900">GH₵{service.revenue.toFixed(2)}</div>
+                        <div className="font-medium text-gray-900">GH₵{(Number(service.revenue) || 0).toFixed(2)}</div>
                         <div className="text-sm text-gray-600">Revenue</div>
                       </div>
                     </div>
