@@ -70,6 +70,22 @@ const ProductMgmt = () => {
     }
   };
 
+  // PRODUCT API FIX: Helper function to compute product status based on backend fields
+  const getProductStatus = (product) => {
+    if (!product) return 'Unknown';
+    const stock = product.stock_quantity || product.stock || 0;
+    const isAvailable = product.is_available !== false; // Default to true if undefined
+    
+    if (!isAvailable) return 'Inactive';
+    if (stock <= 0) return 'Out of Stock';
+    return 'Active';
+  };
+
+  // PRODUCT API FIX: Helper function to get stock quantity from various field names
+  const getStockQuantity = (product) => {
+    return product?.stock_quantity || product?.stock || 0;
+  };
+
   const filteredProducts = products.filter(product => {
     const name = (product && product.name) ? String(product.name) : '';
     const category = (product && product.category) ? String(product.category).toLowerCase() : '';
@@ -128,11 +144,11 @@ const ProductMgmt = () => {
   price: product.price != null ? String(product.price) : '',
   originalPrice: product.originalPrice != null ? String(product.originalPrice) : '',
   discount: product.discount != null ? String(product.discount) : '',
-  stock: product.stock != null ? String(product.stock) : '',
+  stock: product.stock_quantity != null ? String(product.stock_quantity) : (product.stock != null ? String(product.stock) : ''),
   description: product.description || '',
   tags: Array.isArray(product.tags) ? product.tags.join(', ') : (product.tags ? String(product.tags) : ''),
   featured: !!product.featured,
-  active: product.active == null ? true : !!product.active,
+  active: product.is_available !== false, // Use is_available field from backend
   seasonal: !!product.seasonal,
   bulkAvailable: !!product.bulkAvailable,
   bulkMinQuantity: product.bulkMinQuantity != null ? String(product.bulkMinQuantity) : '',
@@ -195,6 +211,7 @@ const ProductMgmt = () => {
       submitData.append('price', parseFloat(formData.price));
       submitData.append('stock_quantity', parseInt(formData.stock));
       submitData.append('rating', 0); // Default rating
+      submitData.append('is_available', formData.active ? 'true' : 'false'); // Map active to is_available
       
       // Add image if present
       const imageFile = formData.images.find(img => img.file)?.file;
@@ -234,49 +251,97 @@ const ProductMgmt = () => {
     }
   };
 
-  const deleteProduct = (id) => {
+  const deleteProduct = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      const remove = async () => {
+      try {
+        setLoadingAction(true);
+        const product = products.find(p => p.id === id);
+        const idToUse = product?._id || product?.id || id;
+        
         try {
-          const idToUse = id && id._id ? id._id : id;
-          try {
-            await productsAPI.removeAdmin(idToUse);
-          } catch {
-            // fallback to generic delete
-            await productsAPI.remove(idToUse);
-          }
-          // Reload all products to ensure fresh data
-          const refreshedData = await productsAPI.getAll();
-          setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
-          // Invalidate product cache for other components
-          localStorage.setItem('productCacheInvalidated', Date.now().toString());
+          await productsAPI.removeAdmin(idToUse);
         } catch {
-          console.error('Failed to delete product');
-          alert('Failed to delete product. See console for details.');
+          // fallback to generic delete
+          await productsAPI.remove(idToUse);
         }
-      };
-      remove();
+        
+        // Reload all products to ensure fresh data
+        const refreshedData = await productsAPI.getAll();
+        setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
+        
+        // Invalidate product cache for other components
+        localStorage.setItem('productCacheInvalidated', Date.now().toString());
+        
+        setSuccessMessage('Product deleted successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } catch (error) {
+        console.error('Failed to delete product:', error);
+        setError('Failed to delete product. Please try again.');
+        setTimeout(() => setError(''), 3000);
+      } finally {
+        setLoadingAction(false);
+      }
     }
   };
 
-  const toggleFeatured = (id) => {
-    setProducts(prev => prev.map(p => 
-      p.id === id ? { ...p, featured: !p.featured } : p
-    ));
+  const toggleFeatured = async (id) => {
+    try {
+      const product = products.find(p => p.id === id);
+      if (!product) return;
+
+      // PRODUCT API FIX: Update featured status via API
+      const updateData = new FormData();
+      updateData.append('featured', !product.featured);
+      
+      const idToUse = product._id || product.id;
+      await productsAPI.updateAdmin(idToUse, updateData);
+      
+      // Update local state
+      setProducts(prev => prev.map(p => 
+        p.id === id ? { ...p, featured: !p.featured } : p
+      ));
+      
+      setSuccessMessage(`Product ${!product.featured ? 'marked as featured' : 'removed from featured'}!`);
+      setTimeout(() => setSuccessMessage(''), 2000);
+    } catch (error) {
+      console.error('Failed to toggle featured status:', error);
+      setError('Failed to update featured status');
+      setTimeout(() => setError(''), 3000);
+    }
   };
 
-  const toggleActive = (id) => {
-    setProducts(prev => prev.map(p => {
-      if (p.id === id) {
-        const newActive = !p.active;
-        return { 
-          ...p, 
-          active: newActive,
-          status: newActive && p.stock > 0 ? 'Active' : !newActive ? 'Inactive' : 'Out of Stock'
-        };
-      }
-      return p;
-    }));
+  const toggleActive = async (id) => {
+    try {
+      const product = products.find(p => p.id === id);
+      if (!product) return;
+
+      // PRODUCT API FIX: Update is_available status via API
+      const newActive = !(product.is_available !== false);
+      const updateData = new FormData();
+      updateData.append('is_available', newActive);
+      
+      const idToUse = product._id || product.id;
+      await productsAPI.updateAdmin(idToUse, updateData);
+      
+      // Update local state
+      setProducts(prev => prev.map(p => {
+        if (p.id === id) {
+          return { 
+            ...p, 
+            is_available: newActive,
+            active: newActive
+          };
+        }
+        return p;
+      }));
+      
+      setSuccessMessage(`Product ${newActive ? 'activated' : 'deactivated'}!`);
+      setTimeout(() => setSuccessMessage(''), 2000);
+    } catch (error) {
+      console.error('Failed to toggle active status:', error);
+      setError('Failed to update active status');
+      setTimeout(() => setError(''), 3000);
+    }
   };
 
   return (
@@ -408,11 +473,11 @@ const ProductMgmt = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {product && product.stock != null ? product.stock : 0}
+                    {getStockQuantity(product)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(product && product.status ? product.status : '')}`}>
-                      {product && product.status ? product.status : 'Unknown'}
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(getProductStatus(product))}`}>
+                      {getProductStatus(product)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -435,7 +500,8 @@ const ProductMgmt = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       onClick={() => toggleFeatured(product.id)}
-                      className={`p-1 rounded ${product.featured ? 'text-yellow-500' : 'text-gray-300'}`}
+                      disabled={loadingAction}
+                      className={`p-1 rounded ${product.featured ? 'text-yellow-500' : 'text-gray-300'} ${loadingAction ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <FiStar className={`w-4 h-4 ${product.featured ? 'fill-current' : ''}`} />
                     </button>
@@ -444,10 +510,11 @@ const ProductMgmt = () => {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => toggleActive(product.id)}
-                        className={`p-1 ${product.active ? 'text-green-600' : 'text-gray-400'}`}
-                        title={product.active ? 'Deactivate' : 'Activate'}
+                        disabled={loadingAction}
+                        className={`p-1 ${(product.is_available !== false) ? 'text-green-600' : 'text-gray-400'} ${loadingAction ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={(product.is_available !== false) ? 'Deactivate' : 'Activate'}
                       >
-                        {product.active ? (
+                        {(product.is_available !== false) ? (
                           <FiToggleRight className="w-5 h-5" />
                         ) : (
                           <FiToggleLeft className="w-5 h-5" />
@@ -455,14 +522,16 @@ const ProductMgmt = () => {
                       </button>
                       <button 
                         onClick={() => openModal(product)}
-                        className="text-blue-600 hover:text-blue-900 p-1"
+                        disabled={loadingAction}
+                        className={`text-blue-600 hover:text-blue-900 p-1 ${loadingAction ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title="Edit"
                       >
                         <FiEdit2 className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => deleteProduct(product.id)}
-                        className="text-red-600 hover:text-red-900 p-1"
+                        disabled={loadingAction}
+                        className={`text-red-600 hover:text-red-900 p-1 ${loadingAction ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title="Delete"
                       >
                         <FiTrash2 className="w-4 h-4" />
@@ -781,14 +850,16 @@ const ProductMgmt = () => {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                  disabled={loadingAction}
+                  className={`bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition-colors ${loadingAction ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  {editingProduct ? 'Update Product' : 'Add Product'}
+                  {loadingAction ? 'Saving...' : (editingProduct ? 'Update Product' : 'Add Product')}
                 </button>
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors"
+                  disabled={loadingAction}
+                  className={`bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors ${loadingAction ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   Cancel
                 </button>
