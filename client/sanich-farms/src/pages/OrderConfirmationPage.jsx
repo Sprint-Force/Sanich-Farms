@@ -62,27 +62,25 @@ const OrderConfirmationPage = () => {
     if (paymentRequired && paymentMethod === 'mobile_money') {
       setProcessingPayment(true);
       try {
-        // Initialize payment with Paystack/MoMo
+        // PAYMENT API FIX: Match backend PaymentController expected fields
         const paymentData = {
-          amount: parseFloat(orderDetails.total_amount || orderDetails.total || 0) * 100, // Amount in pesewas
-          email: orderDetails.email,
-          metadata: {
-            order_id: orderDetails.id,
-            customer_name: `${orderDetails.first_name} ${orderDetails.last_name}`,
-            phone_number: orderDetails.phone_number
-          }
+          order_id: orderDetails.id,
+          payment_method: 'mobile_money',
+          amount: parseFloat(orderDetails.total_amount || orderDetails.total || 0) // Amount in cedis, backend converts to kobo
         };
 
+        console.log('Initializing payment with data:', paymentData);
         const paymentResponse = await paymentsAPI.initializePayment(paymentData);
+        console.log('Payment response:', paymentResponse);
         
-        if (paymentResponse.success && paymentResponse.authorization_url) {
+        if (paymentResponse.payment_link) {
           // Clear cart since we're about to make payment
           clearCart();
           
           // Redirect to Paystack payment page
-          window.location.href = paymentResponse.authorization_url;
+          window.location.href = paymentResponse.payment_link;
         } else {
-          throw new Error('Failed to initialize payment');
+          throw new Error('No payment link received from server');
         }
       } catch (error) {
         console.error('Payment initialization failed:', error);
