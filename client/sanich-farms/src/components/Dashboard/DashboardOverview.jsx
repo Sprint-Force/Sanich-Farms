@@ -31,6 +31,7 @@ const DashboardOverview = () => {
         const bookingsData = Array.isArray(bookingsResponse) ? bookingsResponse : 
                             Array.isArray(bookingsResponse?.bookings) ? bookingsResponse.bookings : [];
 
+        console.log('Bookings data received:', bookingsData); // Debug: Check bookings data
         setOrders(ordersData);
         setBookings(bookingsData);
         setError(null);
@@ -50,9 +51,36 @@ const DashboardOverview = () => {
 
   // Process data for display
   const recentOrders = orders.slice(0, 3);
-  const upcomingBookings = bookings.filter(b => 
-    b.status === 'Confirmed' || b.status === 'Pending'
-  ).slice(0, 2);
+  
+  // Fix upcoming bookings filter - include future bookings only
+  const upcomingBookings = bookings.filter(b => {
+    // Check if booking is confirmed or pending
+    const isValidStatus = b.status === 'Confirmed' || b.status === 'Pending' || b.status === 'confirmed' || b.status === 'pending';
+    
+    // Check if booking date is in the future
+    const bookingDate = b.appointment_date || b.date || b.booking_date;
+    let isFuture = true; // Default to true if no date found
+    
+    if (bookingDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Set to start of day
+      const appointmentDate = new Date(bookingDate);
+      isFuture = appointmentDate >= today;
+    }
+    
+    console.log('Booking filter check:', { 
+      id: b.id, 
+      status: b.status, 
+      isValidStatus, 
+      bookingDate, 
+      isFuture,
+      result: isValidStatus && isFuture 
+    }); // Debug filter logic
+    
+    return isValidStatus && isFuture;
+  }).slice(0, 2);
+  
+  console.log('Final upcoming bookings:', upcomingBookings); // Debug final result
 
   const userName = user?.name?.split(' ')[0] || 'User';
 
