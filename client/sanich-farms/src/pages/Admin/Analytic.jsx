@@ -208,12 +208,122 @@ const Analytic = () => {
 
         setApiBookingStats({ totalBookingRevenue, totalBookings, pendingBookings: bookingPending, approvedBookings: bookingApproved, completedBookings: bookingCompleted, cancelledBookings: bookingCancelled, bookingRevenueGrowth: null, avgBookingValue: totalBookings ? totalBookingRevenue / totalBookings : 0 });
 
-        // Basic revenue data for charts (use last N orders as fallback)
-        const revenueDaily = orders.slice(0, 7).map((o, i) => ({ date: (o.createdAt || o.created_at || o.date || `Day ${i+1}`).slice ? (o.createdAt || o.created_at || o.date).slice(0,10) : `Day ${i+1}`, revenue: getNumber(getOrderTotal(o)), orders: 1 }));
-        const bookingDaily = bookings.slice(0, 7).map((b, i) => ({ date: (b.createdAt || b.created_at || b.date || `Day ${i+1}`).slice ? (b.createdAt || b.created_at || b.date).slice(0,10) : `Day ${i+1}`, bookings: 1, revenue: getNumber(b.revenue || b.total || b.amount || 0), completed: b.status === 'completed' || b.status === 'COMPLETED' }));
+        // Aggregate orders/bookings into time-series for charts (last 7 days, last 4 weeks, last 12 months)
+        const toDateObj = (item) => {
+          const d = item?.createdAt || item?.created_at || item?.date || item?.dateString || item?.date;
+          const parsed = d ? new Date(d) : null;
+          return (parsed && !isNaN(parsed)) ? parsed : null;
+        };
 
-        setApiRevenueData({ daily: revenueDaily, weekly: revenueDaily, monthly: revenueDaily });
-        setApiBookingData({ daily: bookingDaily, weekly: bookingDaily, monthly: bookingDaily });
+        const startOfDay = (dt) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+
+        const formatDay = (dt) => {
+          const y = dt.getFullYear();
+          const m = String(dt.getMonth() + 1).padStart(2, '0');
+          const d = String(dt.getDate()).padStart(2, '0');
+          return `${y}-${m}-${d}`;
+        };
+
+        const getWeekRangeKey = (dt) => {
+          // ISO week-year week number approximation using year-week label
+          const copy = new Date(dt);
+          // Set to Thursday in current week to get ISO week-year
+          copy.setDate(copy.getDate() + 3 - ((copy.getDay() + 6) % 7));
+          const weekYear = copy.getFullYear();
+          const firstJan = new Date(weekYear, 0, 1);
+          const weekNum = Math.floor(1 + Math.round(((copy - firstJan) / 86400000 - 3 + ((firstJan.getDay() + 6) % 7)) / 7));
+          return `${weekYear}-W${String(weekNum).padStart(2, '0')}`;
+        };
+
+        const formatMonth = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2,'0')}`;
+
+        const sumByKey = (items, keyFn, valueFn) => {
+          const map = Object.create(null);
+          for (const it of items) {
+            const key = keyFn(it);
+            if (!key) continue;
+            map[key] = (map[key] || 0) + (Number(valueFn(it)) || 0);
+          }
+          return map;
+        };
+
+        // Build last N day/week/month buckets
+        const buildDaily = (items, getValue, days = 7) => {
+          const today = startOfDay(new Date());
+          const buckets = [];
+          const map = sumByKey(items, (it) => {
+            const d = toDateObj(it);
+            return d ? formatDay(startOfDay(d)) : null;
+          }, getValue);
+          for (let i = days - 1; i >= 0; i--) {
+            const dt = new Date(today);
+            dt.setDate(today.getDate() - i);
+            const key = formatDay(dt);
+            buckets.push({ date: key, revenue: map[key] || 0, orders: 0 });
+          }
+          // compute orders count per day
+          const orderCounts = sumByKey(items, (it) => {
+            const d = toDateObj(it);
+            return d ? formatDay(startOfDay(d)) : null;
+          }, () => 1);
+          for (const b of buckets) {
+            b.orders = orderCounts[b.date] || 0;
+          }
+          return buckets;
+        };
+
+        const buildWeekly = (items, getValue, weeks = 4) => {
+          const today = new Date();
+          const weeksArr = [];
+          // collect sums by week key
+          const revByWeek = sumByKey(items, (it) => {
+            const d = toDateObj(it);
+            return d ? getWeekRangeKey(d) : null;
+          }, getValue);
+          for (let i = weeks - 1; i >= 0; i--) {
+            const dt = new Date(today);
+            dt.setDate(today.getDate() - i * 7);
+            const key = getWeekRangeKey(dt);
+            weeksArr.push({ period: key, revenue: revByWeek[key] || 0, orders: 0 });
+          }
+          const orderCounts = sumByKey(items, (it) => {
+            const d = toDateObj(it);
+            return d ? getWeekRangeKey(d) : null;
+          }, () => 1);
+          for (const w of weeksArr) w.orders = orderCounts[w.period] || 0;
+          return weeksArr;
+        };
+
+        const buildMonthly = (items, getValue, months = 12) => {
+          const today = new Date();
+          const monthsArr = [];
+          const revByMonth = sumByKey(items, (it) => {
+            const d = toDateObj(it);
+            return d ? formatMonth(d) : null;
+          }, getValue);
+          for (let i = months - 1; i >= 0; i--) {
+            const dt = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const key = formatMonth(dt);
+            monthsArr.push({ period: key, revenue: revByMonth[key] || 0, orders: 0 });
+          }
+          const orderCounts = sumByKey(items, (it) => {
+            const d = toDateObj(it);
+            return d ? formatMonth(d) : null;
+          }, () => 1);
+          for (const m of monthsArr) m.orders = orderCounts[m.period] || 0;
+          return monthsArr;
+        };
+
+        const revenueDaily = buildDaily(orders, (o) => getNumber(getOrderTotal(o)), 7);
+        const revenueWeekly = buildWeekly(orders, (o) => getNumber(getOrderTotal(o)), 4);
+        const revenueMonthly = buildMonthly(orders, (o) => getNumber(getOrderTotal(o)), 12);
+
+        const bookingDaily = buildDaily(bookings, (b) => getNumber(b.revenue || b.total || b.amount || 0), 7).map(d => ({ date: d.date, bookings: d.orders, revenue: d.revenue, completed: 0 }));
+        const bookingWeekly = buildWeekly(bookings, (b) => getNumber(b.revenue || b.total || b.amount || 0), 4).map(w => ({ period: w.period, bookings: w.orders, revenue: w.revenue, completed: 0 }));
+        const bookingMonthly = buildMonthly(bookings, (b) => getNumber(b.revenue || b.total || b.amount || 0), 12).map(m => ({ period: m.period, bookings: m.orders, revenue: m.revenue, completed: 0 }));
+
+        setApiRevenueData({ daily: revenueDaily, weekly: revenueWeekly, monthly: revenueMonthly });
+        setApiBookingData({ daily: bookingDaily, weekly: bookingWeekly, monthly: bookingMonthly });
 
         // Best selling products: if products provide unitsSold, use it; otherwise aggregate from orders (if items exist)
         let bestProducts = [];

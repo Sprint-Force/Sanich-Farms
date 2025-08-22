@@ -44,6 +44,28 @@ const BookingMgmt = () => {
   // bookings loaded from API
   const [bookings, setBookings] = useState([]);
 
+  // --- Helpers: normalize ids, numbers and strings to avoid runtime TypeErrors ---
+  const getBookingId = (b) => {
+    if (!b) return '';
+    if (typeof b === 'string' || typeof b === 'number') return String(b);
+    return String(b?.id ?? b?._id ?? b?.bookingNumber ?? '');
+  };
+
+  const resolveId = (idOrBooking) => {
+    if (!idOrBooking) return '';
+    if (typeof idOrBooking === 'object') return getBookingId(idOrBooking);
+    return String(idOrBooking);
+  };
+
+  const normalizeNumber = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const safeStr = (s) => (s == null ? '' : String(s));
+  const toLower = (s) => safeStr(s).toLowerCase();
+
+
   const [formData, setFormData] = useState({
     date: '',
     time: '',
@@ -62,21 +84,21 @@ const BookingMgmt = () => {
 
   // Statistics calculation
   const stats = {
-    total: bookings.length,
-    pending: bookings.filter(b => b.status === 'pending').length,
-    approved: bookings.filter(b => b.status === 'approved').length,
-    completed: bookings.filter(b => b.status === 'completed').length,
-    cancelled: bookings.filter(b => b.status === 'cancelled').length,
-    rejected: bookings.filter(b => b.status === 'rejected').length,
-    totalRevenue: bookings.filter(b => b.status === 'completed').reduce((sum, b) => sum + b.totalCost, 0),
-    avgBookingValue: bookings.length > 0 ? bookings.reduce((sum, b) => sum + b.totalCost, 0) / bookings.length : 0
+  total: bookings.length,
+  pending: bookings.filter(b => toLower(b?.status) === 'pending').length,
+  approved: bookings.filter(b => toLower(b?.status) === 'approved').length,
+  completed: bookings.filter(b => toLower(b?.status) === 'completed').length,
+  cancelled: bookings.filter(b => toLower(b?.status) === 'cancelled').length,
+  rejected: bookings.filter(b => toLower(b?.status) === 'rejected').length,
+  totalRevenue: bookings.filter(b => toLower(b?.status) === 'completed').reduce((sum, b) => sum + normalizeNumber(b?.totalCost), 0),
+  avgBookingValue: bookings.length > 0 ? bookings.reduce((sum, b) => sum + normalizeNumber(b?.totalCost), 0) / bookings.length : 0
   };
 
   // Service statistics
   const serviceStats = services.slice(1).map(service => ({
-    name: service,
-    count: bookings.filter(b => b.service === service).length,
-    revenue: bookings.filter(b => b.service === service && b.status === 'completed').reduce((sum, b) => sum + b.totalCost, 0)
+  name: service,
+  count: bookings.filter(b => toLower(b?.service) === toLower(service)).length,
+  revenue: bookings.filter(b => toLower(b?.service) === toLower(service) && toLower(b?.status) === 'completed').reduce((sum, b) => sum + normalizeNumber(b?.totalCost), 0)
   })).sort((a, b) => b.count - a.count);
 
   useEffect(() => {
@@ -134,38 +156,38 @@ const BookingMgmt = () => {
   };
 
   const filteredBookings = bookings.filter(booking => {
-    const term = (searchTerm || '').toLowerCase();
+  const term = safeStr(searchTerm).toLowerCase();
     const matchesSearch = 
-      (booking.customerName || '').toLowerCase().includes(term) ||
-      (booking.bookingNumber || '').toLowerCase().includes(term) ||
-      (booking.service || '').toLowerCase().includes(term);
+  toLower(booking?.customerName).includes(term) ||
+  toLower(booking?.bookingNumber).includes(term) ||
+  toLower(booking?.service).includes(term);
 
-    const matchesStatus = filterStatus === 'all' || ((booking.status || '').toLowerCase() === (filterStatus || '').toLowerCase());
-    const matchesService = filterService === 'all' || ((booking.service || '').toLowerCase() === (filterService || '').toLowerCase());
+  const matchesStatus = filterStatus === 'all' || (toLower(booking?.status) === toLower(filterStatus));
+  const matchesService = filterService === 'all' || (toLower(booking?.service) === toLower(filterService));
     
     // Date range filter
     let matchesDate = true;
     if (selectedDateRange !== 'all') {
-      const bookingDate = new Date(booking.date);
+  const bookingDate = booking?.date ? new Date(booking.date) : null;
       const today = new Date();
       
       switch (selectedDateRange) {
         case 'today':
-          matchesDate = bookingDate.toDateString() === today.toDateString();
+          matchesDate = bookingDate ? bookingDate.toDateString() === today.toDateString() : false;
           break;
         case 'yesterday': {
           const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-          matchesDate = bookingDate.toDateString() === yesterday.toDateString();
+          matchesDate = bookingDate ? bookingDate.toDateString() === yesterday.toDateString() : false;
           break;
         }
         case 'week': {
           const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-          matchesDate = bookingDate >= weekAgo;
+          matchesDate = bookingDate ? bookingDate >= weekAgo : false;
           break;
         }
         case 'month': {
           const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-          matchesDate = bookingDate >= monthAgo;
+          matchesDate = bookingDate ? bookingDate >= monthAgo : false;
           break;
         }
         default:
@@ -187,13 +209,13 @@ const BookingMgmt = () => {
   const openEditModal = (booking) => {
     setEditingBooking(booking);
     setFormData({
-      date: booking.date,
-      time: booking.time,
-      duration: booking.duration,
-      assignedStaff: booking.assignedStaff || '',
-      notes: booking.notes,
-      totalCost: booking.totalCost.toString(),
-      status: booking.status
+  date: safeStr(booking?.date),
+  time: safeStr(booking?.time),
+  duration: safeStr(booking?.duration),
+  assignedStaff: safeStr(booking?.assignedStaff),
+  notes: safeStr(booking?.notes),
+  totalCost: safeStr(booking?.totalCost),
+  status: safeStr(booking?.status)
     });
     setShowEditModal(true);
   };
@@ -253,10 +275,10 @@ const BookingMgmt = () => {
         try {
           // prefer using bookingsAPI.update to change status
           await bookingsAPI.update(id, { status: newStatus });
-          setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
+          setBookings(prev => prev.map(b => (getBookingId(b) === resolveId(id)) ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
         } catch {
           console.warn('Failed to update status on server, updating locally');
-          setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
+          setBookings(prev => prev.map(b => (getBookingId(b) === resolveId(id)) ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
         }
         setSuccess(`Booking ${newStatus} successfully`);
       } catch {
@@ -286,10 +308,10 @@ const BookingMgmt = () => {
         try {
           try {
             await bookingsAPI.cancel(id);
-            setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
+            setBookings(prev => prev.map(b => (getBookingId(b) === resolveId(id)) ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
           } catch {
             console.warn('Cancel API failed, updating locally');
-            setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
+            setBookings(prev => prev.map(b => (getBookingId(b) === resolveId(id)) ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
           }
           setSuccess('Booking cancelled successfully');
         } catch {
@@ -313,12 +335,12 @@ const BookingMgmt = () => {
         try {
           try {
             await apiClient.delete(`/bookings/${id}`);
-            setBookings(prev => prev.filter(b => b.id !== id));
+            setBookings(prev => prev.filter(b => getBookingId(b) !== resolveId(id)));
             setSuccess('Booking deleted successfully');
           } catch {
             console.warn('Delete API failed, falling back to local delete');
             // fallback to local deletion
-            setBookings(prev => prev.filter(b => b.id !== id));
+            setBookings(prev => prev.filter(b => getBookingId(b) !== resolveId(id)));
             setSuccess('Booking removed locally');
           }
         } catch {
@@ -338,18 +360,24 @@ const BookingMgmt = () => {
     
     // Pre-fill message based on type
     let defaultMessage = '';
+    const name = safeStr(booking?.customerName);
+    const number = safeStr(booking?.bookingNumber);
+    const service = safeStr(booking?.service);
+    const date = safeStr(booking?.date);
+    const time = safeStr(booking?.time);
+
     switch (type) {
       case 'confirmation':
-        defaultMessage = `Dear ${booking.customerName},\n\nYour booking (${booking.bookingNumber}) for ${booking.service} has been confirmed for ${booking.date} at ${booking.time}.\n\nThank you for choosing Sanich Farms!`;
+        defaultMessage = `Dear ${name},\n\nYour booking (${number}) for ${service} has been confirmed for ${date} at ${time}.\n\nThank you for choosing Sanich Farms!`;
         break;
       case 'cancellation':
-        defaultMessage = `Dear ${booking.customerName},\n\nWe regret to inform you that your booking (${booking.bookingNumber}) for ${booking.service} scheduled for ${booking.date} has been cancelled.\n\nWe apologize for any inconvenience.`;
+        defaultMessage = `Dear ${name},\n\nWe regret to inform you that your booking (${number}) for ${service} scheduled for ${date} has been cancelled.\n\nWe apologize for any inconvenience.`;
         break;
       case 'reminder':
-        defaultMessage = `Dear ${booking.customerName},\n\nThis is a reminder that you have a booking (${booking.bookingNumber}) for ${booking.service} tomorrow at ${booking.time}.\n\nPlease contact us if you need to make any changes.`;
+        defaultMessage = `Dear ${name},\n\nThis is a reminder that you have a booking (${number}) for ${service} tomorrow at ${time}.\n\nPlease contact us if you need to make any changes.`;
         break;
       default:
-        defaultMessage = `Dear ${booking.customerName},\n\n`;
+        defaultMessage = `Dear ${name},\n\n`;
     }
     
     setMessageText(defaultMessage);
@@ -362,7 +390,7 @@ const BookingMgmt = () => {
     
     setTimeout(() => {
       setLoading(false);
-      setSuccess(`${messageType.charAt(0).toUpperCase() + messageType.slice(1)} message sent successfully`);
+  setSuccess(`${safeStr(messageType).charAt(0).toUpperCase() + safeStr(messageType).slice(1)} message sent successfully`);
       setShowMessageModal(false);
       setMessageText('');
     }, 1000);
@@ -478,7 +506,7 @@ const BookingMgmt = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Revenue</p>
-              <p className="text-xl font-bold text-green-600">GH₵{stats.totalRevenue.toFixed(2)}</p>
+              <p className="text-xl font-bold text-green-600">GH₵{normalizeNumber(stats.totalRevenue).toFixed(2)}</p>
             </div>
             <FiTrendingUp className="w-8 h-8 text-green-400" />
           </div>
@@ -507,7 +535,7 @@ const BookingMgmt = () => {
             >
               {statuses.map(status => (
                 <option key={status} value={status}>
-                  {status === 'all' ? 'All Statuses' : status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === 'all' ? 'All Statuses' : safeStr(status).charAt(0).toUpperCase() + safeStr(status).slice(1)}
                 </option>
               ))}
             </select>
@@ -586,8 +614,8 @@ const BookingMgmt = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{booking.bookingNumber}</div>
-                      <div className={`text-xs font-medium ${getPriorityColor(booking.priority)}`}>
-                        {(booking.priority || '').toUpperCase()} PRIORITY
+                      <div className={`text-xs font-medium ${getPriorityColor(booking?.priority)}`}>
+                        {safeStr(booking?.priority).toUpperCase()} PRIORITY
                       </div>
                     </div>
                   </td>
@@ -595,41 +623,41 @@ const BookingMgmt = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{booking.customerName}</div>
-                      <div className="text-sm text-gray-500">{booking.customerPhone}</div>
+                      <div className="text-sm text-gray-500">{safeStr(booking?.customerPhone)}</div>
                     </div>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{booking.service}</div>
-                      <div className="text-sm text-gray-500">{booking.serviceType}</div>
+                      <div className="text-sm text-gray-500">{safeStr(booking?.serviceType)}</div>
                     </div>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{booking.date}</div>
-                      <div className="text-sm text-gray-500">{booking.time} ({booking.duration})</div>
+                      <div className="text-sm text-gray-500">{safeStr(booking?.time)} ({safeStr(booking?.duration)})</div>
                     </div>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
-                      {((booking.status || '').charAt(0).toUpperCase() + (booking.status || '').slice(1))}
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(safeStr(booking?.status))}`}>
+                      {(safeStr(booking?.status).charAt(0).toUpperCase() + safeStr(booking?.status).slice(1))}
                     </span>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {booking.assignedStaff || (
+                    {safeStr(booking?.assignedStaff) || (
                       <span className="text-gray-400 italic">Not assigned</span>
                     )}
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">GH₵{(Number(booking.totalCost) || 0).toFixed(2)}</div>
-                      {Number(booking.depositPaid) > 0 && (
-                        <div className="text-xs text-green-600">Deposit: GH₵{(Number(booking.depositPaid) || 0).toFixed(2)}</div>
+                      <div className="text-sm font-medium text-gray-900">GH₵{normalizeNumber(booking?.totalCost).toFixed(2)}</div>
+                      {normalizeNumber(booking?.depositPaid) > 0 && (
+                        <div className="text-xs text-green-600">Deposit: GH₵{normalizeNumber(booking?.depositPaid).toFixed(2)}</div>
                       )}
                     </div>
                   </td>
@@ -637,7 +665,7 @@ const BookingMgmt = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-1">
                       {/* Quick Actions based on status */}
-                      {booking.status === 'pending' && (
+                      {toLower(booking?.status) === 'pending' && (
                         <>
                           <button
                             onClick={() => approveBooking(booking.id)}
@@ -656,7 +684,7 @@ const BookingMgmt = () => {
                         </>
                       )}
                       
-                      {booking.status === 'approved' && (
+                      {toLower(booking?.status) === 'approved' && (
                         <button
                           onClick={() => completeBooking(booking.id)}
                           className="text-green-600 hover:text-green-900 p-1"
@@ -691,7 +719,7 @@ const BookingMgmt = () => {
                         <FiMessageSquare className="w-4 h-4" />
                       </button>
                       
-                      {booking.status !== 'cancelled' && booking.status !== 'completed' && (
+                      {!(toLower(booking?.status) === 'cancelled') && !(toLower(booking?.status) === 'completed') && (
                         <button
                           onClick={() => cancelBooking(booking.id)}
                           className="text-yellow-600 hover:text-yellow-900 p-1"
@@ -831,7 +859,7 @@ const BookingMgmt = () => {
                     >
                       {statuses.slice(1).map(status => (
                         <option key={status} value={status}>
-                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                          {safeStr(status).charAt(0).toUpperCase() + safeStr(status).slice(1)}
                         </option>
                       ))}
                     </select>
@@ -892,19 +920,19 @@ const BookingMgmt = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Name</label>
-                    <p className="text-sm text-gray-900">{selectedBooking.customerName}</p>
+                    <p className="text-sm text-gray-900">{safeStr(selectedBooking?.customerName)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <ClickableEmail 
-                      email={selectedBooking.customerEmail} 
+                      email={safeStr(selectedBooking?.customerEmail)} 
                       className="text-sm text-gray-900 hover:text-green-600" 
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Phone</label>
                     <ClickablePhone 
-                      phone={selectedBooking.customerPhone} 
+                      phone={safeStr(selectedBooking?.customerPhone)} 
                       className="text-sm text-gray-900 hover:text-green-600" 
                     />
                   </div>
@@ -917,19 +945,19 @@ const BookingMgmt = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Service</label>
-                    <p className="text-sm text-gray-900">{selectedBooking.service}</p>
+                    <p className="text-sm text-gray-900">{safeStr(selectedBooking?.service)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Service Type</label>
-                    <p className="text-sm text-gray-900">{selectedBooking.serviceType}</p>
+                    <p className="text-sm text-gray-900">{safeStr(selectedBooking?.serviceType)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Date & Time</label>
-                    <p className="text-sm text-gray-900">{selectedBooking.date} at {selectedBooking.time}</p>
+                    <p className="text-sm text-gray-900">{safeStr(selectedBooking?.date)} at {safeStr(selectedBooking?.time)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Duration</label>
-                    <p className="text-sm text-gray-900">{selectedBooking.duration}</p>
+                    <p className="text-sm text-gray-900">{safeStr(selectedBooking?.duration)}</p>
                   </div>
                 </div>
               </div>
@@ -941,7 +969,7 @@ const BookingMgmt = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Status</label>
                     <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedBooking.status)}`}>
-                      {((selectedBooking.status || '').charAt(0).toUpperCase() + (selectedBooking.status || '').slice(1))}
+                      {(safeStr(selectedBooking?.status).charAt(0).toUpperCase() + safeStr(selectedBooking?.status).slice(1))}
                     </span>
                   </div>
                   <div>
@@ -952,11 +980,11 @@ const BookingMgmt = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Assigned Staff</label>
-                    <p className="text-sm text-gray-900">{selectedBooking.assignedStaff || 'Not assigned'}</p>
+                    <p className="text-sm text-gray-900">{safeStr(selectedBooking?.assignedStaff) || 'Not assigned'}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Created</label>
-                    <p className="text-sm text-gray-900">{new Date(selectedBooking.createdAt).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-900">{selectedBooking?.createdAt ? new Date(selectedBooking.createdAt).toLocaleDateString() : ''}</p>
                   </div>
                 </div>
               </div>
@@ -967,15 +995,15 @@ const BookingMgmt = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Total Cost</label>
-                    <p className="text-sm text-gray-900">GH₵{(Number(selectedBooking.totalCost) || 0).toFixed(2)}</p>
+                    <p className="text-sm text-gray-900">GH₵{normalizeNumber(selectedBooking?.totalCost).toFixed(2)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Deposit Paid</label>
-                    <p className="text-sm text-gray-900">GH₵{(Number(selectedBooking.depositPaid) || 0).toFixed(2)}</p>
+                    <p className="text-sm text-gray-900">GH₵{normalizeNumber(selectedBooking?.depositPaid).toFixed(2)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Balance Due</label>
-                    <p className="text-sm text-gray-900">GH₵{(Number(selectedBooking.totalCost) - Number(selectedBooking.depositPaid) || 0).toFixed(2)}</p>
+                    <p className="text-sm text-gray-900">GH₵{(normalizeNumber(selectedBooking?.totalCost) - normalizeNumber(selectedBooking?.depositPaid) || 0).toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -1025,8 +1053,8 @@ const BookingMgmt = () => {
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 pt-16 z-[60] overflow-y-auto">
           <div className="bg-white rounded-lg max-w-2xl w-full my-4">
             <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold text-gray-900">
-                Send {messageType.charAt(0).toUpperCase() + messageType.slice(1)} Message
+                <h2 className="text-xl font-bold text-gray-900">
+                Send {safeStr(messageType).charAt(0).toUpperCase() + safeStr(messageType).slice(1)} Message
               </h2>
               <button onClick={() => setShowMessageModal(false)} className="text-gray-400 hover:text-gray-600">
                 <FiX className="w-6 h-6" />

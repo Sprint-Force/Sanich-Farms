@@ -127,12 +127,20 @@ const Dashboard = () => {
     date: b.date || b.createdAt || new Date().toISOString()
   })) : [];
 
-  const topProductsDisplay = products.length > 0 ? products.slice(0,4).map((p, i) => ({
-    name: p.name || p.title || `Product ${i+1}`,
-    sales: p.sold || p.unitsSold || 0,
-    revenue: (p.price && (p.sold || p.unitsSold)) ? (p.price * (p.sold || p.unitsSold)) : (p.revenue || 0),
-    stock: p.stock || p.quantity || p.inventory || 0
-  })) : [];
+  const topProductsDisplay = products.length > 0 ? products.slice(0,4).map((p, i) => {
+    const name = p.name || p.title || `Product ${i+1}`;
+    const price = Number(p.price ?? p.originalPrice ?? p.amount ?? 0) || 0;
+    const stock = p.stock_quantity ?? p.stock ?? p.quantity ?? p.inventory ?? 0;
+    const featured = !!p.featured;
+    const isAvailable = p.is_available !== false;
+    return {
+      name,
+      price,
+      stock,
+      featured,
+      isAvailable
+    };
+  }) : [];
 
   const displayOutOfStock = products.length > 0
     ? products.filter(p => (p.stock || p.quantity || p.inventory || 0) === 0).length
@@ -154,29 +162,38 @@ const Dashboard = () => {
 
     const extractTime = (it) => {
       for (const k of dateKeyCandidates) {
-        if (it && it[k]) return Date.parse(it[k]);
+        if (it && it[k]) {
+          const t = Date.parse(it[k]);
+          if (!Number.isNaN(t)) return t;
+        }
+      }
+      // fallback: try common nested shapes
+      if (it && it.created && it.createdAt) {
+        const t = Date.parse(it.createdAt);
+        if (!Number.isNaN(t)) return t;
       }
       return NaN;
     };
 
     const currentItems = items.filter(i => {
       const t = extractTime(i);
-      return !Number.isNaN(t) && t >= currentFrom;
+      return Number.isFinite(t) && t >= currentFrom && t <= now;
     });
 
     const prevItems = items.filter(i => {
       const t = extractTime(i);
-      return !Number.isNaN(t) && t >= prevFrom && t < prevTo;
+      return Number.isFinite(t) && t >= prevFrom && t < prevTo;
     });
 
-    const currentValue = currentItems.reduce((s, it) => s + (valueExtractor(it) || 0), 0);
-    const prevValue = prevItems.reduce((s, it) => s + (valueExtractor(it) || 0), 0);
+    const currentValue = currentItems.reduce((s, it) => s + (Number(valueExtractor(it)) || 0), 0);
+    const prevValue = prevItems.reduce((s, it) => s + (Number(valueExtractor(it)) || 0), 0);
 
-    if (prevValue > 0) {
-      return Math.round(((currentValue - prevValue) / prevValue) * 100);
-    }
+    // If there is no data in the previous window, return null to indicate "new/unavailable"
+    if (prevValue === 0) return null;
 
-    return undefined;
+    // Otherwise compute percent change (rounded)
+    const pct = Math.round(((currentValue - prevValue) / Math.abs(prevValue)) * 100);
+    return pct;
   };
 
   const ordersChange = computeChange(orders, () => 1);
@@ -191,10 +208,12 @@ const Dashboard = () => {
         <div className="min-w-0 flex-1">
           <p className="text-gray-500 text-xs sm:text-sm font-medium truncate">{title}</p>
           <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900 mt-1 truncate">{value}</p>
-          {change && (
-            <p className={`text-xs sm:text-sm mt-1 ${change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {change !== undefined && change !== null ? (
+            <p className={`text-xs sm:text-sm mt-1 ${change > 0 ? 'text-green-600' : (change < 0 ? 'text-red-600' : 'text-gray-600')}`}>
               {change > 0 ? '+' : ''}{change}% from last week
             </p>
+          ) : (
+            <p className="text-xs sm:text-sm mt-1 text-blue-600">New</p>
           )}
         </div>
         <div className={`p-2 sm:p-3 rounded-lg ${color} flex-shrink-0 ml-3`}>
@@ -466,18 +485,18 @@ const Dashboard = () => {
             <div className="p-4 sm:p-6">
               <div className="space-y-3 sm:space-y-4">
                 {topProductsDisplay.map((product, index) => (
-                  <div key={product.name} className="flex items-center justify-between">
+                  <div key={`${product.name}-${index}`} className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${product.featured ? 'bg-yellow-100' : 'bg-green-100'}`}>
                         <span className="text-green-600 font-semibold text-xs sm:text-sm">{index + 1}</span>
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{product.name}</p>
-                        <p className="text-xs sm:text-sm text-gray-500">{product.sales} sales</p>
+                        <p className="text-xs sm:text-sm text-gray-500">GH₵{product.price.toFixed(2)}</p>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <p className="font-semibold text-gray-900 text-sm sm:text-base">GH₵{product.revenue}</p>
+                      <p className="font-semibold text-gray-900 text-sm sm:text-base">{product.isAvailable ? 'Active' : 'Inactive'}</p>
                       <p className="text-xs sm:text-sm text-gray-500">{product.stock} in stock</p>
                     </div>
                   </div>
