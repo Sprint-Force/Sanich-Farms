@@ -29,6 +29,9 @@ const ProductMgmt = () => {
 
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false); // PRODUCT API FIX: Add loading state for actions
+  const [error, setError] = useState(null); // PRODUCT API FIX: Add error state
+  const [successMessage, setSuccessMessage] = useState(''); // PRODUCT API FIX: Add success message
 
   useEffect(() => {
     let mounted = true;
@@ -83,10 +86,15 @@ const ProductMgmt = () => {
     }));
   };
 
+  // PRODUCT API FIX: Simplified image upload handling
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    // store files for upload and previews
-    const previews = files.map(file => ({ file, url: URL.createObjectURL(file) }));
+    // Store files for upload and create previews
+    const previews = files.map(file => ({ 
+      file, 
+      url: URL.createObjectURL(file),
+      name: file.name 
+    }));
     setFormData(prev => ({
       ...prev,
       images: [...prev.images, ...previews]
@@ -163,101 +171,67 @@ const ProductMgmt = () => {
     setEditingProduct(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newProduct = {
-      id: editingProduct?.id || Date.now(),
-      name: formData.name,
-      category: formData.category,
-      price: parseFloat(formData.price),
-      originalPrice: parseFloat(formData.originalPrice),
-      discount: parseFloat(formData.discount),
-      stock: parseInt(formData.stock),
-      status: formData.stock > 0 && formData.active ? 'Active' : formData.stock === 0 ? 'Out of Stock' : 'Inactive',
-      featured: formData.featured,
-      active: formData.active,
-      seasonal: formData.seasonal,
-      bulkAvailable: formData.bulkAvailable,
-      bulkMinQuantity: formData.bulkMinQuantity ? parseInt(formData.bulkMinQuantity) : '',
-      bulkDiscount: formData.bulkDiscount ? parseFloat(formData.bulkDiscount) : '',
-      seasonStartDate: formData.seasonStartDate,
-      seasonEndDate: formData.seasonEndDate,
-      description: formData.description,
-      tags: formData.tags.split(',').map(tag => tag.trim()),
-  images: formData.images
-    };
+    
+    // PRODUCT API FIX: Validate required fields
+    if (!formData.name.trim() || !formData.category || !formData.price || !formData.stock) {
+      setError('Please fill in all required fields: name, category, price, and stock quantity.');
+      return;
+    }
 
-    const submit = async () => {
-      try {
-        // Use admin endpoints with multipart form data when files are present
-        const buildForm = () => {
-          const fd = new FormData();
-          fd.append('name', newProduct.name);
-          fd.append('category', newProduct.category);
-          fd.append('price', newProduct.price);
-          if (newProduct.originalPrice) fd.append('originalPrice', newProduct.originalPrice);
-          if (newProduct.discount) fd.append('discount', newProduct.discount);
-          fd.append('stock_quantity', newProduct.stock);
-          fd.append('description', newProduct.description || '');
-          fd.append('tags', Array.isArray(newProduct.tags) ? newProduct.tags.join(',') : newProduct.tags);
-          fd.append('featured', newProduct.featured ? '1' : '0');
-          fd.append('is_available', newProduct.active ? '1' : '0');
-          // append file inputs
-          (formData.images || []).forEach((img) => {
-            // if stored as {file, url} it's a new file; if string it's an existing url
-            if (img && img.file) fd.append('file', img.file);
-          });
-          return fd;
-        };
+    setLoadingAction(true);
+    setError(null);
+    setSuccessMessage('');
 
-        if (editingProduct) {
-          const idToUse = editingProduct._id || editingProduct.id;
-          const fd = buildForm();
-          try {
-            await productsAPI.updateAdmin(idToUse, fd);
-            // Reload all products to ensure fresh data
-            const refreshedData = await productsAPI.getAll();
-            setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
-            // Invalidate product cache for other components
-            localStorage.setItem('productCacheInvalidated', Date.now().toString());
-          } catch {
-            console.warn('Admin patch failed, trying regular update');
-            await productsAPI.update(idToUse, newProduct);
-            // Reload all products to ensure fresh data
-            const refreshedData = await productsAPI.getAll();
-            setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
-            // Invalidate product cache for other components
-            localStorage.setItem('productCacheInvalidated', Date.now().toString());
-          }
-        } else {
-          const fd = buildForm();
-          try {
-            await productsAPI.createAdmin(fd);
-            // Reload all products to ensure fresh data
-            const refreshedData = await productsAPI.getAll();
-            setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
-            // Invalidate product cache for other components
-            localStorage.setItem('productCacheInvalidated', Date.now().toString());
-          } catch {
-            console.warn('Admin create failed, falling back to public create');
-            await productsAPI.create(newProduct);
-            // Reload all products to ensure fresh data
-            const refreshedData = await productsAPI.getAll();
-            setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
-            // Invalidate product cache for other components
-            localStorage.setItem('productCacheInvalidated', Date.now().toString());
-          }
-        }
-      } catch {
-        // Surface the error to the developer/user instead of silently mutating local state
-        console.error('Product save failed');
-        alert('Failed to save product. See console for details.');
-      } finally {
-        closeModal();
+    try {
+      // PRODUCT API FIX: Create FormData for multipart/form-data to match backend
+      const submitData = new FormData();
+      
+      // Map frontend fields to backend field names exactly
+      submitData.append('name', formData.name.trim());
+      submitData.append('description', formData.description || '');
+      submitData.append('category', formData.category);
+      submitData.append('price', parseFloat(formData.price));
+      submitData.append('stock_quantity', parseInt(formData.stock));
+      submitData.append('rating', 0); // Default rating
+      
+      // Add image if present
+      const imageFile = formData.images.find(img => img.file)?.file;
+      if (imageFile) {
+        submitData.append('file', imageFile);
       }
-    };
 
-    submit();
+      if (editingProduct) {
+        // Update existing product
+        const idToUse = editingProduct._id || editingProduct.id;
+        await productsAPI.updateAdmin(idToUse, submitData);
+        setSuccessMessage('Product updated successfully!');
+      } else {
+        // Create new product
+        await productsAPI.createAdmin(submitData);
+        setSuccessMessage('Product added successfully!');
+      }
+
+      // Reload all products to ensure fresh data
+      const refreshedData = await productsAPI.getAll();
+      setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
+      
+      // Invalidate product cache for other components
+      localStorage.setItem('productCacheInvalidated', Date.now().toString());
+      
+      closeModal();
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+    } catch (error) {
+      console.error('Product save failed:', error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to save product. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   const deleteProduct = (id) => {
@@ -321,6 +295,20 @@ const ProductMgmt = () => {
           <span className="hidden sm:inline">Add</span> Product
         </button>
       </div>
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="mb-4 lg:mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-green-700 font-medium">{successMessage}</p>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-4 lg:mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
