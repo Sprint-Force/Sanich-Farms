@@ -179,15 +179,15 @@ const UserDashboardPage = () => {
             >
               <FiCalendar size={20} /> My Bookings
             </Link>
-            {/* DASHBOARD AUDIT FIX: Add payments section like Amazon */}
-            <Link
+            {/* DASHBOARD AUDIT FIX: Add payments section like Amazon - HIDDEN FOR NOW */}
+            {/* <Link
               to="/dashboard/payments"
               onClick={closeMobileMenu}
               className={`flex items-center gap-3 px-4 py-2 rounded-lg text-lg font-medium transition-colors duration-200
                 ${activeSection === 'payments' ? 'bg-green-100 text-green-700' : 'text-gray-700 hover:bg-gray-100'}`}
             >
               <FiCreditCard size={20} /> Payments & Wallet
-            </Link>
+            </Link> */}
             <Link
               to="/dashboard/profile"
               onClick={closeMobileMenu}
@@ -196,15 +196,15 @@ const UserDashboardPage = () => {
             >
               <FiUser size={20} /> My Profile
             </Link>
-            {/* DASHBOARD AUDIT FIX: Add wishlist back with proper navigation */}
-            <Link
+            {/* DASHBOARD AUDIT FIX: Add wishlist back with proper navigation - HIDDEN FOR NOW */}
+            {/* <Link
               to="/wishlist"
               onClick={closeMobileMenu}
               className={`flex items-center gap-3 px-4 py-2 rounded-lg text-lg font-medium transition-colors duration-200
                 ${activeSection === 'wishlist' ? 'bg-green-100 text-green-700' : 'text-gray-700 hover:bg-gray-100'}`}
             >
               <FiHeart size={20} /> My Wishlist
-            </Link>
+            </Link> */}
           </nav>
           <div className="mt-auto pt-4 border-t border-gray-200">
             <button

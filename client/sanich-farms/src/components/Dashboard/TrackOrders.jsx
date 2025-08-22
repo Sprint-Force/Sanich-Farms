@@ -314,7 +314,7 @@ const TrackOrders = () => {
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-600">Total Amount:</span>
                   <span className="font-semibold text-gray-900">
-                    GH₵{(order.total_amount || order.totalAmount || 0).toFixed(2)}
+                    GH₵{(parseFloat(order.total_amount || order.totalAmount || 0) || 0).toFixed(2)}
                   </span>
                 </div>
               </div>
