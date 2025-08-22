@@ -156,13 +156,11 @@ const BookingMgmt = () => {
   };
 
   const filteredBookings = bookings.filter(booking => {
-  const term = safeStr(searchTerm).toLowerCase();
+    const term = safeStr(searchTerm).toLowerCase();
     const matchesSearch = 
-  toLower(booking?.customerName).includes(term) ||
-  toLower(booking?.bookingNumber).includes(term) ||
-  toLower(booking?.service).includes(term);
-
-  const matchesStatus = filterStatus === 'all' || (toLower(booking?.status) === toLower(filterStatus));
+      toLower(booking?.name || booking?.customerName).includes(term) ||
+      toLower(booking?.bookingNumber).includes(term) ||
+      toLower(booking?.service).includes(term);  const matchesStatus = filterStatus === 'all' || (toLower(booking?.status) === toLower(filterStatus));
   const matchesService = filterService === 'all' || (toLower(booking?.service) === toLower(filterService));
     
     // Date range filter
@@ -360,7 +358,7 @@ const BookingMgmt = () => {
     
     // Pre-fill message based on type
     let defaultMessage = '';
-    const name = safeStr(booking?.customerName);
+    const name = safeStr(booking?.name || booking?.customerName);
     const number = safeStr(booking?.bookingNumber);
     const service = safeStr(booking?.service);
     const date = safeStr(booking?.date);
@@ -622,8 +620,8 @@ const BookingMgmt = () => {
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{booking.customerName}</div>
-                      <div className="text-sm text-gray-500">{safeStr(booking?.customerPhone)}</div>
+                      <div className="text-sm font-medium text-gray-900">{booking.name || booking.customerName}</div>
+                      <div className="text-sm text-gray-500">{safeStr(booking?.phone_number || booking?.customerPhone)}</div>
                     </div>
                   </td>
                   
@@ -920,19 +918,19 @@ const BookingMgmt = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Name</label>
-                    <p className="text-sm text-gray-900">{safeStr(selectedBooking?.customerName)}</p>
+                    <p className="text-sm text-gray-900">{safeStr(selectedBooking?.name || selectedBooking?.customerName)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <ClickableEmail 
-                      email={safeStr(selectedBooking?.customerEmail)} 
+                      email={safeStr(selectedBooking?.email || selectedBooking?.customerEmail)} 
                       className="text-sm text-gray-900 hover:text-green-600" 
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Phone</label>
                     <ClickablePhone 
-                      phone={safeStr(selectedBooking?.customerPhone)} 
+                      phone={safeStr(selectedBooking?.phone_number || selectedBooking?.customerPhone)} 
                       className="text-sm text-gray-900 hover:text-green-600" 
                     />
                   </div>
@@ -1100,7 +1098,7 @@ const BookingMgmt = () => {
                   Recipient
                 </label>
                 <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
-                  {selectedBooking.customerName} ({selectedBooking.customerEmail})
+                  {selectedBooking.name || selectedBooking.customerName} ({selectedBooking.email || selectedBooking.customerEmail})
                 </p>
               </div>
 

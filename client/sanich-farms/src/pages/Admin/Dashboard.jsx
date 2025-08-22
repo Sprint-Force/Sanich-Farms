@@ -113,7 +113,7 @@ const Dashboard = () => {
 
   const recentOrdersDisplay = orders.length > 0 ? orders.slice(0, 4).map(o => ({
     id: o.id || o._id || o.orderNumber || 'N/A',
-    customer: o.customerName || o.user?.name || o.customer || o.email || 'Customer',
+    customer: o.first_name && o.last_name ? `${o.first_name} ${o.last_name}` : o.customerName || o.user?.name || o.customer || o.email || 'Customer',
     amount: o.total || o.amount || o.totalAmount || 0,
     status: o.status || 'Unknown',
     date: o.createdAt || o.date || new Date().toISOString()
@@ -121,7 +121,7 @@ const Dashboard = () => {
 
   const recentBookingsDisplay = bookings.length > 0 ? bookings.slice(0,4).map(b => ({
     id: b.id || b._id || b.bookingNumber || 'BKG',
-    customer: b.customerName || b.user?.name || b.customer || 'Customer',
+    customer: b.name || b.customerName || b.user?.name || b.customer || 'Customer',
     service: b.service || b.serviceName || 'Service',
     status: b.status || 'Unknown',
     date: b.date || b.createdAt || new Date().toISOString()
