@@ -60,7 +60,9 @@ const DashboardOverview = () => {
   const recentOrders = orders.slice(0, 3);
   
   console.log('Processing bookings - total bookings:', bookings.length); // Debug: Check bookings before filter
-  console.log('All bookings:', bookings); // Debug: Show all bookings
+  if (bookings.length > 0) {
+    console.log('Sample booking object structure:', bookings[0]); // Debug: Show booking structure
+  }
   
   // Fix upcoming bookings filter - include future bookings only
   const upcomingBookings = bookings.filter(b => {
@@ -299,11 +301,20 @@ const DashboardOverview = () => {
             {upcomingBookings.map(booking => (
               <li key={booking.id} className="py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <div className="flex-1">
-                  <p className="text-gray-800 font-medium">{booking.service || booking.service_name}</p>
-                  <p className="text-sm text-gray-500">{booking.appointment_date ? new Date(booking.appointment_date).toLocaleDateString() : booking.date}</p>
+                  <p className="text-gray-800 font-medium">
+                    {booking.service || booking.service_name || booking.Service?.name || `Service Booking #${booking.id}`}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {booking.appointment_date ? new Date(booking.appointment_date).toLocaleDateString() : 
+                     booking.date ? new Date(booking.date).toLocaleDateString() : 
+                     booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 
+                     'Date not specified'}
+                  </p>
                 </div>
                 <div className="flex sm:justify-end">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${booking.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${
+                    booking.status?.toLowerCase() === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                  }`}>
                     {booking.status}
                   </span>
                 </div>
