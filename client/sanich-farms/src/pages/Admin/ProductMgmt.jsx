@@ -214,22 +214,38 @@ const ProductMgmt = () => {
           const idToUse = editingProduct._id || editingProduct.id;
           const fd = buildForm();
           try {
-            const updated = await productsAPI.updateAdmin(idToUse, fd);
-            setProducts(prev => prev.map(p => (p._id || p.id) === (updated._id || updated.id) ? updated : p));
+            await productsAPI.updateAdmin(idToUse, fd);
+            // Reload all products to ensure fresh data
+            const refreshedData = await productsAPI.getAll();
+            setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
+            // Invalidate product cache for other components
+            localStorage.setItem('productCacheInvalidated', Date.now().toString());
           } catch {
             console.warn('Admin patch failed, trying regular update');
-            const updated = await productsAPI.update(idToUse, newProduct);
-            setProducts(prev => prev.map(p => (p._id || p.id) === (updated._id || updated.id) ? updated : p));
+            await productsAPI.update(idToUse, newProduct);
+            // Reload all products to ensure fresh data
+            const refreshedData = await productsAPI.getAll();
+            setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
+            // Invalidate product cache for other components
+            localStorage.setItem('productCacheInvalidated', Date.now().toString());
           }
         } else {
           const fd = buildForm();
           try {
-            const created = await productsAPI.createAdmin(fd);
-            setProducts(prev => [...prev, created]);
+            await productsAPI.createAdmin(fd);
+            // Reload all products to ensure fresh data
+            const refreshedData = await productsAPI.getAll();
+            setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
+            // Invalidate product cache for other components
+            localStorage.setItem('productCacheInvalidated', Date.now().toString());
           } catch {
             console.warn('Admin create failed, falling back to public create');
-            const created = await productsAPI.create(newProduct);
-            setProducts(prev => [...prev, created]);
+            await productsAPI.create(newProduct);
+            // Reload all products to ensure fresh data
+            const refreshedData = await productsAPI.getAll();
+            setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
+            // Invalidate product cache for other components
+            localStorage.setItem('productCacheInvalidated', Date.now().toString());
           }
         }
       } catch {
@@ -255,7 +271,11 @@ const ProductMgmt = () => {
             // fallback to generic delete
             await productsAPI.remove(idToUse);
           }
-          setProducts(prev => prev.filter(p => (p._id || p.id) !== (idToUse)));
+          // Reload all products to ensure fresh data
+          const refreshedData = await productsAPI.getAll();
+          setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
+          // Invalidate product cache for other components
+          localStorage.setItem('productCacheInvalidated', Date.now().toString());
         } catch {
           console.error('Failed to delete product');
           alert('Failed to delete product. See console for details.');
