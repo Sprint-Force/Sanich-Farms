@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FiCheckCircle, FiHome, FiChevronRight } from 'react-icons/fi';
-import { ordersAPI } from '../services/api'; // USER SIDE FIX: Use configured API service
+import { ordersAPI, paymentsAPI } from '../services/api'; // MOMO FLOW FIX: Add paymentsAPI
 import { useToast } from '../context/ToastContext'; // Import useToast context
+import { useCart } from '../context/CartContext'; // MOMO FLOW FIX: Add cart context for clearing
 
 const OrderConfirmationPage = () => {
   const { orderId } = useParams(); // Get orderId from the URL parameters
   const location = useLocation(); // USER SIDE FIX: Get state data from navigation
   const { addToast } = useToast();
   const navigate = useNavigate(); // USER SIDE FIX: Add navigate for thank you page
+  const { clearCart } = useCart(); // MOMO FLOW FIX: For clearing cart after payment
   const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [processingPayment, setProcessingPayment] = useState(false); // MOMO FLOW FIX: Payment processing state
+
+  // MOMO FLOW FIX: Get payment flow data from location state
+  const paymentRequired = location.state?.paymentRequired || false;
+  const paymentMethod = location.state?.paymentMethod;
 
   // USER SIDE FIX: Use state data if available, otherwise fetch from API
   useEffect(() => {
@@ -49,6 +56,50 @@ const OrderConfirmationPage = () => {
 
     initializeOrderDetails();
   }, [orderId, location.state, addToast]); // Re-run effect if orderId or state changes
+
+  // MOMO FLOW FIX: Handle payment processing for MOMO orders
+  const handleConfirmOrder = async () => {
+    if (paymentRequired && paymentMethod === 'mobile_money') {
+      setProcessingPayment(true);
+      try {
+        // Initialize payment with Paystack/MoMo
+        const paymentData = {
+          amount: parseFloat(orderDetails.total_amount || orderDetails.total || 0) * 100, // Amount in pesewas
+          email: orderDetails.email,
+          metadata: {
+            order_id: orderDetails.id,
+            customer_name: `${orderDetails.first_name} ${orderDetails.last_name}`,
+            phone_number: orderDetails.phone_number
+          }
+        };
+
+        const paymentResponse = await paymentsAPI.initializePayment(paymentData);
+        
+        if (paymentResponse.success && paymentResponse.authorization_url) {
+          // Clear cart since we're about to make payment
+          clearCart();
+          
+          // Redirect to Paystack payment page
+          window.location.href = paymentResponse.authorization_url;
+        } else {
+          throw new Error('Failed to initialize payment');
+        }
+      } catch (error) {
+        console.error('Payment initialization failed:', error);
+        addToast('Failed to initialize payment. Please try again.', 'error');
+      } finally {
+        setProcessingPayment(false);
+      }
+    } else {
+      // For cash orders or non-payment required orders, go directly to thank you page
+      navigate('/thank-you', { 
+        state: { 
+          type: 'order', 
+          details: orderDetails 
+        } 
+      });
+    }
+  };
 
   // Conditional rendering based on loading and error states
   if (loading) {
@@ -109,17 +160,24 @@ const OrderConfirmationPage = () => {
         )}
 
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          {/* USER SIDE FIX: Add confirm button to go to thank you page */}
+          {/* MOMO FLOW FIX: Different button behavior based on payment method */}
           <button
-            onClick={() => navigate('/thank-you', { 
-              state: { 
-                type: 'order', 
-                details: orderDetails 
-              } 
-            })}
-            className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md"
+            onClick={handleConfirmOrder}
+            disabled={processingPayment}
+            className={`px-8 py-3 rounded-full font-semibold transition duration-300 shadow-md ${
+              processingPayment 
+                ? 'bg-gray-400 text-white cursor-not-allowed' 
+                : paymentRequired && paymentMethod === 'mobile_money'
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+            }`}
           >
-            Confirm Order
+            {processingPayment 
+              ? 'Processing...' 
+              : paymentRequired && paymentMethod === 'mobile_money'
+                ? 'Proceed to Payment'
+                : 'Confirm Order'
+            }
           </button>
           <Link
             to="/shop"

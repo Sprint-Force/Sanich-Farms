@@ -53,6 +53,26 @@ const ThankYouPage = () => {
             </>
           )}
 
+          {type === 'payment' && (
+            <>
+              <p className="text-xl text-gray-600 mb-8">
+                Your payment has been processed successfully! Your order is confirmed and being prepared.
+              </p>
+              {details && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Confirmation</h3>
+                  <div className="text-left space-y-2">
+                    <p><span className="font-medium">Order ID:</span> #{details.id}</p>
+                    <p><span className="font-medium">Total Paid:</span> ₵{details.total_amount || details.total}</p>
+                    <p><span className="font-medium">Payment Method:</span> Mobile Money</p>
+                    <p><span className="font-medium">Payment Status:</span> <span className="text-green-600 font-medium">Successful</span></p>
+                    <p><span className="font-medium">Delivery Address:</span> {details.delivery_address}</p>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
           {type === 'booking' && (
             <>
               <p className="text-xl text-gray-600 mb-8">
@@ -75,12 +95,13 @@ const ThankYouPage = () => {
           {/* What's Next Section */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
             <h3 className="text-lg font-semibold text-blue-800 mb-3">What happens next?</h3>
-            {type === 'order' && (
+            {(type === 'order' || type === 'payment') && (
               <div className="text-blue-700 text-sm space-y-2">
                 <p>✅ Your order is being processed</p>
                 <p>📦 We'll prepare your items for delivery</p>
                 <p>🚚 Our delivery partner will contact you</p>
                 <p>📧 You'll receive updates via email</p>
+                {type === 'payment' && <p>💰 Payment confirmed - no further action needed</p>}
               </div>
             )}
             {type === 'booking' && (
@@ -103,7 +124,7 @@ const ThankYouPage = () => {
               Go Home
             </Link>
 
-            {type === 'order' && (
+            {(type === 'order' || type === 'payment') && (
               <>
                 <Link
                   to="/dashboard/orders"
