@@ -524,7 +524,7 @@ const OrderMgmt = () => {
                 {statuses.map(status => (
                   <option key={status} value={status}>
                     {status === 'all' ? 'All Statuses' : 
-                     status === 'canceled' ? 'Canceled' :
+                     status === 'cancelled' ? 'Cancelled' :
                      status.charAt(0).toUpperCase() + status.slice(1)}
                   </option>
                 ))}
@@ -1084,24 +1084,24 @@ const OrderMgmt = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedOrder.items.map((item, index) => (
-                        <tr key={index} className="border-t border-gray-200">
-                          <td className="px-4 py-2 text-sm text-gray-900">{item.name}</td>
-                          <td className="px-4 py-2 text-sm text-gray-600 text-center">{item.quantity}</td>
-                          <td className="px-4 py-2 text-sm text-gray-600 text-right">GH₵{item.price}</td>
-                          <td className="px-4 py-2 text-sm text-gray-900 text-right font-medium">
-                            GH₵{(item.price * item.quantity).toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
-                      <tr className="border-t-2 border-gray-300 bg-gray-50">
-                        <td colSpan="3" className="px-4 py-2 text-sm font-semibold text-gray-900 text-right">
-                          Total Amount:
-                        </td>
-                        <td className="px-4 py-2 text-lg font-bold text-green-600 text-right">
-                          GH₵{selectedOrder.total}
-                        </td>
-                      </tr>
+                            {(selectedOrder?.items || selectedOrder?.orderItems || []).map((item, index) => (
+                              <tr key={index} className="border-t border-gray-200">
+                                <td className="px-4 py-2 text-sm text-gray-900">{item?.name || ''}</td>
+                                <td className="px-4 py-2 text-sm text-gray-600 text-center">{item?.quantity || 0}</td>
+                                <td className="px-4 py-2 text-sm text-gray-600 text-right">GH₵{Number(item?.price || 0).toFixed(2)}</td>
+                                <td className="px-4 py-2 text-sm text-gray-900 text-right font-medium">
+                                  GH₵{(Number(item?.price || 0) * Number(item?.quantity || 0)).toFixed(2)}
+                                </td>
+                              </tr>
+                            ))}
+                            <tr className="border-t-2 border-gray-300 bg-gray-50">
+                              <td colSpan="3" className="px-4 py-2 text-sm font-semibold text-gray-900 text-right">
+                                Total Amount:
+                              </td>
+                              <td className="px-4 py-2 text-lg font-bold text-green-600 text-right">
+                                GH₵{Number(selectedOrder?.total || selectedOrder?.amount || 0).toFixed(2)}
+                              </td>
+                            </tr>
                     </tbody>
                   </table>
                 </div>
@@ -1177,10 +1177,10 @@ const OrderMgmt = () => {
 
                 {/* Items */}
                 <div className="border-t border-b py-3 space-y-2">
-                  {selectedOrder.items.map((item, index) => (
+                  {(selectedOrder?.items || selectedOrder?.orderItems || []).map((item, index) => (
                     <div key={index} className="flex justify-between">
-                      <span className="flex-1">{item.name} x{item.quantity}</span>
-                      <span className="font-medium">GH₵{(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="flex-1">{item?.name || ''} x{item?.quantity || 0}</span>
+                      <span className="font-medium">GH₵{(Number(item?.price || 0) * Number(item?.quantity || 0)).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -1188,7 +1188,7 @@ const OrderMgmt = () => {
                 {/* Total */}
                 <div className="flex justify-between text-lg font-bold">
                   <span>TOTAL:</span>
-                  <span>GH₵{selectedOrder.total}</span>
+                  <span>GH₵{Number(selectedOrder?.total || selectedOrder?.amount || 0).toFixed(2)}</span>
                 </div>
 
                 {/* Footer */}
