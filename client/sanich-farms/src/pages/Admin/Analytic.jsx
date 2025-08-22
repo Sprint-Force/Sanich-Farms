@@ -105,6 +105,9 @@ const Analytic = () => {
     </div>
   );
 
+  // Helper to safely handle numeric values coming from API (avoid calling .toFixed on undefined)
+  const safeNum = (v, fallback = 0) => (typeof v === 'number' ? v : (Number(v) || fallback));
+
   const SimpleBarChart = ({ data = [], dataKey }) => {
     // Normalize numeric values and guard against missing keys or non-numeric values.
     const safeValues = data.map(item => Number(item?.[dataKey] ?? 0));
@@ -131,7 +134,7 @@ const Analytic = () => {
                 </div>
               </div>
               <div className="w-20 text-xs font-medium text-right">
-                {dataKey === 'revenue' ? `GH\u20b5${value.toFixed(0)}` : String(value)}
+                {dataKey === 'revenue' ? `GH\u20b5${safeNum(value).toFixed(0)}` : String(value)}
               </div>
             </div>
           );
@@ -403,14 +406,14 @@ const Analytic = () => {
           <StatCard
             icon={FiTrendingUp}
     title="Avg Order Value"
-    value={`GH₵${(apiStats ? apiStats.avgOrderValue : stats.avgOrderValue).toFixed(2)}`}
+  value={`GH₵${safeNum(apiStats ? apiStats.avgOrderValue : stats.avgOrderValue).toFixed(2)}`}
     growth={apiStats ? apiStats.avgOrderGrowth ?? stats.avgOrderGrowth : stats.avgOrderGrowth}
             color="bg-purple-500"
           />
           <StatCard
             icon={FiRefreshCw}
     title="Repeat Purchase Rate"
-    value={`${(apiStats ? apiStats.repeatPurchaseRate : stats.repeatPurchaseRate).toFixed(1)}%`}
+  value={`${safeNum(apiStats ? apiStats.repeatPurchaseRate : stats.repeatPurchaseRate).toFixed(1)}%`}
     growth={apiStats ? apiStats.repeatPurchaseGrowth ?? stats.repeatPurchaseGrowth : stats.repeatPurchaseGrowth}
             color="bg-orange-500"
           />
@@ -434,15 +437,15 @@ const Analytic = () => {
           <StatCard
             icon={FiTrendingUp}
     title="Avg Booking Value"
-    value={`GH₵${(apiBookingStats ? apiBookingStats.avgBookingValue : bookingStats.avgBookingValue).toFixed(2)}`}
-    growth={apiBookingStats ? apiBookingStats.avgBookingGrowth ?? bookingStats.avgBookingGrowth : bookingStats.avgBookingGrowth}
+  value={`GH₵${safeNum(apiBookingStats ? apiBookingStats.avgBookingValue : bookingStats.avgBookingValue).toFixed(2)}`}
+  growth={apiBookingStats ? apiBookingStats.avgBookingGrowth ?? bookingStats.avgBookingGrowth : bookingStats.avgBookingGrowth}
             color="bg-purple-500"
           />
           <StatCard
             icon={FiCheckCircle}
     title="Conversion Rate"
-    value={`${(apiBookingStats ? apiBookingStats.conversionRate : bookingStats.conversionRate).toFixed(1)}%`}
-    growth={apiBookingStats ? apiBookingStats.conversionGrowth ?? bookingStats.conversionGrowth : bookingStats.conversionGrowth}
+  value={`${safeNum(apiBookingStats ? apiBookingStats.conversionRate : bookingStats.conversionRate).toFixed(1)}%`}
+  growth={apiBookingStats ? apiBookingStats.conversionGrowth ?? bookingStats.conversionGrowth : bookingStats.conversionGrowth}
             color="bg-orange-500"
           />
         </div>
@@ -591,7 +594,7 @@ const Analytic = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900 text-sm">GH₵{service.revenue.toFixed(2)}</p>
+                        <p className="font-semibold text-gray-900 text-sm">GH₵{safeNum(service.revenue).toFixed(2)}</p>
                         <div className="flex items-center gap-1 text-xs">
                           <span className={`flex items-center ${service.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {service.growth >= 0 ? <FiArrowUp className="w-3 h-3" /> : <FiArrowDown className="w-3 h-3" />}
@@ -676,7 +679,7 @@ const Analytic = () => {
                         <div>
                           <span>{staff.completed}</span>
                           <span className="text-xs text-gray-500 ml-1">
-                            ({((staff.completed / staff.bookings) * 100).toFixed(1)}%)
+                            ({safeNum(((staff.completed || 0) / (staff.bookings || 1)) * 100).toFixed(1)}%)
                           </span>
                         </div>
                       </td>
@@ -687,7 +690,7 @@ const Analytic = () => {
                         </div>
                       </td>
                       <td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900">
-                        GH₵{staff.revenue.toFixed(2)}
+                        GH₵{safeNum(staff.revenue).toFixed(2)}
                       </td>
                       <td className="px-4 sm:px-6 py-4">
                         <div className="flex items-center gap-2">
@@ -742,7 +745,7 @@ const Analytic = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900 text-sm">GH₵{product.revenue.toFixed(2)}</p>
+                        <p className="font-semibold text-gray-900 text-sm">GH₵{safeNum(product.revenue).toFixed(2)}</p>
                         <div className="flex items-center gap-1 text-xs">
                           <span className="text-gray-500">{product.unitsSold} sold</span>
                           <span className={`flex items-center ${product.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -791,7 +794,7 @@ const Analytic = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900 text-sm">GH₵{customer.totalSpent.toFixed(2)}</p>
+                        <p className="font-semibold text-gray-900 text-sm">GH₵{safeNum(customer.totalSpent).toFixed(2)}</p>
                         <p className="text-xs text-gray-500">{customer.orders} orders</p>
                       </div>
                     </div>
@@ -810,7 +813,7 @@ const Analytic = () => {
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-orange-600">
-                  GH₵{abandonedCarts.reduce((sum, cart) => sum + cart.value, 0).toFixed(2)}
+                  GH₵{abandonedCarts.reduce((sum, cart) => sum + safeNum(cart.value), 0).toFixed(2)}
                 </p>
                 <p className="text-sm text-gray-500">Total value</p>
               </div>
@@ -839,7 +842,7 @@ const Analytic = () => {
                         </div>
                       </td>
                       <td className="px-4 sm:px-6 py-4 text-sm text-gray-900">{cart.items}</td>
-                      <td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900">GH₵{cart.value.toFixed(2)}</td>
+                      <td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900">GH₵{safeNum(cart.value).toFixed(2)}</td>
                       <td className="px-4 sm:px-6 py-4">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                           cart.daysAbandoned <= 1 ? 'bg-green-100 text-green-800' :
@@ -882,7 +885,7 @@ const Analytic = () => {
                 <FiCheckCircle className="w-8 h-8" />
                 <div>
                   <p className="text-green-100 text-sm">Completion Rate</p>
-                  <p className="text-2xl font-bold">{((bookingStats.completedBookings / bookingStats.totalBookings) * 100).toFixed(1)}%</p>
+                  <p className="text-2xl font-bold">{safeNum(((bookingStats.completedBookings || 0) / (bookingStats.totalBookings || 1)) * 100).toFixed(1)}%</p>
                 </div>
               </div>
             </div>
@@ -925,7 +928,7 @@ const Analytic = () => {
                 <div>
                   <p className="text-purple-100 text-sm">Cart Recovery Potential</p>
                   <p className="text-2xl font-bold">
-                    GH₵{abandonedCarts.reduce((sum, cart) => sum + cart.value, 0).toFixed(0)}
+                    GH₵{abandonedCarts.reduce((sum, cart) => sum + safeNum(cart.value), 0).toFixed(0)}
                   </p>
                 </div>
               </div>
