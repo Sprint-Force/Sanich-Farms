@@ -17,12 +17,15 @@ const DashboardOverview = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
+      console.log('Starting to fetch dashboard data...'); // Debug: Start of fetch
       try {
         // Fetch all dashboard data in parallel
+        console.log('Calling APIs...'); // Debug: Before API calls
         const [ordersResponse, bookingsResponse] = await Promise.all([
           ordersAPI.getAll(),
           bookingsAPI.getAll()
         ]);
+        console.log('API calls completed'); // Debug: After API calls
 
         // Handle different response structures
         const ordersData = Array.isArray(ordersResponse) ? ordersResponse : 
@@ -31,12 +34,16 @@ const DashboardOverview = () => {
         const bookingsData = Array.isArray(bookingsResponse) ? bookingsResponse : 
                             Array.isArray(bookingsResponse?.bookings) ? bookingsResponse.bookings : [];
 
-        console.log('Bookings data received:', bookingsData); // Debug: Check bookings data
+        console.log('Raw bookings response:', bookingsResponse); // Debug: Check raw response
+        console.log('Processed bookings data:', bookingsData); // Debug: Check processed data
+        console.log('Bookings data length:', bookingsData.length); // Debug: Check array length
         setOrders(ordersData);
         setBookings(bookingsData);
         setError(null);
+        console.log('Dashboard data set successfully'); // Debug: Success
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
+        console.error('Error details:', err.message, err.stack); // Debug: More error details
         setError('Failed to load dashboard data');
         // Fallback to empty arrays
         setOrders([]);
@@ -52,13 +59,17 @@ const DashboardOverview = () => {
   // Process data for display
   const recentOrders = orders.slice(0, 3);
   
+  console.log('Processing bookings - total bookings:', bookings.length); // Debug: Check bookings before filter
+  console.log('All bookings:', bookings); // Debug: Show all bookings
+  
   // Fix upcoming bookings filter - include future bookings only
   const upcomingBookings = bookings.filter(b => {
-    // Check if booking is confirmed or pending
-    const isValidStatus = b.status === 'Confirmed' || b.status === 'Pending' || b.status === 'confirmed' || b.status === 'pending';
+    // Check if booking is confirmed or pending - expanded status check
+    const status = (b.status || '').toLowerCase();
+    const isValidStatus = ['confirmed', 'pending', 'active', 'scheduled', 'booked'].includes(status);
     
     // Check if booking date is in the future
-    const bookingDate = b.appointment_date || b.date || b.booking_date;
+    const bookingDate = b.appointment_date || b.date || b.booking_date || b.scheduled_date;
     let isFuture = true; // Default to true if no date found
     
     if (bookingDate) {
@@ -71,6 +82,7 @@ const DashboardOverview = () => {
     console.log('Booking filter check:', { 
       id: b.id, 
       status: b.status, 
+      statusLower: status,
       isValidStatus, 
       bookingDate, 
       isFuture,
