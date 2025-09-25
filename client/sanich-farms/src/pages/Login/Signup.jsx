@@ -293,7 +293,7 @@ const Signup = () => {
                 to="/login"
                 className="w-full bg-white border-2 border-gray-300 hover:border-blue-500 hover:bg-gray-50 text-gray-700 py-2.5 sm:py-3 px-4 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold text-center transition-all duration-200 block"
               >
-                Sign in to your account
+                Sign in
               </Link>
 
               {/* Terms - More Compact */}
