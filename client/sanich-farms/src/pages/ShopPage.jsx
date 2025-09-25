@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiFilter, FiChevronDown, FiX } from 'react-icons/fi';
 import ProductCard from '../components/UI/ProductCard';
@@ -27,39 +27,6 @@ const ShopPage = () => {
   // State for mobile filter menu visibility
   const [isMobileFilterMenuOpen, setIsMobileFilterMenuOpen] = useState(false);
 
-  // Function to fetch products from the API using centralized client
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = {};
-      if (selectedCategory !== 'All Categories') params.category = selectedCategory.toLowerCase();
-      if (selectedPriceRange !== 'All Prices') {
-        const [min, max] = selectedPriceRange.split('-').map(Number);
-        params.minPrice = min;
-        params.maxPrice = max;
-      }
-      if (selectedRating !== 'All Ratings') params.minRating = parseInt(selectedRating.split(' ')[0]);
-      params.sort = sortBy;
-      params.limit = showCount;
-
-      const response = await productsAPI.getAll(params);
-      // response may be an array or an object with { products, totalCount }
-      const productsData = Array.isArray(response) ? response : (response?.products || response?.data || []);
-      setProducts(productsData);
-      setTotalProducts(response?.totalCount || productsData.length || 0);
-      // Update the fetch timestamp for cache invalidation tracking
-      localStorage.setItem('productsFetchedAt', Date.now().toString());
-    } catch (err) {
-      console.error('Failed to fetch products:', err);
-      setError('Failed to load products. Please try again later.');
-      setProducts([]);
-      setTotalProducts(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedCategory, selectedPriceRange, selectedRating, sortBy, showCount]);
-
   // Effect to set initial category from URL and fetch products
   useEffect(() => {
     const pathParts = location.pathname.split('/');
@@ -75,15 +42,44 @@ const ShopPage = () => {
     } else {
       setSelectedCategory('All Categories');
     }
-
-    // Call fetchProducts whenever the component mounts or URL changes
-    fetchProducts();
-  }, [location.pathname, fetchProducts]); // Dependency on location.pathname to handle direct URL access
+  }, [location.pathname]); // Only depend on location.pathname
 
   // Effect to trigger product fetch whenever filters or sort options change
   useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = {};
+        if (selectedCategory !== 'All Categories') params.category = selectedCategory.toLowerCase();
+        if (selectedPriceRange !== 'All Prices') {
+          const [min, max] = selectedPriceRange.split('-').map(Number);
+          params.minPrice = min;
+          params.maxPrice = max;
+        }
+        if (selectedRating !== 'All Ratings') params.minRating = parseInt(selectedRating.split(' ')[0]);
+        params.sort = sortBy;
+        params.limit = showCount;
+
+        const response = await productsAPI.getAll(params);
+        // response may be an array or an object with { products, totalCount }
+        const productsData = Array.isArray(response) ? response : (response?.products || response?.data || []);
+        setProducts(productsData);
+        setTotalProducts(response?.totalCount || productsData.length || 0);
+        // Update the fetch timestamp for cache invalidation tracking
+        localStorage.setItem('productsFetchedAt', Date.now().toString());
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+        setError('Failed to load products. Please try again later.');
+        setProducts([]);
+        setTotalProducts(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchProducts();
-  }, [fetchProducts]);
+  }, [selectedCategory, selectedPriceRange, selectedRating, sortBy, showCount]); // Direct dependencies instead of fetchProducts
 
   // Effect to update active filters for display
   useEffect(() => {
@@ -103,7 +99,8 @@ const ShopPage = () => {
       if (lastInvalidated && (!lastFetched || parseInt(lastInvalidated) > parseInt(lastFetched))) {
         // Cache was invalidated after last fetch, refresh products
         localStorage.setItem('productsFetchedAt', Date.now().toString());
-        fetchProducts();
+        // Trigger a re-fetch by updating a dependency
+        setSelectedCategory(prev => prev);
       }
     };
 
@@ -115,7 +112,7 @@ const ShopPage = () => {
     window.addEventListener('focus', handleFocus);
     
     return () => window.removeEventListener('focus', handleFocus);
-  }, [fetchProducts]);
+  }, []);
 
   // Function to remove an active filter
   const removeFilter = (filterText) => {
@@ -165,6 +162,7 @@ const ShopPage = () => {
         {/* Mobile Filter Toggle Button */}
         <div className="md:hidden flex justify-end mb-6">
           <button
+            type="button"
             onClick={toggleMobileFilterMenu}
             className="flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-full shadow-md hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
@@ -269,7 +267,7 @@ const ShopPage = () => {
                 activeFilters.map((filter, index) => (
                   <span key={index} className="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
                     {filter}
-                    <button onClick={() => removeFilter(filter)} className="ml-1 text-green-600 hover:text-green-800" aria-label={`Remove filter ${filter}`}>
+                    <button type="button" onClick={() => removeFilter(filter)} className="ml-1 text-green-600 hover:text-green-800" aria-label={`Remove filter ${filter}`}>
                       <FiX size={12} />
                     </button>
                   </span>
@@ -291,7 +289,7 @@ const ShopPage = () => {
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h3 className="text-xl font-bold text-gray-800">Filters</h3>
-            <button onClick={toggleMobileFilterMenu} className="text-gray-600 hover:text-gray-800" aria-label="Close filters">
+            <button type="button" onClick={toggleMobileFilterMenu} className="text-gray-600 hover:text-gray-800" aria-label="Close filters">
               <FiX size={24} />
             </button>
           </div>
@@ -396,6 +394,7 @@ const ShopPage = () => {
 
             {/* Apply Filters Button (Optional, can just apply on change) */}
             <button
+              type="button"
               onClick={closeMobileFilterMenu}
               className="w-full bg-green-600 text-white py-3 rounded-full font-semibold hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 mt-6 text-lg"
             >
@@ -434,7 +433,7 @@ const ShopPage = () => {
         {/* Pagination (Placeholder) */}
         <div className="flex justify-center mt-12">
           {/* Note: In a real-world scenario, this button would load more data from the API */}
-          <button className="bg-green-600 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:bg-green-700 transition duration-300 text-lg">
+          <button type="button" className="bg-green-600 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:bg-green-700 transition duration-300 text-lg">
             Load More
           </button>
         </div>

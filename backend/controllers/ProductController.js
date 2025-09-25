@@ -6,13 +6,12 @@ export const getAllProducts = async (req, res) => {
     try {
         const {
             page = 1,
-            limit = 10,
+            limit = 12,
             category,
             minPrice,
             maxPrice,
             rating,
             sortBy = 'created_at',
-            order = 'DESC'
         } = req.query;
 
         const offset = (page - 1) * limit;
@@ -35,6 +34,22 @@ export const getAllProducts = async (req, res) => {
             whereClause.rating = {
                 [Op.gte]: parseFloat(rating)
             };
+        }
+        // Sorting
+        let order = [["created_at", "DESC"]]; // default: latest
+        switch (sortBy) {
+        case "latest":
+            order = [["created_at", "DESC"]];
+            break;
+        case "name_asc":
+            order = [["name", "ASC"]];
+            break;
+        case "price_asc":
+            order = [["price", "ASC"]];
+            break;
+        case "price_desc":
+            order = [["price", "DESC"]];
+            break;
         }
 
         const { count, rows: products } = await Product.findAndCountAll({
@@ -76,3 +91,34 @@ export const getSingleProduct = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch product details' });
   }
 };
+
+
+// Get related products based on the current selected products
+export const getRelatedProducts = async (req, res) => {
+    try {
+        const { productId } = req.params;
+
+        if (!productId) {
+            return res.status(400).json({ error: 'Product ID is required' });
+        }
+        // Get current product
+        const currentProduct = await Product.findByPk(productId);
+        if (!currentProduct) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        // Find related products in the same category, excluding the current product
+        const relatedProducts = await Product.findAll({
+            where: {
+                category: currentProduct.category,  
+                id: { [Op.ne]: productId }, // Exclude current product
+                is_available: true
+            },
+            limit: 5 
+        });
+
+        res.status(200).json({ relatedProducts });
+    } catch (error) {
+        console.error("Error in getRelatedProducts:", error);
+        res.status(500).json({ error: 'Failed to fetch related products' });
+    }
+}
