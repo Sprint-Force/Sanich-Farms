@@ -1,8 +1,54 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiX, FiMinus, FiPlus } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+
+// Lazy Image Component for Cart Items
+const LazyCartImage = ({ src, alt, className, onError }) => {
+  const imgRef = useRef(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={imgRef} className={className}>
+      {!isLoaded && (
+        <div className="w-full h-full bg-gray-200 animate-pulse rounded-md flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer rounded-md"></div>
+        </div>
+      )}
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          className={`${className} transition-opacity duration-500 ${
+            isLoaded ? 'opacity-100 animate-fadeIn' : 'opacity-0'
+          }`}
+          onLoad={() => setIsLoaded(true)}
+          onError={onError}
+        />
+      )}
+    </div>
+  );
+};
 
 const CartPage = () => {
   const { cartItems, removeFromCart, updateCartItemQuantity, getTotalPrice, getTotalItems } = useCart();
@@ -64,7 +110,7 @@ const CartPage = () => {
                     <div className="flex items-start gap-4">
                       {/* Product Image */}
                       <div className="flex-shrink-0 h-20 w-20">
-                        <img
+                        <LazyCartImage
                           className="h-full w-full rounded-md object-cover"
                           src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/80x80/cccccc/333333?text=Item"}
                           alt={item.name}
@@ -140,7 +186,7 @@ const CartPage = () => {
                       <td className="px-4 py-4">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-16 w-16">
-                            <img
+                            <LazyCartImage
                               className="h-16 w-16 rounded-md object-cover"
                               src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/64x64/cccccc/333333?text=Item"}
                               alt={item.name}

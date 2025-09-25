@@ -1,20 +1,59 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight } from 'react-icons/fi';
 
 const ServiceCard = ({ service }) => {
+  const imgRef = useRef(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <Link
       to={`/services/${service.id}`}
-      className="block bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-lg group"
+      className="block bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-lg group animate-fadeIn"
     >
       <div className="relative h-48 sm:h-56 overflow-hidden"> {/* Consistent image height */}
-        <img
-          src={service.image_url || service.image || "https://placehold.co/600x400/4CAF50/FFFFFF?text=Service"}
-          alt={service.name}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-          onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/cccccc/333333?text=Service+Image"; }}
-        />
+        <div ref={imgRef} className="w-full h-full">
+          {!isLoaded && isInView && (
+            <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer"></div>
+            </div>
+          )}
+          {isInView && (
+            <img
+              src={service.image_url || service.image || "https://placehold.co/600x400/4CAF50/FFFFFF?text=Service"}
+              alt={service.name}
+              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+                isLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              onLoad={() => setIsLoaded(true)}
+              onError={(e) => { 
+                e.target.onerror = null; 
+                e.target.src="https://placehold.co/600x400/cccccc/333333?text=Service+Image";
+                setIsLoaded(true);
+              }}
+              loading="lazy"
+            />
+          )}
+        </div>
       </div>
       <div className="p-4">
         <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 truncate">{service.name}</h3> {/* Adjusted font size */}

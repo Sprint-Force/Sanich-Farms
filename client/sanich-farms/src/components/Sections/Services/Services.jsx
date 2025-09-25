@@ -61,27 +61,49 @@ const Services = () => {
             <div className="w-20 h-1.5 bg-green-600 mx-auto rounded-full"></div>
           </div>
           {loading ? (
-            <div className="text-center py-10 text-gray-600 text-lg">
-              Loading services...
+            <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 md:mb-16 hide-scrollbar animate-fadeIn">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="flex-none w-72 sm:w-80 md:w-auto snap-center bg-white rounded-xl overflow-hidden shadow-lg animate-pulse"
+                  style={{ animationDelay: `${i * 150}ms` }}
+                >
+                  {/* Skeleton Service Image */}
+                  <div className="relative h-64 sm:h-56 md:h-64 lg:h-72 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer"></div>
+                  
+                  {/* Skeleton Service Content */}
+                  <div className="p-6 md:p-7 space-y-4">
+                    <div className="w-3/4 h-6 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="space-y-2">
+                      <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="w-5/6 h-4 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="w-4/5 h-4 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="w-24 h-6 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
-            <div className="text-center py-10 text-red-500 text-lg">
+            <div className="text-center py-10 text-red-500 text-lg animate-fadeIn">
               {error}
             </div>
           ) : featuredServices.length > 0 ? (
-            <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 md:mb-16 hide-scrollbar">
-              {featuredServices.map((service) => (
+            <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 md:mb-16 hide-scrollbar animate-fadeIn">
+              {featuredServices.map((service, index) => (
                 <div
                   key={service.id}
                   className="flex-none w-72 sm:w-80 md:w-auto snap-center
-                            bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 ease-in-out"
+                            bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-300 ease-in-out animate-fadeIn"
+                  style={{ animationDelay: `${index * 150}ms` }}
                 >
                   <div className="relative h-64 sm:h-56 md:h-64 lg:h-72">
                     <img
                       src={service.image_url || service.image || "https://placehold.co/400x300/4CAF50/FFFFFF?text=Service"}
                       alt={service.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-opacity duration-500"
                       onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/400x300/cccccc/333333?text=Service+Image+Error"; }}
+                      loading="lazy"
                     />
                   </div>
                   <div className="p-6 md:p-7">
@@ -101,7 +123,7 @@ const Services = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-10 text-gray-600 text-lg">
+            <div className="text-center py-10 text-gray-600 text-lg animate-fadeIn">
               No services available.
             </div>
           )}

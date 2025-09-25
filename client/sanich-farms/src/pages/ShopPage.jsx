@@ -413,15 +413,24 @@ const ShopPage = () => {
 
         {/* Product Grid and Loading/Error States */}
         {loading ? (
-          <PageSpinner text="Loading products..." />
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 auto-rows-fr">
+            {[...Array(12)].map((_, i) => (
+              <ProductCard key={`skeleton-${i}`} skeleton={true} />
+            ))}
+          </div>
         ) : error ? (
           <div className="text-center py-10 text-red-500 text-lg">
             {error}
           </div>
         ) : products.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 auto-rows-fr">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {products.map((product, index) => (
+              <div 
+                key={product.id} 
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
         ) : (

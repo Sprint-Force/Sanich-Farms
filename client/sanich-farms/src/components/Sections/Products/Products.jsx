@@ -56,8 +56,15 @@ const Products = () => {
 
         {/* Loading, Error, or Products Display */}
         {loading ? (
-          <div className="text-center py-10 text-gray-600 text-lg">
-            Loading products...
+          <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mb-12 md:mb-16 hide-scrollbar">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={`skeleton-${i}`}
+                className="flex-none w-60 sm:w-64 md:w-auto snap-center"
+              >
+                <ProductCard skeleton={true} />
+              </div>
+            ))}
           </div>
         ) : error ? (
           <div className="text-center py-10 text-red-500 text-lg">
@@ -67,11 +74,11 @@ const Products = () => {
           <>
             {/* Products Grid - Horizontal Scroll on Mobile */}
             <div className="flex overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mb-12 md:mb-16 hide-scrollbar">
-              {featuredProducts.map((product) => (
+              {featuredProducts.map((product, index) => (
                 <div
                   key={product.id}
-                  // Adjusted width for better consistency in horizontal scroll
-                  className="flex-none w-60 sm:w-64 md:w-auto snap-center" // Slightly adjusted widths
+                  className="flex-none w-60 sm:w-64 md:w-auto snap-center animate-fadeIn"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <ProductCard product={product} />
                 </div>
