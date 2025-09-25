@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiStar, FiShoppingCart, FiHeart } from 'react-icons/fi';
 import { FaHeart } from 'react-icons/fa';
@@ -6,13 +6,67 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../context/ToastContext';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, skeleton = false }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageInView, setImageInView] = useState(false);
+  const imgRef = useRef();
+  const cardRef = useRef();
+  
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToast } = useToast();
 
   // WISHLIST VISUAL FEEDBACK: Check if product is in wishlist
-  const isWishlisted = isInWishlist(product.id);
+  const isWishlisted = isInWishlist(product?.id);
+
+  // Intersection Observer for lazy loading images
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setImageInView(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { rootMargin: '50px', threshold: 0.1 }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // If showing skeleton
+  if (skeleton) {
+    return (
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden animate-pulse">
+        {/* Image skeleton */}
+        <div className="aspect-square bg-gray-200 relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse"></div>
+        </div>
+        
+        {/* Content skeleton */}
+        <div className="p-4 space-y-3">
+          <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-5 bg-gray-200 rounded w-4/5"></div>
+          <div className="flex items-center justify-between">
+            <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+            <div className="flex gap-1">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="w-4 h-4 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <div className="flex-1 h-9 bg-gray-200 rounded"></div>
+            <div className="w-9 h-9 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -36,17 +90,41 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:shadow-xl group flex flex-col h-full">
+    <div 
+      ref={cardRef}
+      className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl group flex flex-col h-full animate-pulse opacity-0"
+      style={{ animation: 'fadeIn 0.6s ease-out forwards' }}
+    >
       {/* Product Image and Wishlist button */}
-      <div className="relative w-full pb-[100%] overflow-hidden">
+      <div ref={imgRef} className="relative w-full pb-[100%] overflow-hidden bg-gray-200">
         {/* pb-[100%] creates a perfect square aspect ratio for the image container */}
         <Link to={`/products/${product.id}`} className="absolute inset-0">
-          <img
-            src={product.image_url || product.image || product.images?.[0] || "https://placehold.co/300x300/cccccc/333333?text=Product+Image"}
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-            onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x300/cccccc/333333?text=Product+Image"; }}
-          />
+          {imageInView && (
+            <>
+              {/* Placeholder/Loading shimmer */}
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                </div>
+              )}
+              
+              {/* Actual Image */}
+              <img
+                src={product.image_url || product.image || product.images?.[0] || "https://placehold.co/300x300/cccccc/333333?text=Product+Image"}
+                alt={product.name}
+                className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                loading="lazy"
+                onLoad={() => setImageLoaded(true)}
+                onError={(e) => { 
+                  e.target.onerror = null; 
+                  e.target.src="https://placehold.co/300x300/cccccc/333333?text=Product+Image"; 
+                  setImageLoaded(true);
+                }}
+              />
+            </>
+          )}
         </Link>
         {/* WISHLIST VISUAL FEEDBACK: Wishlist button with dynamic styling */}
         <button

@@ -81,14 +81,58 @@ const MyOrders = () => {
   // DASHBOARD API INTEGRATION: Loading state
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fadeIn">
         <div className="flex justify-between items-center">
-          <div className="h-12 bg-gray-200 rounded w-1/3 animate-pulse"></div>
-          <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
+          <div className="h-10 bg-gray-200 rounded w-48 animate-pulse"></div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
+          </div>
         </div>
         <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-24 bg-gray-200 rounded-xl animate-pulse"></div>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6" style={{ animationDelay: `${i * 100}ms` }}>
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div className="flex-1 space-y-4">
+                  {/* Skeleton Order Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="w-32 h-6 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="w-20 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+                  </div>
+                  
+                  {/* Skeleton Order Details Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {[1,2,3].map((j) => (
+                      <div key={j} className="flex flex-col">
+                        <div className="w-16 h-3 bg-gray-200 rounded animate-pulse mb-2"></div>
+                        <div className="w-24 h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Skeleton Items */}
+                  <div className="space-y-2">
+                    <div className="w-20 h-3 bg-gray-200 rounded animate-pulse mb-2"></div>
+                    {[1,2].map((k) => (
+                      <div key={k} className="flex items-center gap-3 p-2">
+                        <div className="w-12 h-12 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="space-y-1 flex-1">
+                          <div className="w-32 h-4 bg-gray-200 rounded animate-pulse"></div>
+                          <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
+                        </div>
+                        <div className="w-8 h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Skeleton Actions */}
+                <div className="flex flex-col gap-2 lg:w-32">
+                  <div className="h-9 bg-gray-200 rounded-lg animate-pulse"></div>
+                  <div className="h-9 bg-gray-200 rounded-lg animate-pulse"></div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>

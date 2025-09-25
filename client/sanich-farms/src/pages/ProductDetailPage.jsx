@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiStar, FiMinus, FiPlus, FiShoppingCart, FiHeart, FiCheckCircle } from 'react-icons/fi';
 import axios from 'axios';
@@ -24,6 +24,8 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState('');
   const [activeTab, setActiveTab] = useState('description');
+  const mainImageRef = useRef(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -100,8 +102,103 @@ const ProductDetailPage = () => {
   // Conditional rendering for loading, error, and main content
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-120px)] bg-gray-50 font-poppins text-gray-700 text-xl col-span-full">
-        Loading product details...
+      <div className="font-poppins bg-gray-50 min-h-screen animate-fadeIn">
+        {/* Skeleton Breadcrumbs */}
+        <div className="w-full py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2">
+            <div className="w-16 h-5 bg-gray-600 rounded animate-pulse"></div>
+            <FiChevronRight className="w-4 h-4 text-gray-400" />
+            <div className="w-12 h-5 bg-gray-600 rounded animate-pulse"></div>
+            <FiChevronRight className="w-4 h-4 text-gray-400" />
+            <div className="w-32 h-5 bg-gray-600 rounded animate-pulse"></div>
+          </div>
+        </div>
+
+        {/* Skeleton Main Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24 md:pt-12 md:pb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
+            {/* Skeleton Image Gallery */}
+            <div className="flex flex-col md:flex-row-reverse gap-4">
+              <div className="flex-grow relative overflow-hidden rounded-xl shadow-lg border border-gray-100 aspect-square bg-gray-200 animate-pulse">
+                <div className="w-full h-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer"></div>
+              </div>
+              
+              {/* Skeleton Thumbnails */}
+              <div className="flex md:flex-col gap-2 md:w-20">
+                {[1,2,3].map((i) => (
+                  <div key={i} className="w-16 h-16 md:w-20 md:h-20 bg-gray-200 rounded-lg animate-pulse"></div>
+                ))}
+              </div>
+            </div>
+
+            {/* Skeleton Product Info */}
+            <div className="space-y-6">
+              {/* Skeleton Title */}
+              <div className="space-y-3">
+                <div className="w-3/4 h-8 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-1/2 h-6 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+
+              {/* Skeleton Rating */}
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  {[1,2,3,4,5].map((i) => (
+                    <div key={i} className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+                  ))}
+                </div>
+                <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+
+              {/* Skeleton Price */}
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-20 h-6 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+
+              {/* Skeleton Description */}
+              <div className="space-y-3">
+                <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-5/6 h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-4/5 h-4 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+
+              {/* Skeleton Features */}
+              <div className="space-y-2">
+                {[1,2,3,4].map((i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="w-5 h-5 bg-gray-200 rounded-full animate-pulse"></div>
+                    <div className="w-32 h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Skeleton Action Buttons */}
+              <div className="hidden md:flex items-center gap-4">
+                <div className="flex items-center border border-gray-300 rounded-full overflow-hidden">
+                  <div className="w-12 h-12 bg-gray-200 animate-pulse"></div>
+                  <div className="w-8 h-6 bg-gray-200 animate-pulse mx-4"></div>
+                  <div className="w-12 h-12 bg-gray-200 animate-pulse"></div>
+                </div>
+                <div className="flex-grow h-12 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Skeleton Tabs */}
+          <div className="mt-8 md:mt-12 bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100">
+            <div className="flex border-b border-gray-200 mb-4 gap-8">
+              {[1,2,3].map((i) => (
+                <div key={i} className="w-24 h-6 bg-gray-200 rounded animate-pulse"></div>
+              ))}
+            </div>
+            <div className="space-y-3">
+              <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-4/5 h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-3/4 h-4 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -141,11 +238,24 @@ const ProductDetailPage = () => {
             {/* Main Image */}
             <div className="flex-grow relative overflow-hidden rounded-xl shadow-lg border border-gray-100 aspect-square">
               <img
+                ref={mainImageRef}
                 src={mainImage || "https://placehold.co/600x600/cccccc/333333?text=Product+Image"}
                 alt={product.name}
-                className="w-full h-full object-cover rounded-xl"
-                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x600/cccccc/333333?text=Product+Image+Error"; }}
+                className={`w-full h-full object-cover rounded-xl transition-opacity duration-500 ${
+                  imageLoaded ? 'opacity-100 animate-fadeIn' : 'opacity-0'
+                }`}
+                onLoad={() => setImageLoaded(true)}
+                onError={(e) => { 
+                  e.target.onerror = null; 
+                  e.target.src="https://placehold.co/600x600/cccccc/333333?text=Product+Image+Error";
+                  setImageLoaded(true);
+                }}
               />
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer"></div>
+                </div>
+              )}
               {product.stock_quantity < 10 && product.stock_quantity > 0 && (
                 <span className="absolute top-4 left-4 bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md">
                   Only {product.stock_quantity} left!

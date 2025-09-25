@@ -65,21 +65,51 @@ const AllServicesPage = () => {
       {/* Services Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         {loading ? (
-          <div className="text-center py-10 text-gray-600 text-lg">
-            Loading services...
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-fadeIn">
+            {[...Array(6)].map((_, i) => (
+              <div 
+                key={i} 
+                className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden animate-pulse"
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                {/* Skeleton Service Image */}
+                <div className="h-48 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer"></div>
+                
+                {/* Skeleton Service Content */}
+                <div className="p-6 space-y-4">
+                  {/* Skeleton Title */}
+                  <div className="w-3/4 h-6 bg-gray-200 rounded animate-pulse"></div>
+                  
+                  {/* Skeleton Description */}
+                  <div className="space-y-2">
+                    <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="w-5/6 h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="w-4/5 h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                  
+                  {/* Skeleton Price/Info */}
+                  <div className="flex items-center justify-between pt-4">
+                    <div className="w-20 h-6 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : error ? (
-          <div className="text-center py-10 text-red-500 text-lg">
+          <div className="text-center py-10 text-red-500 text-lg animate-fadeIn">
             {error}
           </div>
         ) : services.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {services.map((service) => (
-              <ServiceCard key={service.id} service={service} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-fadeIn">
+            {services.map((service, index) => (
+              <div key={service.id} style={{ animationDelay: `${index * 100}ms` }}>
+                <ServiceCard service={service} />
+              </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-10 text-gray-600 text-lg">
+          <div className="text-center py-10 text-gray-600 text-lg animate-fadeIn">
             No services available at the moment. Please check back later!
           </div>
         )}
