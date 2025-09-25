@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiLock, FiMail } from 'react-icons/fi';
 import { useToast } from '../../context/ToastContext';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { authAPI } from '../../services/api';
 import { ButtonSpinner } from '../../components/UI/LoadingSpinner';
-import AuthFooter from '../../components/Layout/AuthFooter';
+import { logo } from '../../assets';
 
-// This component handles the user login functionality.
+// This component handles the user login functionality with modern e-commerce design.
 const Login = () => {
   // Use state to manage the form data for email and password.
   const [formData, setFormData] = useState({
@@ -146,107 +146,166 @@ const Login = () => {
   };
 
   return (
-    <div className="font-poppins bg-gray-50 min-h-screen">
-      {/* Main Content */}
-      <main className="max-w-sm md:max-w-md lg:max-w-lg mx-auto px-4 py-6">
-        <div className="bg-white rounded border border-gray-300 p-6 md:p-8 lg:p-10">
-          <h1 className="text-2xl md:text-3xl lg:text-3xl font-medium text-gray-900 mb-4 md:mb-6">Login</h1>
-          
-          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4 lg:space-y-5">
-            <div>
-              <label htmlFor="email" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
-                placeholder="you@example.com"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 md:pr-12 border border-gray-300 rounded text-sm md:text-base focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400"
-                  placeholder="********"
-                  required
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                  disabled={loading}
-                >
-                  {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading && <ButtonSpinner />}
-              {loading ? 'Signing in...' : 'Login'}
-            </button>
-          </form>
-
-          <div className="text-xs text-gray-600 mt-4">
-            By continuing, you agree to Sanich Farms{' '}
-            <Link to="/terms" className="text-blue-600 hover:text-green-600 hover:underline">
-              Terms & Conditions
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy" className="text-blue-600 hover:text-green-600 hover:underline">
-              Privacy Policy
-            </Link>
-            .
-          </div>
-        </div>
-
-        {/* Forgot Password */}
-        <div className="mt-4 text-center">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+      {/* Header with Logo */}
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 md:top-6 md:left-6 z-10">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3">
+          <img 
+            src={logo} 
+            alt="Sanich Farms Logo" 
+            className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 lg:h-10 lg:w-10 object-contain"
+          />
           <Link 
-            to="/forgot-password" 
-            className="text-sm text-blue-600 hover:text-green-600 hover:underline"
+            to="/" 
+            className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-800 hover:text-green-600 transition-colors"
           >
-            Forgot your password?
+            Sanich Farms
           </Link>
         </div>
+      </div>
 
-        {/* Divider */}
-        <div className="mt-6 mb-4 text-center text-xs text-gray-500">
-          <span className="bg-gray-50 px-2">New to Sanich Farms?</span>
-          <hr className="border-gray-300 -mt-2" />
+      {/* Main Content */}
+      <div className="flex items-center justify-center min-h-screen py-4 sm:py-6 md:py-8 px-3 sm:px-4">
+        <div className="w-full max-w-[280px] xs:max-w-sm sm:max-w-md">
+          {/* Login Card */}
+          <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl border border-gray-100 overflow-hidden">
+            {/* Card Header */}
+            <div className="px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6 lg:py-8 bg-gradient-to-r from-green-600 to-blue-600">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white text-center">Welcome Back</h1>
+              <p className="text-green-100 text-center mt-1 text-xs sm:text-sm md:text-base">Sign in to your account</p>
+            </div>
+
+            {/* Card Body */}
+            <div className="px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6 lg:py-8">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
+                {/* Email Field */}
+                <div>
+                  <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+                    Email address
+                  </label>
+                  <div className="relative">
+                    <FiMail className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-xs sm:text-sm"
+                      placeholder="Enter your email"
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field */}
+                <div>
+                  <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <FiLock className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="w-full pl-8 sm:pl-10 pr-9 sm:pr-12 py-2.5 sm:py-3 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-xs sm:text-sm"
+                      placeholder="Enter your password"
+                      required
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="absolute right-2.5 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      disabled={loading}
+                    >
+                      {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Remember Me & Forgot Password */}
+                <div className="flex items-center justify-between text-xs sm:text-sm">
+                  <div className="flex items-center">
+                    <input
+                      id="remember-me"
+                      name="remember-me"
+                      type="checkbox"
+                      className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="remember-me" className="ml-1.5 sm:ml-2 block text-gray-700">
+                      Remember me
+                    </label>
+                  </div>
+
+                  <div>
+                    <Link
+                      to="/forgot-password"
+                      className="font-medium text-blue-600 hover:text-green-600 transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Sign In Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-2.5 sm:py-3 px-4 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                >
+                  {loading && <ButtonSpinner />}
+                  {loading ? 'Signing in...' : 'Sign in'}
+                </button>
+              </form>
+
+              {/* Divider */}
+              <div className="relative my-4 sm:my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-xs sm:text-sm">
+                  <span className="px-3 sm:px-4 bg-white text-gray-500">New to Sanich Farms?</span>
+                </div>
+              </div>
+
+              {/* Create Account Button */}
+              <Link
+                to="/signup"
+                className="w-full bg-white border-2 border-gray-300 hover:border-blue-500 hover:bg-gray-50 text-gray-700 py-2.5 sm:py-3 px-4 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold text-center transition-all duration-200 block"
+              >
+                Create your account
+              </Link>
+
+              {/* Terms */}
+              <div className="mt-4 sm:mt-6 text-xs text-gray-600 text-center leading-relaxed">
+                By signing in, you agree to our{' '}
+                <Link to="/terms" className="text-blue-600 hover:text-green-600 font-medium">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link to="/privacy" className="text-blue-600 hover:text-green-600 font-medium">
+                  Privacy Policy
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Back to Home */}
+          <div className="text-center mt-4 sm:mt-6">
+            <Link 
+              to="/" 
+              className="text-xs sm:text-sm text-gray-600 hover:text-green-600 font-medium transition-colors"
+            >
+              ← Back to Sanich Farms
+            </Link>
+          </div>
         </div>
-
-        {/* Create Account Button */}
-        <Link
-          to="/signup"
-          className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 px-4 rounded text-sm font-medium text-center border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-        >
-          Create Account
-        </Link>
-
-        {/* Auth Footer */}
-        <AuthFooter />
-      </main>
+      </div>
     </div>
   );
 };

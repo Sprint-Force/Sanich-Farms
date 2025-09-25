@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from './components/Layout/MainLayout';
 import AuthLayout from './components/Layout/AuthLayout';
+import AuthOnlyLayout from './components/Layout/AuthOnlyLayout';
 import Home from './pages/Home';
 import Login from './pages/Login/Login';
 import Signup from './pages/Login/Signup';
@@ -137,8 +138,8 @@ function App() {
                 </Route>
               </Route>
 
-              {/* Authentication routes - using AuthLayout without footer */}
-              <Route element={<AuthLayout />}>
+              {/* Authentication routes - using AuthOnlyLayout without navbar or footer */}
+              <Route element={<AuthOnlyLayout />}>
                 <Route path='/login' element={<Login />} />
                 <Route path='/signup' element={
                   <ProtectedRoute requireAuth={false}>
