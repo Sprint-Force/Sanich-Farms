@@ -97,13 +97,13 @@ export const getSingleProduct = async (req, res) => {
 // Get related products based on the current selected products
 export const getRelatedProducts = async (req, res) => {
     try {
-        const { productId } = req.params;
+        const { id } = req.params;
 
-        if (!productId) {
+        if (!id) {
             return res.status(400).json({ error: 'Product ID is required' });
         }
         // Get current product
-        const currentProduct = await Product.findByPk(productId);
+        const currentProduct = await Product.findByPk(id);
         if (!currentProduct) {
             return res.status(404).json({ error: 'Product not found' });
         }
@@ -111,7 +111,7 @@ export const getRelatedProducts = async (req, res) => {
         const relatedProducts = await Product.findAll({
             where: {
                 category: currentProduct.category,  
-                id: { [Op.ne]: productId }, // Exclude current product
+                id: { [Op.ne]: id }, // Exclude current product
                 is_available: true
             },
             limit: 5 

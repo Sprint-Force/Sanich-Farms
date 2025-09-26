@@ -10,7 +10,7 @@ export const productRoutes = express.Router();
 // Routes
 productRoutes.get('/', getAllProducts);
 productRoutes.get('/:id', getSingleProduct);
-productRoutes.get('/relatedproducts/:id', getRelatedProducts);
+productRoutes.get('/:id/related', getRelatedProducts);
 
 // Middlewares
 productRoutes.use(auth);
