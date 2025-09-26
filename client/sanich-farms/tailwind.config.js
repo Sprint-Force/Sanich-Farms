@@ -5,9 +5,14 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        'xs': '384px',
+        // => @media (min-width: 384px) { ... }
+      },
+    },
   },
   plugins: [
-    require('@tailwindcss/line-clamp'), // <-- This is the line to add
+    require('@tailwindcss/line-clamp'),
   ],
 };

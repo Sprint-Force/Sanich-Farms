@@ -56,8 +56,8 @@ const Products = () => {
 
         {/* Products Container */}
         {loading ? (
-          // Loading State - 4 skeleton cards
-          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          // Loading State - Responsive skeleton cards
+          <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
             {[...Array(4)].map((_, i) => (
               <ProductCard key={`skeleton-${i}`} skeleton={true} />
             ))}
@@ -75,8 +75,8 @@ const Products = () => {
           </div>
         ) : featuredProducts.length > 0 ? (
           <>
-            {/* Desktop Grid - 4 columns */}
-            <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {/* Desktop Grid - Responsive 2/3/4 columns */}
+            <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-12">
               {featuredProducts.map((product, index) => (
                 <div
                   key={product.id}
@@ -88,18 +88,21 @@ const Products = () => {
               ))}
             </div>
 
-            {/* Mobile Horizontal Scroll */}
+            {/* Mobile Horizontal Scroll - Enhanced */}
             <div className="sm:hidden mb-12">
-              <div className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 hide-scrollbar">
+              <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 px-4 -mx-4 hide-scrollbar
+                           snap-x snap-mandatory touch-pan-x">
                 {featuredProducts.map((product, index) => (
                   <div
                     key={product.id}
-                    className="flex-shrink-0 w-48 animate-fadeIn"
+                    className="flex-shrink-0 w-44 xs:w-48 animate-fadeIn snap-start"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <ProductCard product={product} compact={true} />
                   </div>
                 ))}
+                {/* Add padding element for better scroll experience */}
+                <div className="flex-shrink-0 w-4"></div>
               </div>
             </div>
           </>

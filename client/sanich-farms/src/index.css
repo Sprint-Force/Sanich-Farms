@@ -117,7 +117,53 @@ header {
     max-width: 100vw;
     box-sizing: border-box;
   }
+}
+
+/* --- Cart Quantity Selector Animation --- */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scaleY(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+.quantity-selector-slide {
+  animation: slideInUp 0.25s ease-out forwards;
+  transform-origin: top;
+}
+
+/* --- Extra Small Device Optimizations --- */
+@media (max-width: 384px) {
+  /* Optimize for very small screens like iPhone SE */
+  .product-card-compact {
+    min-width: 160px !important;
+  }
   
+  /* Prevent cart controls from being too small on tiny screens */
+  .cart-control-min-size {
+    min-width: 32px !important;
+    min-height: 32px !important;
+  }
+}
+
+/* --- Small Device Optimizations (384px - 640px) --- */
+@media (min-width: 384px) and (max-width: 640px) {
+  .quantity-selector-compact {
+    min-height: 36px !important;
+  }
+  
+  .quantity-selector-compact .quantity-btn {
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+}
+
+/* --- Mobile Menu Specific Styles --- */
+@media (max-width: 1024px) {
   /* Mobile menu specific z-index fixes and full screen coverage */
   .mobile-menu-overlay {
     z-index: 10000 !important;
