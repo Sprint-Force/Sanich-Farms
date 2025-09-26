@@ -1,78 +1,79 @@
 import { Product } from "../models/Product.js";
 import { Op } from "sequelize";
 
-// Get all products
-export const getAllProducts = async (req, res) => {
-    try {
-        const {
-            page = 1,
-            limit = 12,
-            category,
-            minPrice,
-            maxPrice,
-            rating,
-            sortBy = 'created_at',
-        } = req.query;
+    // Get all products
+    export const getAllProducts = async (req, res) => {
+        try {
+            const {
+                page = 1,
+                limit = 12,
+                category,
+                minPrice,
+                maxPrice,
+                rating,
+                sortBy = 'created_at',
+            } = req.query;
 
-        const offset = (page - 1) * limit;
+            const offset = (page - 1) * limit;
 
-        const whereClause = {
-            is_available: true,
-        };
-
-        if (category) {
-            whereClause.category = category;
-        }
-
-        if (minPrice && maxPrice) {
-            whereClause.price = {
-                [Op.between]: [parseFloat(minPrice), parseFloat(maxPrice)]
+            const whereClause = {
+                is_available: true,
             };
-        }
 
-        if (rating) {
-            whereClause.rating = {
-                [Op.gte]: parseFloat(rating)
-            };
-        }
-        // Sorting
-        let order = [["created_at", "DESC"]]; // default: latest
-        switch (sortBy) {
-        case "latest":
-            order = [["created_at", "DESC"]];
-            break;
-        case "name_asc":
-            order = [["name", "ASC"]];
-            break;
-        case "price_asc":
-            order = [["price", "ASC"]];
-            break;
-        case "price_desc":
-            order = [["price", "DESC"]];
-            break;
-        }
+            if (category) {
+                whereClause.category = category;
+            }
 
-        const { count, rows: products } = await Product.findAndCountAll({
-            where: whereClause,
-            order: [[sortBy, order]],
-            limit: parseInt(limit),
-            offset
-        });
+            if (minPrice && maxPrice) {
+                whereClause.price = {
+                    [Op.between]: [parseFloat(minPrice), parseFloat(maxPrice)]
+                };
+            }
 
-        res.status(200).json({
-            status: 'success',
-            currentPage: parseInt(page),
-            totalPages: Math.ceil(count / limit),
-            totalCount: count,
-            count: products.length,
-            products,
-        });
-    } catch (error) {
-        res.status(500).json({
-            error: 'Failed to retrieve products'
-        });
-    }
-};
+            if (rating) {
+                whereClause.rating = {
+                    [Op.gte]: parseFloat(rating)
+                };
+            }
+            // Sorting
+            let order = [["created_at", "DESC"]]; // default: latest
+            switch (sortBy) {
+            case "latest":
+                order = [["created_at", "DESC"]];
+                break;
+            case "name_asc":
+                order = [["name", "ASC"]];
+                break;
+            case "price_asc":
+                order = [["price", "ASC"]];
+                break;
+            case "price_desc":
+                order = [["price", "DESC"]];
+                break;
+            }
+
+            const { count, rows: products } = await Product.findAndCountAll({
+                where: whereClause,
+                order,
+                limit: parseInt(limit),
+                offset
+            });
+
+            res.status(200).json({
+                status: 'success',
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(count / limit),
+                totalCount: count,
+                count: products.length,
+                products,
+            });
+        } catch (error) {
+            console.log("Error:", error);
+            res.status(500).json({
+                error: 'Failed to retrieve products'
+            });
+        }
+    };
 
 
 // Get single product
