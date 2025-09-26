@@ -70,7 +70,7 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
     );
   }
 
-  // CART QUANTITY HANDLERS: Jumia-style quantity controls
+  // CART QUANTITY HANDLERS: Bottom quantity selector approach
   const handleAddToCart = () => {
     if (!isInCartAlready) {
       addToCart(product, 1);
@@ -197,61 +197,85 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
           </div>
         </Link>
 
-          {/* Price and Add to Cart Button */}
-          <div className="mt-auto flex items-end justify-between gap-2">
-            {/* Price */}
-            <div className="flex flex-col">
-              <span className={`font-bold text-green-700 leading-none ${
-                compact ? 'text-sm' : 'text-base sm:text-lg'
-              }`}>
-                GH₵{parseFloat(product.price || 0).toFixed(2)}
-              </span>
-              {product.oldPrice && !compact && (
-                <span className="text-xs text-gray-500 line-through">
-                  GH₵{parseFloat(product.oldPrice || 0).toFixed(2)}
+          {/* Price Section - Clean Layout */}
+          <div className="mt-auto">
+            {/* Price Display */}
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="flex flex-col flex-grow">
+                <span className={`font-bold text-green-700 leading-none ${
+                  compact ? 'text-sm' : 'text-base sm:text-lg'
+                }`}>
+                  GH₵{parseFloat(product.price || 0).toFixed(2)}
                 </span>
+                {product.oldPrice && !compact && (
+                  <span className="text-xs text-gray-500 line-through mt-0.5">
+                    GH₵{parseFloat(product.oldPrice || 0).toFixed(2)}
+                  </span>
+                )}
+              </div>
+              
+              {/* Add to Cart Button - Only show when not in cart */}
+              {!isInCartAlready && (
+                <button
+                  onClick={handleAddToCart}
+                  className={`flex-shrink-0 bg-green-600 hover:bg-green-700 active:bg-green-800 
+                    text-white rounded-full shadow-md transition-all duration-200 
+                    flex items-center justify-center touch-manipulation font-medium
+                    ${compact 
+                      ? 'w-10 h-10 min-w-[40px] min-h-[40px] text-xs' 
+                      : 'w-12 h-12 min-w-[48px] min-h-[48px] sm:w-14 sm:h-14 sm:min-w-[56px] sm:min-h-[56px] text-sm'
+                    }`}
+                  aria-label="Add to cart"
+                >
+                  <FiShoppingCart size={compact ? 16 : 20} />
+                </button>
               )}
             </div>
-            
-            {/* Cart Controls - Jumia Style */}
-            {!isInCartAlready ? (
-              /* Add to Cart button */
-              <button
-                onClick={handleAddToCart}
-                className={`flex-shrink-0 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-md transition duration-200 ${
-                  compact ? 'p-1.5' : 'p-2'
-                }`}
-                aria-label="Add to cart"
-              >
-                <FiShoppingCart size={compact ? 14 : 18} />
-              </button>
-            ) : (
-              /* Quantity Selector */
-              <div className={`flex items-center bg-green-600 text-white rounded-full shadow-md ${
-                compact ? 'text-xs' : 'text-sm'
-              }`}>
+
+            {/* Quantity Selector - Below price when item is in cart */}
+            {isInCartAlready && (
+              <div className={`flex items-center bg-green-600 text-white rounded-lg shadow-md
+                quantity-selector-slide transition-all duration-300 ease-in-out
+                ${compact 
+                  ? 'h-10 min-h-[40px] text-sm' 
+                  : 'h-12 min-h-[48px] sm:h-14 sm:min-h-[56px] text-base'
+                }`}>
+                
+                {/* Decrease Button */}
                 <button
                   onClick={handleDecreaseQuantity}
-                  className={`hover:bg-green-700 rounded-full transition duration-200 ${
-                    compact ? 'p-1' : 'p-1.5'
-                  }`}
+                  className={`flex items-center justify-center hover:bg-green-700 active:bg-green-800 
+                    transition-all duration-200 touch-manipulation rounded-l-lg flex-shrink-0
+                    ${compact 
+                      ? 'w-10 h-10 min-w-[40px] min-h-[40px]' 
+                      : 'w-12 h-12 min-w-[48px] min-h-[48px] sm:w-14 sm:h-14 sm:min-w-[56px] sm:min-h-[56px]'
+                    }`}
                   aria-label="Decrease quantity"
                 >
-                  <FiMinus size={compact ? 12 : 14} />
+                  <FiMinus size={compact ? 14 : 18} />
                 </button>
-                <span className={`font-medium min-w-8 text-center ${
-                  compact ? 'mx-1 text-xs' : 'mx-2 text-sm'
-                }`}>
+                
+                {/* Quantity Display */}
+                <div className={`font-bold text-center flex-grow
+                  ${compact 
+                    ? 'text-sm px-2' 
+                    : 'text-base sm:text-lg px-3'
+                  }`}>
                   {cartQuantity}
-                </span>
+                </div>
+                
+                {/* Increase Button */}
                 <button
                   onClick={handleIncreaseQuantity}
-                  className={`hover:bg-green-700 rounded-full transition duration-200 ${
-                    compact ? 'p-1' : 'p-1.5'
-                  }`}
+                  className={`flex items-center justify-center hover:bg-green-700 active:bg-green-800 
+                    transition-all duration-200 touch-manipulation rounded-r-lg flex-shrink-0
+                    ${compact 
+                      ? 'w-10 h-10 min-w-[40px] min-h-[40px]' 
+                      : 'w-12 h-12 min-w-[48px] min-h-[48px] sm:w-14 sm:h-14 sm:min-w-[56px] sm:min-h-[56px]'
+                    }`}
                   aria-label="Increase quantity"
                 >
-                  <FiPlus size={compact ? 12 : 14} />
+                  <FiPlus size={compact ? 14 : 18} />
                 </button>
               </div>
             )}
