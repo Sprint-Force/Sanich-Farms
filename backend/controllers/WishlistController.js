@@ -25,7 +25,8 @@ export const addToWishlist = async (req, res) => {
             include: [
                 { model: Product, attributes: ['id','name','price','image_url','category','description'] }
             ],
-            order: [['created_at','DESC']]
+            order: [["created_at", "DESC"]]
+
         });
 
         res.status(201).json({ status: 'success', message: 'Item added to wishlist', wishlist: updatedWishlist });
