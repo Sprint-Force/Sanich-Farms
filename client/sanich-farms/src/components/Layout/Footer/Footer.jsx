@@ -81,27 +81,52 @@ const Footer = () => {
               Your trusted partner in poultry farming, providing quality products and services to help your business thrive.
             </p>
             <div className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm text-gray-400">
-              <p className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+              <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                 <FiMapPin className="text-green-400 flex-shrink-0 text-sm" /> 
                 <span className="text-center sm:text-left">Ejisu, Kumasi, Ghana</span>
-              </p>
-              <p className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+              </div>
+              <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                 <FiPhoneCall className="text-green-400 flex-shrink-0 text-sm" /> 
                 <div className="flex flex-col xs:flex-row xs:gap-1 sm:gap-2 items-center">
                   <ClickablePhone phone="0243826137" className="text-gray-400 hover:text-green-400 transition-colors" />
                   <span className="hidden xs:inline text-gray-500">|</span>
                   <ClickablePhone phone="0568160546" className="text-gray-400 hover:text-green-400 transition-colors" />
                 </div>
-              </p>
-              <p className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+              </div>
+              <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                 <FiMail className="text-green-400 flex-shrink-0 text-sm" /> 
                 <ClickableEmail email="Sanichfarms@gmail.com" className="text-gray-400 hover:text-green-400 transition-colors break-all sm:break-normal" />
-              </p>
+              </div>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="text-center sm:text-center lg:text-center order-2 sm:order-2">
+          {/* Mobile: Quick Links and Customer Care Side by Side */}
+          <div className="grid grid-cols-2 gap-4 order-2 sm:hidden">
+            {/* Quick Links - Mobile */}
+            <div className="text-center">
+              <h3 className="text-sm font-bold text-white mb-2">Quick Links</h3>
+              <ul className="space-y-1 text-xs text-gray-400">
+                <li><Link to="/about" className="hover:text-green-400 transition-colors inline-block py-0.5">About Us</Link></li>
+                <li><Link to="/shop" className="hover:text-green-400 transition-colors inline-block py-0.5">Shop</Link></li>
+                <li><Link to="/services" className="hover:text-green-400 transition-colors inline-block py-0.5">Services</Link></li>
+                <li><Link to="/contact" className="hover:text-green-400 transition-colors inline-block py-0.5">Contact</Link></li>
+                <li><Link to="/faq" className="hover:text-green-400 transition-colors inline-block py-0.5">FAQs</Link></li>
+              </ul>
+            </div>
+
+            {/* Customer Care - Mobile */}
+            <div className="text-center">
+              <h3 className="text-sm font-bold text-white mb-2">Customer Care</h3>
+              <ul className="space-y-1 text-xs text-gray-400">
+                <li><Link to="/track-order" className="hover:text-green-400 transition-colors inline-block py-0.5">Track Order</Link></li>
+                <li><Link to="/terms" className="hover:text-green-400 transition-colors inline-block py-0.5">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="hover:text-green-400 transition-colors inline-block py-0.5">Privacy Policy</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Desktop/Tablet: Quick Links */}
+          <div className="text-center sm:text-center lg:text-center order-2 sm:order-2 hidden sm:block">
             <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Quick Links</h3>
             <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-400">
               <li><Link to="/about" className="hover:text-green-400 transition-colors inline-block py-1">About Us</Link></li>
@@ -112,8 +137,8 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Customer Care */}
-          <div className="text-center sm:text-center lg:text-center order-3 sm:order-3">
+          {/* Desktop/Tablet: Customer Care */}
+          <div className="text-center sm:text-center lg:text-center order-3 sm:order-3 hidden sm:block">
             <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Customer Care</h3>
             <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-400">
               <li><Link to="/track-order" className="hover:text-green-400 transition-colors inline-block py-1">Track Order</Link></li>
