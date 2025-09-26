@@ -71,85 +71,85 @@ const Footer = () => {
       </div>
 
       {/* Main Footer Content */}
-      <div className="max-w-6xl mx-auto py-12 md:py-16 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div className="max-w-7xl mx-auto py-8 sm:py-10 md:py-12 lg:py-16 px-3 xs:px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 mb-6 sm:mb-8">
           
           {/* Company Info */}
-          <div className="text-center md:text-left">
-            <h3 className="text-lg font-bold text-white mb-4">Sanich Farms</h3>
-            <p className="text-gray-400 mb-4 leading-relaxed">
+          <div className="text-center sm:text-left lg:text-left order-1 sm:col-span-2 lg:col-span-1">
+            <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Sanich Farms</h3>
+            <p className="text-gray-400 mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base max-w-sm mx-auto sm:mx-0">
               Your trusted partner in poultry farming, providing quality products and services to help your business thrive.
             </p>
-            <div className="space-y-2 text-sm text-gray-400">
-              <p className="flex items-center justify-center md:justify-start gap-2">
-                <FiMapPin className="text-green-400 flex-shrink-0" /> 
-                Ejisu, Kumasi, Ghana
+            <div className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm text-gray-400">
+              <p className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                <FiMapPin className="text-green-400 flex-shrink-0 text-sm" /> 
+                <span className="text-center sm:text-left">Ejisu, Kumasi, Ghana</span>
               </p>
-              <p className="flex items-center justify-center md:justify-start gap-2">
-                <FiPhoneCall className="text-green-400 flex-shrink-0" /> 
-                <div className="flex flex-col sm:flex-row sm:gap-2">
-                  <ClickablePhone phone="0243826137" className="text-gray-400 hover:text-green-400" />
-                  <span className="hidden sm:inline text-gray-500">|</span>
-                  <ClickablePhone phone="0568160546" className="text-gray-400 hover:text-green-400" />
+              <p className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                <FiPhoneCall className="text-green-400 flex-shrink-0 text-sm" /> 
+                <div className="flex flex-col xs:flex-row xs:gap-1 sm:gap-2 items-center">
+                  <ClickablePhone phone="0243826137" className="text-gray-400 hover:text-green-400 transition-colors" />
+                  <span className="hidden xs:inline text-gray-500">|</span>
+                  <ClickablePhone phone="0568160546" className="text-gray-400 hover:text-green-400 transition-colors" />
                 </div>
               </p>
-              <p className="flex items-center justify-center md:justify-start gap-2">
-                <FiMail className="text-green-400 flex-shrink-0" /> 
-                <ClickableEmail email="Sanichfarms@gmail.com" className="text-gray-400 hover:text-green-400" />
+              <p className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                <FiMail className="text-green-400 flex-shrink-0 text-sm" /> 
+                <ClickableEmail email="Sanichfarms@gmail.com" className="text-gray-400 hover:text-green-400 transition-colors break-all sm:break-normal" />
               </p>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="text-center">
-            <h3 className="text-lg font-bold text-white mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link to="/about" className="hover:text-green-400 transition-colors">About Us</Link></li>
-              <li><Link to="/shop" className="hover:text-green-400 transition-colors">Shop</Link></li>
-              <li><Link to="/services" className="hover:text-green-400 transition-colors">Services</Link></li>
-              <li><Link to="/contact" className="hover:text-green-400 transition-colors">Contact</Link></li>
-              <li><Link to="/faq" className="hover:text-green-400 transition-colors">FAQs</Link></li>
+          <div className="text-center sm:text-center lg:text-center order-2 sm:order-2">
+            <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Quick Links</h3>
+            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-400">
+              <li><Link to="/about" className="hover:text-green-400 transition-colors inline-block py-1">About Us</Link></li>
+              <li><Link to="/shop" className="hover:text-green-400 transition-colors inline-block py-1">Shop</Link></li>
+              <li><Link to="/services" className="hover:text-green-400 transition-colors inline-block py-1">Services</Link></li>
+              <li><Link to="/contact" className="hover:text-green-400 transition-colors inline-block py-1">Contact</Link></li>
+              <li><Link to="/faq" className="hover:text-green-400 transition-colors inline-block py-1">FAQs</Link></li>
             </ul>
           </div>
 
           {/* Customer Care */}
-          <div className="text-center md:text-right">
-            <h3 className="text-lg font-bold text-white mb-4">Customer Care</h3>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link to="/track-order" className="hover:text-green-400 transition-colors">Track Order</Link></li>
-              <li><Link to="/terms" className="hover:text-green-400 transition-colors">Terms of Service</Link></li>
-              <li><Link to="/privacy" className="hover:text-green-400 transition-colors">Privacy Policy</Link></li>
+          <div className="text-center sm:text-center lg:text-center order-3 sm:order-3">
+            <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Customer Care</h3>
+            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-400">
+              <li><Link to="/track-order" className="hover:text-green-400 transition-colors inline-block py-1">Track Order</Link></li>
+              <li><Link to="/terms" className="hover:text-green-400 transition-colors inline-block py-1">Terms of Service</Link></li>
+              <li><Link to="/privacy" className="hover:text-green-400 transition-colors inline-block py-1">Privacy Policy</Link></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-gray-700 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-400 text-center sm:text-left">
+        <div className="border-t border-gray-700 pt-4 sm:pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+          <p className="text-xs sm:text-sm text-gray-400 text-center sm:text-left order-2 sm:order-1">
             © {new Date().getFullYear()} Sanich Farms. All rights reserved.
           </p>
           
           {/* Social Media */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 order-1 sm:order-2">
             <a href="https://facebook.com/sanichfarms" target="_blank" rel="noopener noreferrer"
-               className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-300"
+               className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-300"
                aria-label="Facebook">
-              <FaFacebookF className="text-sm" />
+              <FaFacebookF className="text-xs sm:text-sm" />
             </a>
             <a href="https://tiktok.com/@sanichfarms" target="_blank" rel="noopener noreferrer"
-               className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-300"
+               className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-300"
                aria-label="TikTok">
-              <FaTiktok className="text-sm" />
+              <FaTiktok className="text-xs sm:text-sm" />
             </a>
             <a href="https://youtube.com/sanichfarms" target="_blank" rel="noopener noreferrer"
-               className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-300"
+               className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-300"
                aria-label="YouTube">
-              <FaYoutube className="text-sm" />
+              <FaYoutube className="text-xs sm:text-sm" />
             </a>
             <a href="https://instagram.com/sanichfarms" target="_blank" rel="noopener noreferrer"
-               className="w-9 h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-300"
+               className="w-8 h-8 sm:w-9 sm:h-9 bg-gray-700 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-300"
                aria-label="Instagram">
-              <FaInstagram className="text-sm" />
+              <FaInstagram className="text-xs sm:text-sm" />
             </a>
           </div>
         </div>
