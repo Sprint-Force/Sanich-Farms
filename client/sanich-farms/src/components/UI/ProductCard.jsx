@@ -1,23 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiStar, FiShoppingCart, FiHeart } from 'react-icons/fi';
+import { FiStar, FiShoppingCart, FiHeart, FiPlus, FiMinus } from 'react-icons/fi';
 import { FaHeart } from 'react-icons/fa';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '../../context/ToastContext';
 
-const ProductCard = ({ product, skeleton = false }) => {
+const ProductCard = ({ product, skeleton = false, compact = false }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageInView, setImageInView] = useState(false);
   const imgRef = useRef();
   const cardRef = useRef();
   
-  const { addToCart } = useCart();
+  const { addToCart, removeFromCart, updateCartItemQuantity, getItemQuantity } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToast } = useToast();
 
-  // WISHLIST VISUAL FEEDBACK: Check if product is in wishlist
+  // VISUAL FEEDBACK: Check if product is in wishlist or cart
   const isWishlisted = isInWishlist(product?.id);
+  const cartQuantity = getItemQuantity(product?.id);
+  const isInCartAlready = cartQuantity > 0;
 
   // Intersection Observer for lazy loading images
   useEffect(() => {
@@ -68,14 +70,31 @@ const ProductCard = ({ product, skeleton = false }) => {
     );
   }
 
-  const handleAddToCart = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product, 1);
-    addToast(`${product.name} added to cart!`, 'success');
+  // CART QUANTITY HANDLERS: Jumia-style quantity controls
+  const handleAddToCart = () => {
+    if (!isInCartAlready) {
+      addToCart(product, 1);
+      addToast(`${product.name} added to cart!`, 'success');
+    }
   };
 
-  // WISHLIST VISUAL FEEDBACK: Toggle wishlist with proper feedback
+  const handleIncreaseQuantity = (e) => {
+    e.stopPropagation();
+    const newQuantity = cartQuantity + 1;
+    updateCartItemQuantity(product.id, newQuantity);
+  };
+
+  const handleDecreaseQuantity = (e) => {
+    e.stopPropagation();
+    if (cartQuantity > 1) {
+      const newQuantity = cartQuantity - 1;
+      updateCartItemQuantity(product.id, newQuantity);
+    } else {
+      // Remove from cart when quantity reaches 0
+      removeFromCart(product.id);
+      addToast(`${product.name} removed from cart!`, 'info');
+    }
+  };  // WISHLIST VISUAL FEEDBACK: Toggle wishlist with proper feedback
   const handleToggleWishlist = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -92,11 +111,15 @@ const ProductCard = ({ product, skeleton = false }) => {
   return (
     <div 
       ref={cardRef}
-      className="bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl group flex flex-col h-full animate-pulse opacity-0"
+      className={`bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl group flex flex-col h-full animate-pulse opacity-0 ${
+        compact ? 'shadow-sm hover:shadow-md' : ''
+      }`}
       style={{ animation: 'fadeIn 0.6s ease-out forwards' }}
     >
       {/* Product Image and Wishlist button */}
-      <div ref={imgRef} className="relative w-full pb-[100%] overflow-hidden bg-gray-200">
+      <div ref={imgRef} className={`relative w-full overflow-hidden bg-gray-200 ${
+        compact ? 'pb-[100%]' : 'pb-[100%]'
+      }`}>
         {/* pb-[100%] creates a perfect square aspect ratio for the image container */}
         <Link to={`/products/${product.id}`} className="absolute inset-0">
           {imageInView && (
@@ -144,23 +167,33 @@ const ProductCard = ({ product, skeleton = false }) => {
         </button>
       </div>
        {/* Product Details and Add to Cart button */}
-      <div className="flex-grow flex flex-col p-3 sm:p-4">
+      <div className={`flex-grow flex flex-col ${compact ? 'p-2' : 'p-3 sm:p-4'}`}>
         <Link to={`/products/${product.id}`} className="flex-grow">
           {/* Product Name - Line-clamp for two lines */}
-          <h3 className="text-sm font-semibold text-gray-800 mb-1 line-clamp-2">{product.name}</h3>
+          <h3 className={`font-semibold text-gray-800 mb-1 line-clamp-2 ${
+            compact ? 'text-xs' : 'text-sm'
+          }`}>
+            {product.name}
+          </h3>
           
-          {/* Category */}
-          <p className="text-xs text-gray-500 mb-1">{product.category}</p>
+          {/* Category - Hidden in compact mode */}
+          {!compact && (
+            <p className="text-xs text-gray-500 mb-1">{product.category}</p>
+          )}
 
-          {/* Rating */}
-          <div className="flex items-center text-xs mb-2">
-            {[...Array(5)].map((_, i) => (
+          {/* Rating - Simplified in compact mode */}
+          <div className={`flex items-center mb-2 ${compact ? 'text-xs' : 'text-xs'}`}>
+            {[...Array(compact ? 3 : 5)].map((_, i) => (
               <FiStar
                 key={i}
-                className={`w-3 h-3 ${i < (product.rating || 0) ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
+                className={`${compact ? 'w-2.5 h-2.5' : 'w-3 h-3'} ${
+                  i < (product.rating || 0) ? 'text-yellow-500 fill-current' : 'text-gray-300'
+                }`}
               />
             ))}
-            <span className="text-gray-500 ml-1">({product.reviews || 0})</span>
+            {!compact && (
+              <span className="text-gray-500 ml-1">({product.reviews || 0})</span>
+            )}
           </div>
         </Link>
 
@@ -168,20 +201,60 @@ const ProductCard = ({ product, skeleton = false }) => {
           <div className="mt-auto flex items-end justify-between gap-2">
             {/* Price */}
             <div className="flex flex-col">
-              <span className="text-base font-bold text-green-700 leading-none sm:text-lg">GH₵{parseFloat(product.price || 0).toFixed(2)}</span>
-              {product.oldPrice && (
-                <span className="text-xs text-gray-500 line-through">GH₵{parseFloat(product.oldPrice || 0).toFixed(2)}</span>
+              <span className={`font-bold text-green-700 leading-none ${
+                compact ? 'text-sm' : 'text-base sm:text-lg'
+              }`}>
+                GH₵{parseFloat(product.price || 0).toFixed(2)}
+              </span>
+              {product.oldPrice && !compact && (
+                <span className="text-xs text-gray-500 line-through">
+                  GH₵{parseFloat(product.oldPrice || 0).toFixed(2)}
+                </span>
               )}
             </div>
             
-            {/* Add to Cart button */}
-            <button
-              onClick={handleAddToCart}
-              className="flex-shrink-0 bg-green-600 text-white p-2 rounded-full shadow-md hover:bg-green-700 transition duration-200"
-              aria-label="Add to cart"
-            >
-              <FiShoppingCart size={18} />
-            </button>
+            {/* Cart Controls - Jumia Style */}
+            {!isInCartAlready ? (
+              /* Add to Cart button */
+              <button
+                onClick={handleAddToCart}
+                className={`flex-shrink-0 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-md transition duration-200 ${
+                  compact ? 'p-1.5' : 'p-2'
+                }`}
+                aria-label="Add to cart"
+              >
+                <FiShoppingCart size={compact ? 14 : 18} />
+              </button>
+            ) : (
+              /* Quantity Selector */
+              <div className={`flex items-center bg-green-600 text-white rounded-full shadow-md ${
+                compact ? 'text-xs' : 'text-sm'
+              }`}>
+                <button
+                  onClick={handleDecreaseQuantity}
+                  className={`hover:bg-green-700 rounded-full transition duration-200 ${
+                    compact ? 'p-1' : 'p-1.5'
+                  }`}
+                  aria-label="Decrease quantity"
+                >
+                  <FiMinus size={compact ? 12 : 14} />
+                </button>
+                <span className={`font-medium min-w-8 text-center ${
+                  compact ? 'mx-1 text-xs' : 'mx-2 text-sm'
+                }`}>
+                  {cartQuantity}
+                </span>
+                <button
+                  onClick={handleIncreaseQuantity}
+                  className={`hover:bg-green-700 rounded-full transition duration-200 ${
+                    compact ? 'p-1' : 'p-1.5'
+                  }`}
+                  aria-label="Increase quantity"
+                >
+                  <FiPlus size={compact ? 12 : 14} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
     </div>
