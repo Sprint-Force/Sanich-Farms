@@ -4,7 +4,7 @@ import { FaFacebook } from 'react-icons/fa';
 
 // Placeholder images for team members
 // IMPORTANT: Ensure these paths are correct relative to THIS file's location.
-import teamMember1 from '../../../assets/image6.png';
+import teamMember1 from '../../../assets/slider2.png';
 import teamMember2 from '../../../assets/image7.png';
 import teamMember3 from '../../../assets/feed.jpg';
 

@@ -1,12 +1,12 @@
 // banner List
-import { image1, image2, image3, image4, image5, tsetimage, test2 } from "../assets";
+import { image1, image3, slider1, slider2, slider3 } from "../assets";
 
 export const bannerList = [
     {
         id: 1,
         title: "WELCOME TO SANICH FARMS",
         subTitle: "Quality Chicks, Feeds & Expert Poultry Services",
-        image: test2,
+        image: slider3,
         buttonText: "Shop Now",
         link: "/shop"
     },
@@ -14,7 +14,7 @@ export const bannerList = [
         id: 2,
         title: "From Our Farm to Your Table",
         subTitle: "Quality Poultry You Can Trust Every Day",
-        image: image2,
+        image: image1,
         buttonText: "Shop Now",
         link: "/shop"
     },
@@ -30,7 +30,7 @@ export const bannerList = [
         id: 4,
         title: "Happy Hens, Healthy Harvest",
         subTitle: "Ethically Raised Poultry for a Better Tomorrow",
-        image: image4,
+        image: slider1,
         buttonText: "Shop Now",
         link: "/shop"
     },
@@ -38,7 +38,7 @@ export const bannerList = [
         id: 5,
         title: "Cluckin Good Quality!",
         subTitle: "Premium Poultry Products from Our Family Farm",
-        image: image5,
+        image: slider2,
         buttonText: "Shop Now",
         link: "/shop"
     },

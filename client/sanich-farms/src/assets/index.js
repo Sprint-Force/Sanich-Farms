@@ -1,39 +1,29 @@
 import logo from "./logo.png";
 import image1 from "./broiler_chick_group.png"
-import image2 from "./broiler_chick_side.png"
 import image3 from "./layer_chicks.png"
-import image4 from "./poultry_vitamins.png"
-import image5 from "./image5.png"
-import image6 from "./image6.png"
 import image7 from "./image7.png"
-import tsetimage from "./tsetimage.jpg"
-import test2 from "./test2.jpg"
+import slider1 from "./slider1.png"
+import slider2 from "./slider2.png"
+import slider3 from "./slider3.jpg"
 import feed from "./feed.jpg"
 import wheat from "./wheat.jpg"
-import eggs from "./eggs.jpeg"
-import sevice1 from "./sevice1.jpg";
-import sevice2 from "./sevice2.jpg"
 import sevice3 from "./sevice3.jpg";
-import statistic from "./statistic.jpg"
+import additive from "./additive.jpg";
+import egg from "./egg.jpg";
 
 
 
 export {
     logo,
     image1,
-    image2,
     image3,
-    image4,
-    image5,
-    image6,
     image7,
-    tsetimage,
-    test2,
+    slider1,
+    slider2,
+    slider3,
     feed,
     wheat,
-    eggs,
-    sevice1,
-    sevice2,
     sevice3,
-    statistic
+    additive,
+    egg
 };

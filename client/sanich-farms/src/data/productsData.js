@@ -3,11 +3,10 @@
 import chickImage from '../assets/image7.png'; // Example
 import feedImage from '../assets/additive.jpg';   // Example
 import eggImage from '../assets/egg.jpg';     // Example
-import vitaminImage from '../assets/poultry_vitamins.png'; // Example (Updated from .jpg to .png as per user's provided code)
 
 // Example of multiple images for a product
 import broilerChickMain from '../assets/image7.png'; // Assuming this is your main broiler chick image
-import broilerChickSide from '../assets/layer_chicks.png'; // Assuming this is a side view (Updated from broiler_chick_side.png to layer_chicks.png as per user's provided code)
+import broilerChickSide from '../assets/layer_chicks.png'; // Assuming this is a side view
 import broilerChickGroup from '../assets/broiler_chick_group.png'; // Assuming this is a group view
 
 
@@ -209,9 +208,9 @@ export const productsData = [
     // sku: "VIT001", // REMOVED SKU as requested
     tags: ["vitamins", "health", "supplement", "poultry"],
     availability: 'In Stock',
-    image: vitaminImage,
+    image: 'https://placehold.co/600x400/B0E0E6/0000CD?text=Poultry+Vitamins',
     images: [
-      vitaminImage,
+      'https://placehold.co/600x400/B0E0E6/0000CD?text=Poultry+Vitamins',
       'https://placehold.co/600x400/B0E0E6/0000CD?text=Poultry+Vitamins+2'
     ],
     keyFeatures: [
