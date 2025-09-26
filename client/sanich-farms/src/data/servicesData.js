@@ -1,10 +1,12 @@
 // IMPORTANT: Paths are relative to THIS file's location (src/data/)
-import Service1 from '../assets/sevice1.jpg'; // Brooding Training
 import Service3 from '../assets/sevice3.jpg'; // Consultancy
-import poultryProjectsImage from '../assets/sevice1.jpg'; // Ensure this image path is correct
-import injectingImage from '../assets/sevice2.jpg'; // Ensure this image path is correct
-import managementImage from '../assets/sevice3.jpg'; // Ensure this image path is correct
-import budgetingImage from '../assets/sevice1.jpg'; // Ensure this image path is correct
+
+// Using placeholder images for services where original images were deleted
+const Service1 = 'https://placehold.co/400x300/4CAF50/FFFFFF?text=Brooding+Training';
+const poultryProjectsImage = 'https://placehold.co/400x300/4CAF50/FFFFFF?text=Poultry+Projects';
+const injectingImage = 'https://placehold.co/400x300/4CAF50/FFFFFF?text=Injection+Service';
+const managementImage = Service3; // Use the existing service3 image
+const budgetingImage = 'https://placehold.co/400x300/4CAF50/FFFFFF?text=Budgeting+Service';
 
 export const servicesData = [
   {

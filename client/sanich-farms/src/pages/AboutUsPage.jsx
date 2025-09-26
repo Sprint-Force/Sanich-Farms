@@ -4,8 +4,8 @@ import { FiHome, FiChevronRight, FiShoppingCart, FiPhone, FiUsers, FiAward, FiHe
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from 'react-icons/fa';
 
 // Import assets
-import ourStoryImage from '../assets/image5.png';
-import founderImage from '../assets/image6.png';
+import ourStoryImage from '../assets/slider1.png';
+import founderImage from '../assets/slider2.png';
 import managerImage from '../assets/image7.png';
 
 const AboutUsPage = () => {

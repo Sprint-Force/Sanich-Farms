@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
 import { FiArrowRight } from 'react-icons/fi';
-import Image6 from '../../../assets/image6.png';
+import Image6 from '../../../assets/slider2.png';
 const WhyUs = () => {
   const navigate = useNavigate();
 
