@@ -6,6 +6,7 @@ import { wishlistAPI } from '../services/api';
 const WishlistContext = createContext();
 
 // Custom hook to easily use the wishlist functions
+// eslint-disable-next-line react-refresh/only-export-components
 export const useWishlist = () => {
   return useContext(WishlistContext);
 };
