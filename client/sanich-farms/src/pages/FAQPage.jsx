@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiHome, FiChevronRight, FiHelpCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiHome, FiChevronRight, FiHelpCircle, FiChevronDown, FiChevronUp, FiPhone, FiMail, FiMessageCircle, FiStar } from 'react-icons/fi';
 
 const FAQPage = () => {
   const [openFAQ, setOpenFAQ] = useState(null);
@@ -86,7 +86,7 @@ const FAQPage = () => {
   };
 
   return (
-    <div className="font-poppins bg-gray-50 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Breadcrumbs */}
       <div className="w-full py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-white">
@@ -99,46 +99,75 @@ const FAQPage = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <FiHelpCircle className="w-8 h-8 text-green-600" />
-            <h1 className="text-3xl font-bold text-gray-800">Frequently Asked Questions</h1>
+      <div className="max-w-6xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-4 xs:py-5 sm:py-6 lg:py-8">
+        {/* Header Section */}
+        <div className="text-center mb-6 xs:mb-7 sm:mb-8">
+          <div className="flex items-center justify-center gap-1.5 xs:gap-2 sm:gap-3 mb-3 xs:mb-4">
+            <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 bg-green-100 rounded-full flex items-center justify-center shadow-sm">
+              <FiHelpCircle className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 text-green-600" />
+            </div>
+            <h1 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+              Frequently Asked Questions
+            </h1>
           </div>
-          <p className="text-gray-600 text-lg">
-            Find answers to the most common questions about our products and services
+          <p className="text-gray-600 text-sm xs:text-base leading-relaxed max-w-2xl mx-auto px-2">
+            Find answers to common questions about our products and services
           </p>
         </div>
 
-        <div className="space-y-8">
+          <div className="grid gap-3 xs:gap-4 sm:gap-5">
           {faqData.map((category) => (
-            <div key={category.id} className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="bg-green-50 px-6 py-4 border-b border-green-100">
-                <h2 className="text-xl font-semibold text-gray-800">{category.category}</h2>
+            <div key={category.id} className="bg-white rounded-xl xs:rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+              {/* Category Header */}
+              <div className="bg-gradient-to-r from-green-50 to-green-100 px-4 xs:px-5 sm:px-6 py-3 xs:py-4 border-b border-green-200">
+                <h2 className="text-base xs:text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2 xs:gap-3">
+                  <div className="w-5 h-5 xs:w-6 xs:h-6 bg-green-200 rounded-lg flex items-center justify-center">
+                    <FiStar className="w-3 h-3 xs:w-4 xs:h-4 text-green-700" />
+                  </div>
+                  <span className="text-gray-800 flex-1 min-w-0">{category.category}</span>
+                  <span className="bg-green-200 text-green-800 px-2 xs:px-3 py-1 rounded-full text-xs xs:text-sm font-semibold flex-shrink-0">
+                    {category.questions.length}
+                  </span>
+                </h2>
               </div>
               
+              {/* Questions */}
               <div className="divide-y divide-gray-100">
                 {category.questions.map((faq, index) => {
                   const isOpen = openFAQ === `${category.id}-${index}`;
                   return (
-                    <div key={index} className="p-6">
+                    <div key={index} className="group">
                       <button
                         onClick={() => toggleFAQ(category.id, index)}
-                        className="w-full text-left flex items-center justify-between group"
+                        className="w-full text-left px-4 xs:px-5 sm:px-6 py-3 xs:py-4 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-inset"
                       >
-                        <h3 className="text-lg font-medium text-gray-800 group-hover:text-green-600 transition-colors">
-                          {faq.question}
-                        </h3>
-                        {isOpen ? (
-                          <FiChevronUp className="w-5 h-5 text-green-600 flex-shrink-0" />
-                        ) : (
-                          <FiChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                        )}
+                        <div className="flex items-start justify-between gap-3 xs:gap-4">
+                          <h3 className="text-sm xs:text-base sm:text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 leading-relaxed flex-1 min-w-0 pr-2">
+                            {faq.question}
+                          </h3>
+                          <div className="flex-shrink-0 mt-1">
+                            <div className={`w-7 h-7 xs:w-8 xs:h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+                              isOpen 
+                                ? 'bg-green-100' 
+                                : 'bg-gray-100 group-hover:bg-green-50'
+                            }`}>
+                              {isOpen ? (
+                                <FiChevronUp className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <FiChevronDown className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors duration-200" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </button>
                       
                       {isOpen && (
-                        <div className="mt-4 pr-6">
-                          <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
+                        <div className="px-4 xs:px-5 sm:px-6 pb-3 xs:pb-4 transform transition-all duration-300 ease-out animate-in slide-in-from-top-2">
+                          <div className="bg-blue-50 p-3 xs:p-4 rounded-lg xs:rounded-xl border border-blue-200 shadow-sm">
+                            <p className="text-gray-700 text-sm xs:text-base leading-relaxed">
+                              {faq.answer}
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -150,24 +179,48 @@ const FAQPage = () => {
         </div>
 
         {/* Contact Section */}
-        <div className="mt-12 bg-white rounded-xl shadow-md p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Still have questions?</h2>
-          <p className="text-gray-600 mb-6">
-            Can't find the answer you're looking for? Please chat with our friendly team.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/contact"
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors"
-            >
-              Contact Us
-            </Link>
-            <a
-              href="tel:0243826137"
-              className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            >
-              Call: 0243826137
-            </a>
+        <div className="mt-8 xs:mt-10 bg-white rounded-xl xs:rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-4 xs:px-6 sm:px-8 py-5 xs:py-6 text-center border-b border-blue-200">
+            <div className="w-10 h-10 xs:w-12 xs:h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 xs:mb-4 shadow-lg">
+              <FiMessageCircle className="w-5 h-5 xs:w-6 xs:h-6 text-white" />
+            </div>
+            <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+              Still have questions?
+            </h2>
+            <p className="text-gray-600 text-sm xs:text-base leading-relaxed max-w-2xl mx-auto">
+              Can't find the answer you're looking for? Our friendly team is here to help you.
+            </p>
+          </div>
+          
+          <div className="p-4 xs:p-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4 max-w-4xl mx-auto">
+              <Link
+                to="/contact"
+                className="bg-gradient-to-r from-green-600 to-green-700 text-white px-4 xs:px-6 py-3 xs:py-4 rounded-lg xs:rounded-xl font-semibold hover:from-green-700 hover:to-green-800 active:scale-95 transform transition-all duration-200 shadow-md hover:shadow-lg text-sm xs:text-base text-center flex items-center justify-center gap-2 min-h-[44px] xs:min-h-[48px] focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              >
+                <FiMail className="w-4 h-4 xs:w-5 xs:h-5 flex-shrink-0" />
+                <span className="hidden xs:inline">Contact Us</span>
+                <span className="xs:hidden">Contact</span>
+              </Link>
+              
+              <a
+                href="tel:0243826137"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 xs:px-6 py-3 xs:py-4 rounded-lg xs:rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 active:scale-95 transform transition-all duration-200 shadow-md hover:shadow-lg text-sm xs:text-base text-center flex items-center justify-center gap-2 min-h-[44px] xs:min-h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <FiPhone className="w-4 h-4 xs:w-5 xs:h-5 flex-shrink-0" />
+                <span className="hidden sm:inline">Call: 0243826137</span>
+                <span className="sm:hidden">Call Us</span>
+              </a>
+              
+              <a
+                href="mailto:Sanichfarms@gmail.com"
+                className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-4 xs:px-6 py-3 xs:py-4 rounded-lg xs:rounded-xl font-semibold hover:from-yellow-600 hover:to-yellow-700 active:scale-95 transform transition-all duration-200 shadow-md hover:shadow-lg text-sm xs:text-base text-center flex items-center justify-center gap-2 min-h-[44px] xs:min-h-[48px] xs:col-span-2 lg:col-span-1 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+              >
+                <FiMail className="w-4 h-4 xs:w-5 xs:h-5 flex-shrink-0" />
+                <span className="hidden xs:inline">Email Support</span>
+                <span className="xs:hidden">Email</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
