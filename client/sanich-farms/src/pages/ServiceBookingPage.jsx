@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { FiHome, FiChevronRight } from 'react-icons/fi';
+import { FiHome, FiChevronRight, FiCalendar, FiUser, FiMail, FiPhone, FiMapPin, FiClock, FiCheckCircle } from 'react-icons/fi';
 import { useToast } from '../context/ToastContext';
-import { servicesAPI, bookingsAPI } from '../services/api'; // Use configured API services
+import { servicesAPI, bookingsAPI } from '../services/api';
 import { useAuthContext } from '../hooks/useAuthContext';
 
 const ServiceBookingPage = () => {
@@ -164,189 +164,364 @@ const ServiceBookingPage = () => {
   // Conditional rendering based on loading and error states
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-120px)] bg-gray-50 font-poppins text-gray-700 text-xl col-span-full">
-        Loading service details...
+      <div className="min-h-screen bg-gray-50">
+        {/* Breadcrumb Skeleton */}
+        <div className="w-full py-6 sm:py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
+          <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-4 bg-gray-600 rounded animate-pulse"></div>
+              <div className="w-4 h-4 bg-gray-600 rounded animate-pulse"></div>
+              <div className="w-20 h-4 bg-gray-600 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Content Skeleton */}
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-6 xs:py-8 sm:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 xs:gap-8">
+            {/* Form Skeleton */}
+            <div className="lg:col-span-2 bg-white rounded-lg xs:rounded-xl shadow-sm p-4 xs:p-6 sm:p-8">
+              <div className="w-48 h-8 bg-gray-200 rounded animate-pulse mb-6"></div>
+              <div className="space-y-4">
+                {[...Array(7)].map((_, i) => (
+                  <div key={i} className="w-full h-12 bg-gray-200 rounded animate-pulse"></div>
+                ))}
+                <div className="w-32 h-12 bg-gray-200 rounded animate-pulse mt-6"></div>
+              </div>
+            </div>
+            
+            {/* Summary Skeleton */}
+            <div className="bg-white rounded-lg xs:rounded-xl shadow-sm p-4 xs:p-6 sm:p-8">
+              <div className="w-32 h-6 bg-gray-200 rounded animate-pulse mb-6"></div>
+              <div className="space-y-4">
+                <div className="flex gap-3">
+                  <div className="w-16 h-16 bg-gray-200 rounded-lg animate-pulse"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="w-3/4 h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="w-1/2 h-3 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-24 h-6 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (error || !selectedService) {
+  if (error) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-120px)] bg-gray-50 font-poppins text-gray-700 text-xl col-span-full">
-        <p className="text-red-500 mb-4">{error || "Service not found."}</p>
-        <Link to="/services" className="text-green-600 hover:underline">Back to Services</Link>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center px-4">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <span className="text-red-600 text-2xl">⚠️</span>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Service Not Found</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Link 
+            to="/services" 
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Back to Services
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="font-poppins bg-gray-50 min-h-screen">
-      {/* Breadcrumbs */}
-      <div className="w-full py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-white">
+    <div className="min-h-screen bg-gray-50">
+      {/* Breadcrumbs - Enhanced Mobile Responsiveness */}
+      <div className="w-full py-6 sm:py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-white">
           <Link to="/" className="flex items-center gap-1 text-gray-300 hover:text-white transition-colors duration-200" aria-label="Go to Home page">
-            <FiHome className="w-5 h-5" />
-            <span className="text-base font-medium hidden sm:inline">Home</span>
+            <FiHome className="w-4 h-4 xs:w-5 xs:h-5" />
+            <span className="text-sm xs:text-base font-medium hidden xs:inline">Home</span>
           </Link>
-          <FiChevronRight className="w-4 h-4 text-gray-400" />
+          <FiChevronRight className="w-3 h-3 xs:w-4 xs:h-4 text-gray-400" />
           <Link to="/services" className="text-gray-300 hover:text-white transition-colors duration-200" aria-label="Go to Services page">
-            <span className="text-base font-medium">Our Services</span>
+            <span className="text-sm xs:text-base font-medium hidden sm:inline">Services</span>
+            <span className="text-sm xs:text-base font-medium sm:hidden">...</span>
           </Link>
-          <FiChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-green-400 text-base font-semibold">Book: {selectedService.name}</span>
+          <FiChevronRight className="w-3 h-3 xs:w-4 xs:h-4 text-gray-400" />
+          <span className="text-green-400 text-sm xs:text-base font-semibold truncate max-w-[120px] xs:max-w-[200px] sm:max-w-none">
+            Book Service
+          </span>
         </div>
       </div>
 
-      {/* Main Booking Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
-          {/* Booking Form */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-6 sm:p-8">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-8 md:mb-12">
-              Book a Service
+      {/* Hero Section - Clean & Modern */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-6 xs:py-8 sm:py-10">
+          <div className="text-center">
+            <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 xs:mb-3 sm:mb-4">
+              Book Your Service
             </h1>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              <div className="sm:col-span-2">
-                <label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-1">Customer Name <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  id="customerName"
-                  name="customerName"
-                  value={formData.customerName}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                  placeholder="Enter your name"
-                  required
-                />
+            <p className="text-xs xs:text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Fill out the form below to book your preferred service with us
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Booking Content - Enhanced Responsive Layout */}
+      <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-6 xs:py-8 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 xs:gap-8">
+          
+          {/* Booking Form - Enhanced Mobile Design */}
+          <div className="lg:col-span-2 bg-white rounded-lg xs:rounded-xl shadow-sm p-4 xs:p-6 sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-6">
+              
+              {/* Personal Information Section */}
+              <div className="border-b border-gray-100 pb-4 xs:pb-6">
+                <h2 className="text-lg xs:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <FiUser className="w-5 h-5 text-blue-600" />
+                  Personal Information
+                </h2>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xs:gap-6">
+                  {/* Name */}
+                  <div className="sm:col-span-2">
+                    <label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-1 xs:mb-2">
+                      Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="customerName"
+                      name="customerName"
+                      value={formData.customerName}
+                      onChange={handleChange}
+                      className="w-full px-3 xs:px-4 py-2 xs:py-3 text-sm xs:text-base border border-gray-300 rounded-md xs:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      placeholder="Enter your full name"
+                      required
+                    />
+                  </div>
+                  
+                  {/* Email */}
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1 xs:mb-2">
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="w-full pl-9 xs:pl-10 pr-3 xs:pr-4 py-2 xs:py-3 text-sm xs:text-base border border-gray-300 rounded-md xs:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="your@email.com"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Phone */}
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1 xs:mb-2">
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <FiPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="w-full pl-9 xs:pl-10 pr-3 xs:pr-4 py-2 xs:py-3 text-sm xs:text-base border border-gray-300 rounded-md xs:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="0XX XXX XXXX"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email <span className="text-red-500">*</span></label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                  placeholder="Enter your email"
-                  required
-                />
+
+              {/* Service & Location Section */}
+              <div className="border-b border-gray-100 pb-4 xs:pb-6">
+                <h2 className="text-lg xs:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <FiMapPin className="w-5 h-5 text-green-600" />
+                  Service & Location
+                </h2>
+                
+                <div className="grid grid-cols-1 gap-4 xs:gap-6">
+                  {/* Service Selection */}
+                  <div>
+                    <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1 xs:mb-2">
+                      Select Service <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="serviceType"
+                      name="serviceType"
+                      value={formData.serviceType}
+                      onChange={handleChange}
+                      className="w-full px-3 xs:px-4 py-2 xs:py-3 text-sm xs:text-base border border-gray-300 rounded-md xs:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      required
+                    >
+                      <option value="">Choose your service...</option>
+                      {allServices.map(service => (
+                        <option key={service.id} value={service.name}>
+                          {service.name} - GH₵{parseFloat(service.price || 0).toFixed(2)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {/* Location */}
+                  <div>
+                    <label htmlFor="customerLocation" className="block text-sm font-medium text-gray-700 mb-1 xs:mb-2">
+                      Your Location <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="customerLocation"
+                      name="customerLocation"
+                      value={formData.customerLocation}
+                      onChange={handleChange}
+                      className="w-full px-3 xs:px-4 py-2 xs:py-3 text-sm xs:text-base border border-gray-300 rounded-md xs:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      placeholder="Enter your address or location"
+                      required
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number <span className="text-red-500">*</span></label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                  placeholder="Enter your phone number"
-                  required
-                />
+
+              {/* Booking Details Section */}
+              <div className="pb-4 xs:pb-6">
+                <h2 className="text-lg xs:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <FiCalendar className="w-5 h-5 text-yellow-600" />
+                  Booking Details
+                </h2>
+                
+                <div className="grid grid-cols-1 gap-4 xs:gap-6">
+                  {/* Date & Time */}
+                  <div>
+                    <label htmlFor="preferredDateTime" className="block text-sm font-medium text-gray-700 mb-1 xs:mb-2">
+                      Preferred Date & Time <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <FiClock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="datetime-local"
+                        id="preferredDateTime"
+                        name="preferredDateTime"
+                        value={formData.preferredDateTime}
+                        onChange={handleChange}
+                        className="w-full pl-9 xs:pl-10 pr-3 xs:pr-4 py-2 xs:py-3 text-sm xs:text-base border border-gray-300 rounded-md xs:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Additional Notes */}
+                  <div>
+                    <label htmlFor="optionalMessage" className="block text-sm font-medium text-gray-700 mb-1 xs:mb-2">
+                      Additional Notes (Optional)
+                    </label>
+                    <textarea
+                      id="optionalMessage"
+                      name="optionalMessage"
+                      rows="3"
+                      value={formData.optionalMessage}
+                      onChange={handleChange}
+                      className="w-full px-3 xs:px-4 py-2 xs:py-3 text-sm xs:text-base border border-gray-300 rounded-md xs:rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                      placeholder="Any specific requirements or notes..."
+                    ></textarea>
+                  </div>
+                </div>
               </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="customerLocation" className="block text-sm font-medium text-gray-700 mb-1">Customer Location <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  id="customerLocation"
-                  name="customerLocation"
-                  value={formData.customerLocation}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                  placeholder="Enter your location"
-                  required
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="preferredDateTime" className="block text-sm font-medium text-gray-700 mb-1">Preferred Date and Time <span className="text-red-500">*</span></label>
-                <input
-                  type="datetime-local"
-                  id="preferredDateTime"
-                  name="preferredDateTime"
-                  value={formData.preferredDateTime}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                  required
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">Service Type <span className="text-red-500">*</span></label>
-                {/* FIX: Service Booking Dropdown - Allow user to change service selection */}
-                <select
-                  id="serviceType"
-                  name="serviceType"
-                  value={formData.serviceType}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                  required
-                >
-                  <option value="">Select service type</option>
-                  {/* Display all available services for user selection */}
-                  {allServices.map(service => (
-                    <option key={service.id} value={service.name}>
-                      {service.name} - GH₵{parseFloat(service.price || 0).toFixed(2)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="optionalMessage" className="block text-sm font-medium text-gray-700 mb-1">Optional Message</label>
-                <textarea
-                  id="optionalMessage"
-                  name="optionalMessage"
-                  rows="4"
-                  value={formData.optionalMessage}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
-                  placeholder="Any additional notes or specific requirements..."
-                ></textarea>
-              </div>
-              <div className="sm:col-span-2 mt-4">
+
+              {/* Submit Button */}
+              <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full sm:w-auto bg-green-600 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loadingBooking}
+                  className={`w-full flex items-center justify-center gap-2 px-6 xs:px-8 py-3 xs:py-4 rounded-lg xs:rounded-xl font-semibold text-sm xs:text-base transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 min-h-[44px] ${
+                    loadingBooking
+                      ? 'bg-gray-400 cursor-not-allowed text-white'
+                      : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white focus:ring-green-300'
+                  }`}
                 >
-                  {loadingBooking ? 'Submitting...' : 'Submit Booking'}
+                  {loadingBooking ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Booking Service...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiCheckCircle className="w-5 h-5" />
+                      <span>Book Service Now</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
           </div>
 
-          {/* Service Summary */}
-          <div className="lg:col-span-1 bg-white rounded-xl shadow-md p-6 sm:p-8 h-fit">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4 border-gray-200">
+          {/* Service Summary - Enhanced Mobile Design */}
+          <div className="bg-white rounded-lg xs:rounded-xl shadow-sm p-4 xs:p-6 sm:p-8 h-fit">
+            <h2 className="text-lg xs:text-xl font-semibold text-gray-900 mb-4 xs:mb-6 border-b border-gray-100 pb-3 xs:pb-4">
               Service Summary
             </h2>
+            
             {selectedService ? (
-              <div className="space-y-4 text-gray-700 text-lg">
-                {/* FIX: Service Summary Population - Display dynamic service information */}
-                <div className="flex items-center gap-3">
+              <div className="space-y-4 xs:space-y-6">
+                {/* Service Info */}
+                <div className="flex items-start gap-3 xs:gap-4">
                   <img
-                    src={selectedService.image_url || "https://placehold.co/60x60/4CAF50/FFFFFF?text=Service"}
+                    src={selectedService.image_url || selectedService.image || "https://placehold.co/60x60/4CAF50/FFFFFF?text=Service"}
                     alt={selectedService.name}
-                    className="w-16 h-16 rounded-lg object-cover"
-                    onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/60x60/cccccc/333333?text=Service"; }}
+                    className="w-12 h-12 xs:w-16 xs:h-16 rounded-lg object-cover flex-shrink-0"
+                    onError={(e) => { 
+                      e.target.onerror = null; 
+                      e.target.src="https://placehold.co/60x60/cccccc/333333?text=Service"; 
+                    }}
                   />
-                  <div>
-                    <p className="font-semibold">{selectedService.name}</p>
-                    <p className="text-sm text-gray-600">Selected Service</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm xs:text-base font-semibold text-gray-900 leading-tight">
+                      {selectedService.name}
+                    </h3>
+                    <p className="text-xs xs:text-sm text-gray-600 mt-1">Selected Service</p>
+                    <div className="mt-2">
+                      <span className="text-lg xs:text-xl font-bold text-green-600">
+                        GH₵{parseFloat(selectedService.price || 0).toFixed(2)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <p><strong>Description:</strong> {selectedService.description?.substring(0, 150) + '...' || 'Professional service available.'}</p>
-                <p><strong>Price:</strong> <span className="text-green-600 font-semibold">GH₵{parseFloat(selectedService.price || 0).toFixed(2)}</span></p>
-                <div className="pt-4 border-t border-gray-200">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">Confirmation Details</h3>
-                  <p className="text-gray-600 text-base">
-                    You will receive a confirmation email within 24 hours with detailed instructions and next steps.
+                
+                {/* Description */}
+                <div className="border-t border-gray-100 pt-4">
+                  <p className="text-xs xs:text-sm text-gray-700 leading-relaxed">
+                    {selectedService.description?.substring(0, 120) + '...' || 'Professional service tailored to your needs.'}
                   </p>
+                </div>
+                
+                {/* Confirmation Info */}
+                <div className="bg-blue-50 rounded-lg p-3 xs:p-4 border border-blue-100">
+                  <h4 className="text-sm xs:text-base font-semibold text-blue-900 mb-2">
+                    What happens next?
+                  </h4>
+                  <ul className="text-xs xs:text-sm text-blue-800 space-y-1">
+                    <li>• Confirmation email within 1 hour</li>
+                    <li>• Service team contact within 24 hours</li>
+                    <li>• Flexible rescheduling available</li>
+                  </ul>
                 </div>
               </div>
             ) : (
-              <p className="text-gray-600 text-base">
-                Select a service from the dropdown to see its summary here.
-              </p>
+              <div className="text-center py-6 xs:py-8">
+                <div className="w-12 h-12 xs:w-16 xs:h-16 mx-auto mb-3 xs:mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <FiCalendar className="w-6 h-6 xs:w-8 xs:h-8 text-gray-400" />
+                </div>
+                <p className="text-xs xs:text-sm text-gray-600">
+                  Select a service to view its details and pricing
+                </p>
+              </div>
             )}
           </div>
         </div>
