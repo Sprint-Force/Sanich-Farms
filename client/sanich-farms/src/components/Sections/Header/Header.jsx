@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { FiArrowRight, FiTruck, FiHeadphones, FiShield } from 'react-icons/fi';
+import { FiArrowRight, FiTruck, FiHeadphones, FiShield, FiShoppingCart } from 'react-icons/fi';
 import { bannerList } from '../../../data/bannerList';
 
 const Header = () => {
@@ -17,13 +17,17 @@ const Header = () => {
 
   return (
     <div className='w-full font-poppins'>
-      {/* Hero Section (Swiper) */}
+      {/* Enhanced Hero Section - Natural Device Responsive */}
       <Swiper
         modules={[Pagination, Autoplay]}
-        pagination={{ clickable: true }}
-        autoplay={{ delay: 4000, disableOnInteraction: false }}
+        pagination={{ 
+          clickable: true,
+          bulletClass: 'swiper-pagination-bullet !bg-white/60 !w-2 !h-2 xs:!w-2.5 xs:!h-2.5 sm:!w-3 sm:!h-3',
+          bulletActiveClass: 'swiper-pagination-bullet-active !bg-green-500'
+        }}
+        autoplay={{ delay: 5000, disableOnInteraction: false }}
         loop={true}
-        className="w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[90vh]"
+        className="w-full h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] xl:h-[80vh]"
       >
         {bannerList.map((banner) => (
           <SwiperSlide key={banner.id}>
@@ -32,79 +36,126 @@ const Header = () => {
                 src={banner.image}
                 className='h-full w-full object-cover'
                 alt={banner.title}
-                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/1920x1080/cccccc/333333?text=Image+Load+Error"; }}
+                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/1920x1080/E5F3F6/2E8B57?text=Sanich+Farms"; }}
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
-              <div className='absolute flex flex-col justify-center text-left
-                              top-1/2 -translate-y-1/2 left-2 sm:left-4 md:left-6 lg:left-8 xl:left-12
-                              w-[95%] sm:w-[90%] max-w-[300px] sm:max-w-[400px] md:max-w-[500px] lg:max-w-[600px] xl:max-w-[700px]
-                              p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10
-                              bg-black/50 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-lg
-                              animate-fade-in-left'
-              >
-                <h1 className='text-xs sm:text-sm md:text-base lg:text-lg text-green-400 font-bold uppercase mb-1 sm:mb-2'>
-                  {banner.title}
-                </h1>
-                <p className='text-white text-lg sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold leading-tight mb-2 sm:mb-3'>
-                  {banner.subTitle}
-                </p>
-                <div className='flex mb-3'>
-                  <p className='text-xs sm:text-sm md:text-base lg:text-lg font-semibold bg-orange-500 text-white px-2 sm:px-3 py-1 rounded-md shadow-md'>
-                    Very Affordable
-                  </p>
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+              
+              {/* Enhanced Hero Content - Natural Responsive */}
+              <div className='absolute inset-0 flex items-center'>
+                <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl">
+                    {/* Category Badge */}
+                    <div className="inline-block px-3 py-1.5 bg-green-500/90 backdrop-blur-sm rounded-full mb-3 sm:mb-4">
+                      <span className="text-xs sm:text-sm font-semibold text-white uppercase tracking-wide">
+                        {banner.title}
+                      </span>
+                    </div>
+                    
+                    {/* Main Headline - Natural Typography Scaling */}
+                    <h1 className='text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight'>
+                      {banner.subTitle}
+                    </h1>
+                    
+                    {/* Subtext */}
+                    <p className="text-sm sm:text-base md:text-lg text-gray-200 mb-6 leading-relaxed max-w-lg">
+                      Fresh, quality poultry products delivered to your doorstep. Trusted by thousands across Ghana.
+                    </p>
+                    
+                    {/* Action Buttons - Clean Responsive */}
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                      <button
+                        onClick={() => handleBannerClick(banner.link)}
+                        className='group inline-flex items-center justify-center gap-2
+                                   px-6 py-3 sm:px-7 sm:py-3.5
+                                   bg-green-600 hover:bg-green-700 text-white rounded-lg
+                                   font-semibold text-sm sm:text-base
+                                   shadow-lg hover:shadow-xl transform hover:-translate-y-0.5
+                                   transition-all duration-200 ease-out
+                                   focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2
+                                   active:transform active:scale-95'
+                      >
+                        <FiShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-105 transition-transform duration-200" />
+                        <span>{banner.buttonText}</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => navigate('/services')}
+                        className="group inline-flex items-center justify-center gap-2
+                                   px-6 py-3 sm:px-7 sm:py-3.5
+                                   bg-white/10 hover:bg-white/20 backdrop-blur-sm
+                                   text-white border border-white/30 hover:border-white/50 rounded-lg
+                                   font-semibold text-sm sm:text-base
+                                   shadow-lg hover:shadow-xl transform hover:-translate-y-0.5
+                                   transition-all duration-200 ease-out
+                                   focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2
+                                   active:transform active:scale-95"
+                      >
+                        <span>Learn More</span>
+                        <FiArrowRight className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <button
-                  onClick={() => handleBannerClick(banner.link)}
-                  className='inline-flex items-center justify-center gap-2
-                             px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-full
-                             font-semibold text-xs sm:text-sm md:text-base lg:text-lg
-                             hover:bg-green-700 transition duration-300 ease-in-out
-                             shadow-md hover:shadow-lg transform hover:-translate-y-0.5
-                             focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50'
-                >
-                  {banner.buttonText}
-                  <FiArrowRight className="w-5 h-5" />
-                </button>
               </div>
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
 
-      {/* Featured Section (Below Hero) */}
-      <div className='w-full py-8 md:py-12 bg-gray-100 flex justify-center relative -mt-12 md:-mt-16 lg:-mt-20 z-10'>
-        <div className='w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 bg-white rounded-xl shadow-xl p-6 md:p-8 transform transition-all duration-300 hover:shadow-2xl'>
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
-            <div className='flex items-center gap-3 p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200'>
-              <div className='bg-green-100 p-2 sm:p-3 rounded-full flex-shrink-0 shadow-sm'>
-                <FiTruck className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+      {/* Enhanced Features Section - Full Device Responsive */}
+            {/* Enhanced Features Section - Clean Modern Design */}
+      <section className='bg-white py-8 sm:py-12 lg:py-16 shadow-sm border-t'>
+        <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8'>
+            
+            {/* Fast Delivery */}
+            <div className='flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 group'>
+              <div className='bg-green-100 group-hover:bg-green-200 p-3 rounded-full flex-shrink-0 shadow-sm transition-colors duration-200'>
+                <FiTruck className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h3 className='text-sm sm:text-lg font-semibold text-gray-800 mb-1'>Fast Delivery</h3>
-                <p className='text-xs sm:text-sm text-gray-600'>Fast delivery on all orders</p>
+                <h3 className='text-base sm:text-lg font-semibold text-gray-900 mb-1'>
+                  Fast Delivery
+                </h3>
+                <p className='text-sm text-gray-600 leading-tight'>
+                  Same day delivery available
+                </p>
               </div>
             </div>
-            <div className='flex items-center gap-3 p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200'>
-              <div className='bg-green-100 p-2 sm:p-3 rounded-full flex-shrink-0 shadow-sm'>
-                <FiHeadphones className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+            
+            {/* 24/7 Support */}
+            <div className='flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 group'>
+              <div className='bg-blue-100 group-hover:bg-blue-200 p-3 rounded-full flex-shrink-0 shadow-sm transition-colors duration-200'>
+                <FiHeadphones className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className='text-sm sm:text-lg font-semibold text-gray-800 mb-1'>24/7 Support</h3>
-                <p className='text-xs sm:text-sm text-gray-600'>Instant access to Support</p>
+                <h3 className='text-base sm:text-lg font-semibold text-gray-900 mb-1'>
+                  24/7 Support
+                </h3>
+                <p className='text-sm text-gray-600 leading-tight'>
+                  Expert help anytime
+                </p>
               </div>
             </div>
-            <div className='flex items-center gap-3 p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200'>
-              <div className='bg-green-100 p-2 sm:p-3 rounded-full flex-shrink-0 shadow-sm'>
-                <FiShield className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+            
+            {/* Quality Guarantee */}
+            <div className='flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 group sm:col-span-2 lg:col-span-1'>
+              <div className='bg-purple-100 group-hover:bg-purple-200 p-3 rounded-full flex-shrink-0 shadow-sm transition-colors duration-200'>
+                <FiShield className="w-6 h-6 text-purple-600" />
               </div>
               <div>
-                <h3 className='text-sm sm:text-lg font-semibold text-gray-800 mb-1'>Secure Payment</h3>
-                <p className='text-xs sm:text-sm text-gray-600'>Your money is safe</p>
+                <h3 className='text-base sm:text-lg font-semibold text-gray-900 mb-1'>
+                  Quality Guaranteed
+                </h3>
+                <p className='text-sm text-gray-600 leading-tight'>
+                  100% satisfaction promise
+                </p>
               </div>
             </div>
+            
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
