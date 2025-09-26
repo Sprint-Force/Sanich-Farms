@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FiHome, FiChevronRight, FiCheckCircle, FiBookOpen, FiDollarSign, FiCalendar, FiHelpCircle } from 'react-icons/fi';
+import { FiHome, FiChevronRight, FiCheckCircle, FiBookOpen, FiClock, FiStar, FiUsers, FiShield } from 'react-icons/fi';
 import axios from 'axios';
 
 const ServiceDetailPage = () => {
@@ -52,127 +52,233 @@ const ServiceDetailPage = () => {
   // Conditional rendering based on loading and error states
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-120px)] bg-gray-50 font-poppins text-gray-700 text-xl col-span-full">
-        Loading service details...
+      <div className="min-h-screen bg-gray-50">
+        {/* Breadcrumbs Skeleton */}
+        <div className="w-full py-6 sm:py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
+          <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2">
+              <div className="w-20 h-4 bg-gray-600 rounded animate-pulse"></div>
+              <div className="w-4 h-4 bg-gray-600 rounded animate-pulse"></div>
+              <div className="w-24 h-4 bg-gray-600 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Content Skeleton */}
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-6 xs:py-8 sm:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 xs:gap-8">
+            {/* Image Skeleton */}
+            <div className="bg-white rounded-lg xs:rounded-xl shadow-sm p-4 xs:p-6">
+              <div className="w-full h-48 xs:h-56 sm:h-64 bg-gray-200 rounded-lg animate-pulse mb-4"></div>
+              <div className="w-3/4 h-6 xs:h-8 bg-gray-200 rounded animate-pulse mb-3"></div>
+              <div className="space-y-2 mb-4">
+                <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="w-4/5 h-4 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            
+            {/* Details Skeleton */}
+            <div className="bg-white rounded-lg xs:rounded-xl shadow-sm p-4 xs:p-6">
+              <div className="w-32 h-6 bg-gray-200 rounded animate-pulse mb-4"></div>
+              <div className="space-y-3">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-4 h-4 bg-gray-200 rounded-full animate-pulse mt-1"></div>
+                    <div className="w-full h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !service) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-120px)] bg-gray-50 font-poppins text-gray-700 text-xl p-4 text-center">
-        <p className="mb-4 text-red-500">{error || "Service not found."}</p>
-        <Link to="/services" className="text-green-600 hover:underline ml-2 px-4 py-2 bg-white rounded-lg shadow-md">View All Services</Link>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center px-4 xs:px-6">
+          <div className="w-16 h-16 xs:w-20 xs:h-20 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <span className="text-red-600 text-xl xs:text-2xl">⚠️</span>
+          </div>
+          <h3 className="text-lg xs:text-xl font-semibold text-gray-900 mb-2">Service Not Found</h3>
+          <p className="text-sm xs:text-base text-red-600 mb-6">{error || "The requested service could not be found."}</p>
+          <div className="flex flex-col xs:flex-row gap-3 justify-center">
+            <Link 
+              to="/services" 
+              className="px-4 xs:px-6 py-2 xs:py-3 bg-blue-600 text-white rounded-lg xs:rounded-xl font-medium hover:bg-blue-700 transition-colors text-sm xs:text-base"
+            >
+              View All Services
+            </Link>
+            <button 
+              onClick={() => navigate(-1)}
+              className="px-4 xs:px-6 py-2 xs:py-3 bg-gray-100 text-gray-700 rounded-lg xs:rounded-xl font-medium hover:bg-gray-200 transition-colors text-sm xs:text-base"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="font-poppins bg-gray-50 min-h-screen">
-      {/* Breadcrumbs */}
-      <div className="w-full py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-white">
+    <div className="min-h-screen bg-gray-50">
+      {/* Breadcrumbs - Enhanced Mobile Responsiveness */}
+      <div className="w-full py-6 sm:py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-white">
           <Link to="/" className="flex items-center gap-1 text-gray-300 hover:text-white transition-colors duration-200" aria-label="Go to Home page">
-            <FiHome className="w-5 h-5" />
-            <span className="text-base font-medium hidden sm:inline">Home</span>
+            <FiHome className="w-4 h-4 xs:w-5 xs:h-5" />
+            <span className="text-sm xs:text-base font-medium hidden xs:inline">Home</span>
           </Link>
-          <FiChevronRight className="w-4 h-4 text-gray-400" />
+          <FiChevronRight className="w-3 h-3 xs:w-4 xs:h-4 text-gray-400" />
           <Link to="/services" className="text-gray-300 hover:text-white transition-colors duration-200" aria-label="Go to Services page">
-            <span className="text-base font-medium">Our Services</span>
+            <span className="text-sm xs:text-base font-medium hidden sm:inline">Services</span>
+            <span className="text-sm xs:text-base font-medium sm:hidden">...</span>
           </Link>
-          <FiChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-green-400 text-base font-semibold truncate max-w-[150px] sm:max-w-none">{service.name}</span>
+          <FiChevronRight className="w-3 h-3 xs:w-4 xs:h-4 text-gray-400" />
+          <span className="text-green-400 text-sm xs:text-base font-semibold truncate max-w-[120px] xs:max-w-[150px] sm:max-w-none">
+            {service.name}
+          </span>
         </div>
       </div>
 
-      {/* Service Detail Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-start">
-          {/* Service Image and Summary */}
-          <div className="flex flex-col gap-6 bg-white rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100">
-            <img
-              src={service.image_url || service.image || "https://placehold.co/600x400/cccccc/333333?text=Service+Image"}
-              alt={service.name}
-              className="w-full h-auto object-cover rounded-lg shadow-md"
-              onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/cccccc/333333?text=Service+Image+Error"; }}
-            />
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 leading-tight">{service.name}</h1>
-            <p className="text-gray-600 text-lg leading-relaxed">{service.description || 'No description available.'}</p>
-
-            <div className="flex items-baseline gap-3 mb-4">
-              <span className="text-3xl sm:text-4xl font-bold text-green-700">
-                GH₵{parseFloat(service.price || 0).toFixed(2)}
-              </span>
+      {/* Service Detail Content - Modern Layout */}
+      <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-6 xs:py-8 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 xs:gap-8 md:gap-12">
+          
+          {/* Service Image and Main Info */}
+          <div className="space-y-4 xs:space-y-6">
+            {/* Service Image */}
+            <div className="bg-white rounded-lg xs:rounded-xl shadow-sm overflow-hidden">
+              <img
+                src={service.image_url || service.image || "https://placehold.co/600x400/cccccc/333333?text=Service+Image"}
+                alt={service.name}
+                className="w-full h-48 xs:h-56 sm:h-64 md:h-72 object-cover"
+                onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/cccccc/333333?text=Service+Image+Error"; }}
+              />
             </div>
 
-            <button
-              onClick={handleBookService}
-              className="w-full bg-green-600 text-white py-3 rounded-full font-semibold text-lg hover:bg-green-700 transition duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              Book This Service
-            </button>
+            {/* Service Header Info */}
+            <div className="bg-white rounded-lg xs:rounded-xl shadow-sm p-4 xs:p-6">
+              <div className="flex items-start justify-between gap-4 mb-3 xs:mb-4">
+                <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
+                  {service.name}
+                </h1>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-2xl xs:text-3xl font-bold text-green-600">
+                    GH₵{parseFloat(service.price || 0).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-gray-600 text-sm xs:text-base leading-relaxed mb-4 xs:mb-6">
+                {service.description || 'Professional poultry service tailored to your needs.'}
+              </p>
+
+              {/* Service Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 xs:gap-4 mb-4 xs:mb-6">
+                <div className="flex items-center gap-2 text-xs xs:text-sm">
+                  <FiStar className="w-4 h-4 text-yellow-500" />
+                  <span className="text-gray-600">5.0 Rating</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs xs:text-sm">
+                  <FiUsers className="w-4 h-4 text-blue-500" />
+                  <span className="text-gray-600">Expert Team</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs xs:text-sm col-span-2 sm:col-span-1">
+                  <FiShield className="w-4 h-4 text-green-500" />
+                  <span className="text-gray-600">Guaranteed</span>
+                </div>
+              </div>
+
+              {/* Book Service Button - Enhanced Mobile Touch Target */}
+              <button
+                onClick={handleBookService}
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 xs:py-4 sm:py-4 rounded-lg xs:rounded-xl font-semibold text-sm xs:text-base transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-green-300 min-h-[44px] touch-manipulation"
+              >
+                Book This Service Now
+              </button>
+            </div>
           </div>
 
-          {/* Service Details (Description, Benefits, Process, FAQs) */}
-          <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100">
-            {/* Full Description */}
-            <div className="mb-8 pb-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
-                <FiBookOpen className="text-green-600" /> Description
+          {/* Service Details */}
+          <div className="space-y-4 xs:space-y-6">
+            
+            {/* What's Included */}
+            <div className="bg-white rounded-lg xs:rounded-xl shadow-sm p-4 xs:p-6">
+              <h2 className="text-lg xs:text-xl font-bold text-gray-900 mb-3 xs:mb-4 flex items-center gap-2">
+                <FiCheckCircle className="w-5 h-5 text-green-600" />
+                What's Included
               </h2>
-              <p className="text-gray-700 leading-relaxed text-base">{service.description || 'No detailed description available.'}</p>
-            </div>
-
-            {/* Default Benefits since backend doesn't provide them */}
-            <div className="mb-8 pb-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
-                <FiCheckCircle className="text-green-600" /> Benefits
-              </h2>
-              <ul className="list-none space-y-2 text-gray-700 text-base">
-                <li className="flex items-start gap-2">
-                  <FiCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Professional and experienced service</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <FiCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Quality guaranteed results</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <FiCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Affordable pricing</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <FiCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Customer support included</span>
-                </li>
+              <ul className="space-y-2 xs:space-y-3">
+                {[
+                  'Professional consultation and assessment',
+                  'Expert service execution by trained staff',
+                  'Quality assurance and follow-up',
+                  'Customer support throughout the process',
+                  'Satisfaction guarantee'
+                ].map((item, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <FiCheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 text-xs xs:text-sm sm:text-base">{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Default Process Steps */}
-            <div className="mb-8 pb-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
-                <FiCalendar className="text-green-600" /> Our Process
+            {/* Service Process */}
+            <div className="bg-white rounded-lg xs:rounded-xl shadow-sm p-4 xs:p-6">
+              <h2 className="text-lg xs:text-xl font-bold text-gray-900 mb-3 xs:mb-4 flex items-center gap-2">
+                <FiClock className="w-5 h-5 text-blue-600" />
+                Our Process
               </h2>
-              <ol className="list-decimal list-inside space-y-2 text-gray-700 text-base">
-                <li>Initial consultation and assessment</li>
-                <li>Service planning and scheduling</li>
-                <li>Professional service execution</li>
-                <li>Quality assurance and follow-up</li>
-              </ol>
-            </div>
-
-            {/* Additional Information */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
-                <FiHelpCircle className="text-green-600" /> Additional Information
-              </h2>
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <p className="text-gray-700 text-sm">
-                  For more information or custom requirements, please contact us during the booking process. 
-                  Our team is ready to provide personalized service to meet your specific needs.
-                </p>
+              <div className="space-y-3 xs:space-y-4">
+                {[
+                  { step: 1, title: 'Book & Schedule', desc: 'Choose your preferred time and date' },
+                  { step: 2, title: 'Assessment', desc: 'Our experts evaluate your needs' },
+                  { step: 3, title: 'Service Delivery', desc: 'Professional execution of service' },
+                  { step: 4, title: 'Follow-up', desc: 'Ensure satisfaction and provide support' }
+                ].map((item, index) => (
+                  <div key={index} className="flex gap-3 xs:gap-4">
+                    <div className="w-6 h-6 xs:w-8 xs:h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-blue-600 font-semibold text-xs xs:text-sm">{item.step}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 text-sm xs:text-base">{item.title}</h3>
+                      <p className="text-gray-600 text-xs xs:text-sm">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+
+            {/* Additional Info */}
+            <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg xs:rounded-xl border border-blue-100 p-4 xs:p-6">
+              <h3 className="text-base xs:text-lg font-semibold text-gray-900 mb-2 xs:mb-3">
+                Need Custom Requirements?
+              </h3>
+              <p className="text-gray-700 text-xs xs:text-sm sm:text-base leading-relaxed mb-3 xs:mb-4">
+                We offer flexible solutions tailored to your specific needs. Contact us for personalized service options and pricing.
+              </p>
+              <div className="flex flex-col xs:flex-row gap-2 xs:gap-3">
+                <a 
+                  href="tel:0243826137" 
+                  className="inline-flex items-center justify-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 bg-blue-600 text-white rounded-md xs:rounded-lg font-medium hover:bg-blue-700 transition-colors text-xs xs:text-sm"
+                >
+                  Call Now
+                </a>
+                <Link 
+                  to="/contact" 
+                  className="inline-flex items-center justify-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 bg-white text-blue-600 border border-blue-200 rounded-md xs:rounded-lg font-medium hover:bg-blue-50 transition-colors text-xs xs:text-sm"
+                >
+                  Send Message
+                </Link>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
