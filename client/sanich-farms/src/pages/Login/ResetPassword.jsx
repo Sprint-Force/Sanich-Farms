@@ -82,25 +82,23 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
-      {/* Header with Logo */}
-      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 md:top-6 md:left-6 z-10">
-        <div className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3">
+      {/* Main Content */}
+      <div className="flex flex-col items-center justify-center min-h-screen py-4 sm:py-6 md:py-8 px-3 sm:px-4">
+        {/* Logo and Brand - Centered above card */}
+        <div className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 mb-4 sm:mb-6 md:mb-8">
           <img 
             src={logo} 
             alt="Sanich Farms Logo" 
-            className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 lg:h-10 lg:w-10 object-contain"
+            className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 object-contain"
           />
           <Link 
             to="/" 
-            className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-800 hover:text-green-600 transition-colors"
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 hover:text-green-600 transition-colors"
           >
             Sanich Farms
           </Link>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex items-center justify-center min-h-screen py-4 sm:py-6 md:py-8 px-3 sm:px-4">
         <div className="w-full max-w-[300px] xs:max-w-sm sm:max-w-md">
           {/* Reset Password Card */}
           <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl border border-gray-100 overflow-hidden">
