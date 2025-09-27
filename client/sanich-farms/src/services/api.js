@@ -270,7 +270,7 @@ export const cartAPI = {
   },
 
   clearCart: async () => {
-    const response = await apiClient.delete('/cart');
+    const response = await apiClient.delete('/cart/clear');
     return response.data;
   },
 };
