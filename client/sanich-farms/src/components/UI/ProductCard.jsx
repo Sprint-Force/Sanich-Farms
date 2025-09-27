@@ -43,27 +43,27 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
   // If showing skeleton
   if (skeleton) {
     return (
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden animate-pulse">
-        {/* Image skeleton */}
-        <div className="aspect-square bg-gray-200 relative">
+      <div className="bg-white rounded-xl xs:rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-pulse h-full flex flex-col">
+        {/* Image skeleton - Optimized aspect ratio for mobile */}
+        <div className="aspect-[4/3] xs:aspect-square bg-gray-200 relative">
           <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse"></div>
         </div>
         
-        {/* Content skeleton */}
-        <div className="p-4 space-y-3">
-          <div className="h-3 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-5 bg-gray-200 rounded w-4/5"></div>
+        {/* Content skeleton - Better mobile spacing */}
+        <div className="p-2 xs:p-3 sm:p-4 space-y-2 xs:space-y-3 flex-1 flex flex-col">
+          <div className="h-2 xs:h-3 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-3 xs:h-4 sm:h-5 bg-gray-200 rounded w-4/5"></div>
           <div className="flex items-center justify-between">
-            <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-3 xs:h-4 bg-gray-200 rounded w-1/4"></div>
             <div className="flex gap-1">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="w-4 h-4 bg-gray-200 rounded"></div>
+                <div key={i} className="w-2 h-2 xs:w-3 xs:h-3 sm:w-4 sm:h-4 bg-gray-200 rounded"></div>
               ))}
             </div>
           </div>
-          <div className="flex gap-2 pt-2">
-            <div className="flex-1 h-9 bg-gray-200 rounded"></div>
-            <div className="w-9 h-9 bg-gray-200 rounded"></div>
+          <div className="flex gap-1 xs:gap-2 pt-2 mt-auto">
+            <div className="flex-1 h-6 xs:h-8 sm:h-9 bg-gray-200 rounded-lg"></div>
+            <div className="w-6 h-6 xs:w-8 xs:h-8 sm:w-9 sm:h-9 bg-gray-200 rounded-lg"></div>
           </div>
         </div>
       </div>
@@ -111,16 +111,14 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
   return (
     <div 
       ref={cardRef}
-      className={`bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-xl group flex flex-col h-full animate-pulse opacity-0 ${
-        compact ? 'shadow-sm hover:shadow-md' : ''
+      className={`bg-white rounded-xl xs:rounded-2xl shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl group flex flex-col h-full ${
+        compact ? 'shadow-md hover:shadow-lg' : ''
       }`}
-      style={{ animation: 'fadeIn 0.6s ease-out forwards' }}
     >
       {/* Product Image and Wishlist button */}
-      <div ref={imgRef} className={`relative w-full overflow-hidden bg-gray-200 ${
-        compact ? 'pb-[100%]' : 'pb-[100%]'
+      <div ref={imgRef} className={`relative w-full overflow-hidden bg-gray-100 ${
+        compact ? 'aspect-[4/3] xs:aspect-square' : 'aspect-[4/3] xs:aspect-square'
       }`}>
-        {/* pb-[100%] creates a perfect square aspect ratio for the image container */}
         <Link to={`/products/${product.id}`} className="absolute inset-0">
           {imageInView && (
             <>
@@ -152,115 +150,118 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
         {/* WISHLIST VISUAL FEEDBACK: Wishlist button with dynamic styling */}
         <button
           onClick={handleToggleWishlist}
-          className={`absolute top-2 right-2 p-2 rounded-full shadow-md transition duration-200 z-10 ${
+          className={`absolute top-1 xs:top-2 sm:top-3 right-1 xs:right-2 sm:right-3 p-1 xs:p-1.5 sm:p-2 rounded-full shadow-lg transition-all duration-200 z-10 ${
             isWishlisted 
-              ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-              : 'bg-white/80 backdrop-blur-sm text-red-500 hover:bg-red-500 hover:text-white'
+              ? 'bg-green-100 text-green-600 hover:bg-green-200 scale-110' 
+              : 'bg-white/90 backdrop-blur-sm text-red-500 hover:bg-red-500 hover:text-white'
           }`}
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
           {isWishlisted ? (
-            <FaHeart size={16} />
+            <FaHeart className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5" />
           ) : (
-            <FiHeart size={16} />
+            <FiHeart className="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5" />
           )}
         </button>
       </div>
-       {/* Product Details and Add to Cart button */}
-      <div className={`flex-grow flex flex-col ${compact ? 'p-2' : 'p-3 sm:p-4'}`}>
-        <Link to={`/products/${product.id}`} className="flex-grow">
-          {/* Product Name - Line-clamp for two lines */}
-          <h3 className={`font-semibold text-gray-800 mb-1 line-clamp-2 ${
-            compact ? 'text-xs' : 'text-sm'
+       
+      {/* Product Details and Add to Cart button */}
+      <div className={`flex-1 flex flex-col ${compact ? 'p-2 xs:p-3' : 'p-2 xs:p-3 sm:p-4'}`}>
+        <Link to={`/products/${product.id}`} className="flex-1 flex flex-col">
+          {/* Product Name - Better mobile typography */}
+          <h3 className={`font-semibold text-gray-800 mb-1 line-clamp-2 leading-tight ${
+            compact ? 'text-xs xs:text-sm' : 'text-xs xs:text-sm sm:text-base'
           }`}>
             {product.name}
           </h3>
           
           {/* Category - Hidden in compact mode */}
           {!compact && (
-            <p className="text-xs text-gray-500 mb-1">{product.category}</p>
+            <p className="text-[10px] xs:text-xs sm:text-sm text-gray-500 mb-1 truncate">{product.category}</p>
           )}
 
-          {/* Rating - Simplified in compact mode */}
-          <div className={`flex items-center mb-2 ${compact ? 'text-xs' : 'text-xs'}`}>
-            {[...Array(compact ? 3 : 5)].map((_, i) => (
-              <FiStar
-                key={i}
-                className={`${compact ? 'w-2.5 h-2.5' : 'w-3 h-3'} ${
-                  i < (product.rating || 0) ? 'text-yellow-500 fill-current' : 'text-gray-300'
-                }`}
-              />
-            ))}
+          {/* Rating - Mobile optimized */}
+          <div className={`flex items-center mb-2 ${compact ? 'text-xs' : 'text-xs xs:text-sm'}`}>
+            <div className="flex items-center">
+              {[...Array(5)].map((_, i) => (
+                <FiStar
+                  key={i}
+                  className={`${compact ? 'w-2.5 h-2.5' : 'w-3 h-3 xs:w-4 xs:h-4'} ${
+                    i < Math.floor(product.rating || 0) ? 'text-yellow-500 fill-current' : 'text-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
             {!compact && (
-              <span className="text-gray-500 ml-1">({product.reviews || 0})</span>
+              <span className="text-gray-500 ml-1 xs:ml-2 text-[10px] xs:text-xs">
+                ({product.reviews || 0})
+              </span>
             )}
           </div>
         </Link>
 
-          {/* Price Section - Clean Layout */}
+          {/* Price Section - Better mobile layout for long prices */}
           <div className="mt-auto">
-            {/* Price Display */}
-            <div className="flex items-center justify-between gap-3 mb-2">
-              <div className="flex flex-col flex-grow">
-                <span className={`font-bold text-green-700 leading-none ${
-                  compact ? 'text-sm' : 'text-base sm:text-lg'
+            {/* Price Display - Optimized for small screens */}
+            <div className={`flex items-center justify-between gap-1 xs:gap-2 mb-2 ${compact ? 'mb-1' : 'mb-2'}`}>
+              <div className="flex flex-col flex-1 min-w-0">
+                <span className={`font-bold text-green-700 leading-tight ${
+                  compact 
+                    ? 'text-xs xs:text-sm break-words' 
+                    : 'text-sm xs:text-base sm:text-lg break-words'
                 }`}>
                   GH₵{parseFloat(product.price || 0).toFixed(2)}
                 </span>
                 {product.oldPrice && !compact && (
-                  <span className="text-xs text-gray-500 line-through mt-0.5">
+                  <span className="text-xs text-gray-500 line-through mt-0.5 break-words">
                     GH₵{parseFloat(product.oldPrice || 0).toFixed(2)}
                   </span>
                 )}
               </div>
               
-              {/* Add to Cart Button - Only show when not in cart */}
+              {/* Add to Cart Button - Compact for small screens */}
               {!isInCartAlready && (
                 <button
                   onClick={handleAddToCart}
-                  className={`flex-shrink-0 bg-green-600 hover:bg-green-700 active:bg-green-800 
-                    text-white rounded-full shadow-md transition-all duration-200 
-                    flex items-center justify-center touch-manipulation font-medium
+                  className={`flex-shrink-0 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 
+                    text-white rounded-md shadow-md hover:shadow-lg transition-all duration-200 
+                    flex items-center justify-center touch-manipulation font-medium transform hover:scale-105
                     ${compact 
-                      ? 'w-10 h-10 min-w-[40px] min-h-[40px] text-xs' 
-                      : 'w-12 h-12 min-w-[48px] min-h-[48px] sm:w-14 sm:h-14 sm:min-w-[56px] sm:min-h-[56px] text-sm'
+                      ? 'w-7 h-7 xs:w-8 xs:h-8 text-xs' 
+                      : 'w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 text-sm'
                     }`}
                   aria-label="Add to cart"
                 >
-                  <FiShoppingCart size={compact ? 16 : 20} />
+                  <FiShoppingCart className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5 xs:w-4 xs:h-4'} />
                 </button>
               )}
             </div>
 
-            {/* Quantity Selector - Below price when item is in cart */}
+            {/* Quantity Selector - Compact for mobile */}
             {isInCartAlready && (
-              <div className={`flex items-center bg-green-600 text-white rounded-lg shadow-md
-                quantity-selector-slide transition-all duration-300 ease-in-out
+              <div className={`flex items-center bg-gradient-to-r from-green-600 to-green-700 text-white rounded-md shadow-md
+                transition-all duration-300 ease-in-out overflow-hidden w-full
                 ${compact 
-                  ? 'h-10 min-h-[40px] text-sm' 
-                  : 'h-12 min-h-[48px] sm:h-14 sm:min-h-[56px] text-base'
+                  ? 'h-7 xs:h-8 text-xs' 
+                  : 'h-8 xs:h-9 sm:h-10 text-xs xs:text-sm'
                 }`}>
                 
                 {/* Decrease Button */}
                 <button
                   onClick={handleDecreaseQuantity}
                   className={`flex items-center justify-center hover:bg-green-700 active:bg-green-800 
-                    transition-all duration-200 touch-manipulation rounded-l-lg flex-shrink-0
+                    transition-all duration-200 touch-manipulation flex-shrink-0
                     ${compact 
-                      ? 'w-10 h-10 min-w-[40px] min-h-[40px]' 
-                      : 'w-12 h-12 min-w-[48px] min-h-[48px] sm:w-14 sm:h-14 sm:min-w-[56px] sm:min-h-[56px]'
+                      ? 'w-7 h-7 xs:w-8 xs:h-8' 
+                      : 'w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10'
                     }`}
                   aria-label="Decrease quantity"
                 >
-                  <FiMinus size={compact ? 14 : 18} />
+                  <FiMinus className="w-3 h-3" />
                 </button>
                 
                 {/* Quantity Display */}
-                <div className={`font-bold text-center flex-grow
-                  ${compact 
-                    ? 'text-sm px-2' 
-                    : 'text-base sm:text-lg px-3'
-                  }`}>
+                <div className="font-bold text-center flex-1 px-1">
                   {cartQuantity}
                 </div>
                 
@@ -268,14 +269,14 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
                 <button
                   onClick={handleIncreaseQuantity}
                   className={`flex items-center justify-center hover:bg-green-700 active:bg-green-800 
-                    transition-all duration-200 touch-manipulation rounded-r-lg flex-shrink-0
+                    transition-all duration-200 touch-manipulation flex-shrink-0
                     ${compact 
-                      ? 'w-10 h-10 min-w-[40px] min-h-[40px]' 
-                      : 'w-12 h-12 min-w-[48px] min-h-[48px] sm:w-14 sm:h-14 sm:min-w-[56px] sm:min-h-[56px]'
+                      ? 'w-7 h-7 xs:w-8 xs:h-8' 
+                      : 'w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10'
                     }`}
                   aria-label="Increase quantity"
                 >
-                  <FiPlus size={compact ? 14 : 18} />
+                  <FiPlus className="w-3 h-3" />
                 </button>
               </div>
             )}
