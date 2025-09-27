@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiShoppingCart, FiPhone, FiUsers, FiAward, FiHeart, FiTruck } from 'react-icons/fi';
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from 'react-icons/fa';
+import SocialShare from '../components/UI/SocialShare';
 
 // Import assets
 import ourStoryImage from '../assets/slider1.png';
@@ -205,6 +206,21 @@ const AboutUsPage = () => {
             >
               Contact our team →
             </Link>
+          </div>
+
+          {/* Social Sharing Section */}
+          <div className="mt-8 xs:mt-10 sm:mt-12 pt-6 xs:pt-8 border-t border-green-500/30">
+            <p className="text-sm xs:text-base text-green-100 mb-4 text-center">
+              Share our story with others
+            </p>
+            <div className="flex justify-center">
+              <SocialShare 
+                title="About Sanich Farms - Ghana's Trusted Poultry Partner"
+                description="Learn about Sanich Farms' journey since 2019, providing quality poultry products and expert services across Ghana."
+                platforms={['facebook', 'twitter', 'linkedin', 'whatsapp', 'copy']}
+                className="justify-center"
+              />
+            </div>
           </div>
         </div>
       </section>
