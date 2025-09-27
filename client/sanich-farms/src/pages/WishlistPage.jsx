@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiHome, FiChevronRight, FiX, FiShoppingCart, FiStar } from 'react-icons/fi';
+import { FiHome, FiChevronRight, FiX, FiShoppingCart, FiHeart, FiPackage } from 'react-icons/fi';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 
 const WishlistPage = () => {
-  const { wishlistItems, removeFromWishlist } = useWishlist();
+  const { wishlistItems, removeFromWishlist, loading } = useWishlist();
   const { addToCart } = useCart();
   const { addToast } = useToast();
 
@@ -22,7 +22,7 @@ const WishlistPage = () => {
   };
 
   return (
-    <div className="font-poppins bg-gray-50 min-h-screen">
+    <div className="font-poppins bg-gradient-to-br from-gray-50 via-white to-green-50 min-h-screen">
       {/* Breadcrumbs */}
       <div className="w-full py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-white">
@@ -35,166 +35,163 @@ const WishlistPage = () => {
         </div>
       </div>
 
-      {/* Wishlist Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-8 text-center">
-          My Wishlist
-        </h1>
-
-        {wishlistItems.length === 0 ? (
-          <div className="text-center py-20 text-gray-600 text-xl">
-            <p className="mb-4">Your wishlist is empty.</p>
-            <Link to="/shop" className="text-green-600 hover:underline font-semibold">
-              Start adding products!
-            </Link>
+      {/* Modern Header Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
+        <div className="text-center">
+          <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-100 to-blue-100 rounded-full px-6 py-2 mb-4">
+            <FiHeart className="w-5 h-5 text-green-600" />
+            <span className="text-sm font-medium text-gray-700">My Wishlist</span>
           </div>
-        ) : (
+          <p className="text-xs text-gray-500 max-w-lg mx-auto">
+            Items you want to purchase later
+          </p>
+        </div>
+      </div>
+
+      {/* Wishlist Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        {loading ? (
           <div>
-            {/* --- Mobile Wishlist Items List --- */}
-            <div className="lg:hidden">
-              <div className="flex flex-col gap-6">
-                {wishlistItems.map((item) => (
-                  <div key={item.id} className="bg-white rounded-xl shadow-md border border-gray-100 p-4 relative flex flex-col">
-                    <div className="flex items-center gap-4">
-                      {/* Product Image */}
-                      <div className="flex-shrink-0 h-20 w-20">
-                        <img
-                          className="h-full w-full rounded-md object-cover"
-                          src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/80x80/cccccc/333333?text=Item"}
-                          alt={item.name}
-                          onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/80x80/cccccc/333333?text=Item"; }}
-                        />
-                      </div>
-                      <div className="flex-grow">
-                        <Link to={`/products/${item.id}`} className="text-sm font-medium text-gray-900 hover:text-green-600 line-clamp-2">
-                          {item.name}
-                        </Link>
-                        <p className="text-xs text-gray-500">{item.category}</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1">
-                          {/* FIX: Wishlist Price Display */}
-                          GH₵{parseFloat(item.price || item.currentPrice || 0).toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Status and Rating */}
-                    <div className="flex items-center justify-between mt-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          item.availability === 'In Stock' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {item.availability || 'N/A'}
-                        </span>
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <FiStar
-                              key={i}
-                              className={`w-4 h-4 ${i < item.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center justify-end gap-2 mt-4">
-                      <button
-                        onClick={() => handleAddToCartFromWishlist(item)}
-                        className="flex-grow flex items-center justify-center gap-2 bg-green-600 text-white py-2 px-4 rounded-full font-semibold text-sm hover:bg-green-700 transition duration-300 shadow-sm"
-                        aria-label={`Add ${item.name} to cart`}
-                      >
-                        <FiShoppingCart size={16} />
-                        Add to Cart
-                      </button>
-                    </div>
-
-                    {/* Remove button */}
-                    <button
-                      onClick={() => handleRemoveFromWishlist(item.id, item.name)}
-                      className="absolute top-2 right-2 text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                      aria-label={`Remove ${item.name} from wishlist`}
-                    >
-                      <FiX size={16} />
-                    </button>
+            {/* Skeleton Stats Card */}
+            <div className="mb-4 sm:mb-6">
+              <div className="bg-white rounded-lg shadow-md border border-gray-100 p-3 sm:p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                    <div className="w-24 h-4 sm:h-5 bg-gray-200 rounded animate-pulse"></div>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
 
-            {/* --- Desktop Wishlist Items List --- */}
-            <div className="hidden lg:block bg-white rounded-xl shadow-md border border-gray-100 p-4">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Product</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Rating</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {wishlistItems.map((item) => (
-                    <tr key={item.id}>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-16 w-16">
-                            <img
-                              className="h-16 w-16 rounded-md object-cover"
-                              src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/64x64/cccccc/333333?text=Item"}
-                              alt={item.name}
-                              onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/64x64/cccccc/333333?text=Item"; }}
-                            />
-                          </div>
-                          <div className="ml-4">
-                            <Link to={`/products/${item.id}`} className="text-sm font-medium text-gray-900 hover:text-green-600 line-clamp-2">
-                              {item.name}
-                            </Link>
-                            <p className="text-xs text-gray-500">{item.category}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-gray-900">
-                        {/* FIX: Wishlist Desktop Price Display */}
+            {/* Skeleton Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md border border-gray-100 animate-pulse flex flex-col">
+                  {/* Skeleton Image */}
+                  <div className="aspect-square bg-gray-200 rounded-t-lg"></div>
+                  
+                  {/* Skeleton Content */}
+                  <div className="p-2 sm:p-3 flex flex-col flex-grow">
+                    <div className="w-3/4 h-3 sm:h-4 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                    <div className="w-1/2 h-3 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                    <div className="w-16 h-4 sm:h-5 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                    <div className="w-full h-8 sm:h-9 bg-gray-200 rounded-lg mt-auto animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : wishlistItems.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <div className="mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-100 to-blue-100 rounded-full mb-4">
+                  <FiHeart className="w-8 h-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Your wishlist is empty</h3>
+                <p className="text-gray-600">Start adding products you love to keep track of them!</p>
+              </div>
+              <Link 
+                to="/shop" 
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              >
+                <FiPackage className="w-5 h-5" />
+                Explore Products
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div>
+            {/* Wishlist Stats */}
+            <div className="mb-4 sm:mb-6">
+              <div className="bg-white rounded-lg shadow-md border border-gray-100 p-3 sm:p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-100 to-blue-100 rounded-full">
+                      <FiHeart className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-semibold text-gray-800">
+                        {wishlistItems.length} {wishlistItems.length === 1 ? 'Item' : 'Items'} Saved
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Compact Grid Layout */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+              {wishlistItems.map((item) => (
+                <div key={item.id} className="group bg-white rounded-lg shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 flex flex-col">
+                  {/* Product Image */}
+                  <div className="relative aspect-square overflow-hidden bg-gray-50 rounded-t-lg">
+                    <img
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      src={item.image_url || item.image || item.images?.[0] || "https://placehold.co/300x300/cccccc/333333?text=Product"}
+                      alt={item.name}
+                      onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/300x300/cccccc/333333?text=Product"; }}
+                    />
+                    
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => handleRemoveFromWishlist(item.id, item.name)}
+                      className="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-500 shadow-md transition-all duration-200 opacity-0 group-hover:opacity-100"
+                    >
+                      <FiX className="w-3 h-3" />
+                    </button>
+
+                    {/* Status Badge */}
+                    <div className="absolute bottom-2 left-2">
+                      <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                        Available
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Product Info - Flex grow to push button down */}
+                  <div className="p-2 sm:p-3 flex flex-col flex-grow">
+                    <Link 
+                      to={`/products/${item.id}`} 
+                      className="text-xs sm:text-sm font-semibold text-gray-800 hover:text-green-600 transition-colors line-clamp-2 mb-1 block flex-grow"
+                    >
+                      {item.name}
+                    </Link>
+
+                    {/* Price */}
+                    <div className="mb-2">
+                      <span className="text-sm sm:text-lg font-bold text-green-600">
                         GH₵{parseFloat(item.price || item.currentPrice || 0).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-4 hidden sm:table-cell">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          item.availability === 'In Stock' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {item.availability || 'N/A'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 hidden md:table-cell">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <FiStar
-                              key={i}
-                              className={`w-4 h-4 ${i < item.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                            />
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleAddToCartFromWishlist(item)}
-                          className="text-green-600 hover:text-green-900 mx-1 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                          aria-label={`Add ${item.name} to cart`}
-                        >
-                          <FiShoppingCart size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleRemoveFromWishlist(item.id, item.name)}
-                          className="text-red-600 hover:text-red-900 mx-1 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                          aria-label={`Remove ${item.name} from wishlist`}
-                        >
-                          <FiX size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </span>
+                    </div>
+
+                    {/* Add to Cart Button - Fixed at bottom */}
+                    <button
+                      onClick={() => handleAddToCartFromWishlist(item)}
+                      className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white h-8 sm:h-9 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1 transition-all duration-300 mt-auto"
+                    >
+                      <FiShoppingCart className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">Add to Cart</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Call to Action */}
+            <div className="mt-6 text-center">
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 sm:p-4">
+                <h3 className="text-sm font-medium text-gray-800 mb-1">Looking for more?</h3>
+                <p className="text-xs text-gray-600 mb-3">Explore our collection</p>
+                <Link
+                  to="/shop"
+                  className="inline-flex items-center gap-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300"
+                >
+                  <FiPackage className="w-3 h-3" />
+                  Continue Shopping
+                </Link>
+              </div>
             </div>
           </div>
         )}
