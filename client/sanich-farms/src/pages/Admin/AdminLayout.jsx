@@ -12,7 +12,8 @@ import {
   FiLogOut,
   FiBook,
   FiUser,
-  FiTool
+  FiTool,
+  FiMessageSquare
 } from 'react-icons/fi';
 
 const AdminLayout = () => {
@@ -25,6 +26,7 @@ const AdminLayout = () => {
     { name: 'Services', href: '/admin/services', icon: FiTool }, // ADMIN SERVICES FIX: Add Services navigation
     { name: 'Orders', href: '/admin/orders', icon: FiShoppingBag },
     { name: 'Bookings', href: '/admin/bookings', icon: FiBook },
+    { name: 'Q&A Management', href: '/admin/qa', icon: FiMessageSquare },
     { name: 'Users', href: '/admin/users', icon: FiUsers },
     { name: 'Analytics', href: '/admin/analytics', icon: FiBarChart },
     { name: 'Settings', href: '/admin/settings', icon: FiSettings },
