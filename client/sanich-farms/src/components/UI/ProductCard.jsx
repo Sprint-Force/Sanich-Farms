@@ -202,40 +202,41 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
 
           {/* Price Section - Better mobile layout for long prices */}
           <div className="mt-auto">
-            {/* Price Display - Optimized for small screens */}
-            <div className={`flex items-center justify-between gap-1 xs:gap-2 mb-2 ${compact ? 'mb-1' : 'mb-2'}`}>
-              <div className="flex flex-col flex-1 min-w-0">
+            {/* Price Display - Full width since button is now below */}
+            <div className={`mb-2 ${compact ? 'mb-1' : 'mb-2'}`}>
+              <div className="flex flex-col">
                 <span className={`font-bold text-green-700 leading-tight ${
                   compact 
-                    ? 'text-xs xs:text-sm break-words' 
-                    : 'text-sm xs:text-base sm:text-lg break-words'
+                    ? 'text-xs xs:text-sm' 
+                    : 'text-sm xs:text-base sm:text-lg'
                 }`}>
                   GH₵{parseFloat(product.price || 0).toFixed(2)}
                 </span>
                 {product.oldPrice && !compact && (
-                  <span className="text-xs text-gray-500 line-through mt-0.5 break-words">
+                  <span className="text-xs text-gray-500 line-through mt-0.5">
                     GH₵{parseFloat(product.oldPrice || 0).toFixed(2)}
                   </span>
                 )}
               </div>
-              
-              {/* Add to Cart Button - Compact for small screens */}
-              {!isInCartAlready && (
-                <button
-                  onClick={handleAddToCart}
-                  className={`flex-shrink-0 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 
-                    text-white rounded-md shadow-md hover:shadow-lg transition-all duration-200 
-                    flex items-center justify-center touch-manipulation font-medium transform hover:scale-105
-                    ${compact 
-                      ? 'w-7 h-7 xs:w-8 xs:h-8 text-xs' 
-                      : 'w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 text-sm'
-                    }`}
-                  aria-label="Add to cart"
-                >
-                  <FiShoppingCart className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5 xs:w-4 xs:h-4'} />
-                </button>
-              )}
             </div>
+              
+            {/* Add to Cart Button - Full width like wishlist */}
+            {!isInCartAlready && (
+              <button
+                onClick={handleAddToCart}
+                className={`w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 
+                  text-white rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1 
+                  transition-all duration-300 mt-auto
+                  ${compact 
+                    ? 'h-7 xs:h-8' 
+                    : 'h-8 xs:h-9'
+                  }`}
+                aria-label="Add to cart"
+              >
+                <FiShoppingCart className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">Add to Cart</span>
+              </button>
+            )}
 
             {/* Quantity Selector - Compact for mobile */}
             {isInCartAlready && (
