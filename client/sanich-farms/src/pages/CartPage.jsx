@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiX, FiMinus, FiPlus, FiShoppingCart, FiTrash2, FiPackage, FiTruck, FiShield, FiCreditCard } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import ConfirmationModal from '../components/UI/ConfirmationModal';
 
 // Modern Lazy Image Component for Cart Items
 const LazyCartImage = ({ src, alt, className, onError }) => {
@@ -53,10 +54,21 @@ const LazyCartImage = ({ src, alt, className, onError }) => {
 const CartPage = () => {
   const { cartItems, removeFromCart, updateCartItemQuantity, getTotalPrice, getTotalItems } = useCart();
   const { addToast } = useToast();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
 
   const handleRemoveFromCart = (productId, productName) => {
-    removeFromCart(productId);
-    addToast(`${productName} removed from cart.`, 'success');
+    setItemToRemove({ id: productId, name: productName });
+    setShowConfirmModal(true);
+  };
+
+  const confirmRemoveFromCart = () => {
+    if (itemToRemove) {
+      removeFromCart(itemToRemove.id);
+      addToast(`${itemToRemove.name} removed from cart.`, 'success');
+      setShowConfirmModal(false);
+      setItemToRemove(null);
+    }
   };
 
   const handleUpdateQuantity = (productId, newQuantity, productName) => {
@@ -344,6 +356,18 @@ const CartPage = () => {
       
       {/* Add bottom padding for mobile sticky summary */}
       {cartItems.length > 0 && <div className="h-28 sm:h-32 lg:hidden"></div>}
+      
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={confirmRemoveFromCart}
+        type="warning"
+        title="Remove from Cart"
+        message={`Are you sure you want to remove "${itemToRemove?.name}" from your cart?`}
+        confirmButtonText="Remove"
+        cancelButtonText="Cancel"
+      />
     </div>
   );
 };

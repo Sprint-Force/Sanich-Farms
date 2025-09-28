@@ -1,18 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiX, FiShoppingCart, FiHeart, FiPackage } from 'react-icons/fi';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import ConfirmationModal from '../components/UI/ConfirmationModal';
 
 const WishlistPage = () => {
   const { wishlistItems, removeFromWishlist, loading } = useWishlist();
   const { addToCart } = useCart();
   const { addToast } = useToast();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
 
   const handleRemoveFromWishlist = (productId, productName) => {
-    removeFromWishlist(productId);
-    addToast(`${productName} removed from wishlist.`, 'success');
+    setItemToRemove({ id: productId, name: productName });
+    setShowConfirmModal(true);
+  };
+
+  const confirmRemoveFromWishlist = () => {
+    if (itemToRemove) {
+      removeFromWishlist(itemToRemove.id);
+      addToast(`${itemToRemove.name} removed from wishlist.`, 'success');
+      setShowConfirmModal(false);
+      setItemToRemove(null);
+    }
   };
 
   const handleAddToCartFromWishlist = (product) => {
@@ -196,6 +208,18 @@ const WishlistPage = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={confirmRemoveFromWishlist}
+        type="warning"
+        title="Remove from Wishlist"
+        message={`Are you sure you want to remove "${itemToRemove?.name}" from your wishlist?`}
+        confirmButtonText="Remove"
+        cancelButtonText="Cancel"
+      />
     </div>
   );
 };
