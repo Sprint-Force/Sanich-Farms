@@ -127,12 +127,15 @@ const Products = () => {
             onClick={() => navigate('/shop')}
             className="inline-flex items-center justify-center gap-2
                        bg-green-600 hover:bg-green-700 active:bg-green-800
-                       text-white px-8 py-4 rounded-xl font-semibold text-lg
-                       shadow-lg hover:shadow-xl transform hover:-translate-y-1
+                       text-white px-4 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 
+                       rounded-lg sm:rounded-xl font-medium sm:font-semibold 
+                       text-sm sm:text-base lg:text-lg
+                       shadow-md hover:shadow-lg sm:shadow-lg sm:hover:shadow-xl 
+                       transform hover:-translate-y-1
                        transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-300"
           >
             Shop All Products
-            <FiArrowRight className="w-5 h-5" />
+            <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
