@@ -217,7 +217,24 @@ const ProductMgmt = () => {
     
     // PRODUCT API FIX: Validate required fields
     if (!formData.name.trim() || !formData.category || !formData.price || !formData.stock) {
+      console.error('Validation failed:', {
+        name: formData.name?.trim(),
+        category: formData.category,
+        price: formData.price,
+        stock: formData.stock
+      });
       setError('Please fill in all required fields: name, category, price, and stock quantity.');
+      return;
+    }
+
+    // Additional validation
+    if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
+      setError('Please enter a valid price greater than 0.');
+      return;
+    }
+
+    if (isNaN(parseInt(formData.stock)) || parseInt(formData.stock) < 0) {
+      setError('Please enter a valid stock quantity (0 or greater).');
       return;
     }
 
@@ -238,20 +255,54 @@ const ProductMgmt = () => {
       submitData.append('rating', 0); // Default rating
       submitData.append('is_available', formData.active ? 'true' : 'false'); // Map active to is_available
       
+      // Add optional fields if they have values
+      if (formData.originalPrice && formData.originalPrice !== '') {
+        submitData.append('original_price', parseFloat(formData.originalPrice));
+      }
+      if (formData.discount && formData.discount !== '') {
+        submitData.append('discount', parseFloat(formData.discount));
+      }
+      if (formData.featured !== undefined) {
+        submitData.append('featured', formData.featured ? 'true' : 'false');
+      }
+      if (formData.tags && formData.tags !== '') {
+        submitData.append('tags', formData.tags);
+      }
+      
       // Add image if present
       const imageFile = formData.images.find(img => img.file)?.file;
       if (imageFile) {
         submitData.append('file', imageFile);
       }
 
+      // Log what we're sending for debugging
+      console.log('Submitting product data:', {
+        name: formData.name.trim(),
+        category: formData.category,
+        price: formData.price,
+        stock_quantity: formData.stock,
+        is_available: formData.active,
+        isEdit: !!editingProduct,
+        productId: editingProduct?.id || editingProduct?._id
+      });
+
       if (editingProduct) {
         // Update existing product
         const idToUse = editingProduct._id || editingProduct.id;
-        await productsAPI.updateAdmin(idToUse, submitData);
+        console.log('Updating product with ID:', idToUse);
+        
+        if (!idToUse) {
+          throw new Error('Product ID is missing for update operation');
+        }
+        
+        const result = await productsAPI.updateAdmin(idToUse, submitData);
+        console.log('Update result:', result);
         setSuccessMessage('Product updated successfully!');
       } else {
         // Create new product
-        await productsAPI.createAdmin(submitData);
+        console.log('Creating new product');
+        const result = await productsAPI.createAdmin(submitData);
+        console.log('Create result:', result);
         setSuccessMessage('Product added successfully!');
       }
 
@@ -269,7 +320,29 @@ const ProductMgmt = () => {
       
     } catch (error) {
       console.error('Product save failed:', error);
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to save product. Please try again.';
+      console.error('Error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      // More detailed error handling
+      let errorMessage = 'Failed to save product. Please try again.';
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 400) {
+        errorMessage = 'Invalid data provided. Please check all fields.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Product not found. Please refresh and try again.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else if (error.message) {
+        errorMessage = `Error: ${error.message}`;
+      }
+      
       setError(errorMessage);
     } finally {
       setLoadingAction(false);
