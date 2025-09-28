@@ -24,12 +24,13 @@ const ShopPage = () => {
   // State for active filters (to display below the filter bar)
   const [activeFilters, setActiveFilters] = useState([]);
 
-  // Effect to set initial category from URL and fetch products
+  // Effect to set initial category from URL query parameters and fetch products
   useEffect(() => {
-    const pathParts = location.pathname.split('/');
-    const categoryFromUrl = pathParts[pathParts.length - 1];
-    if (categoryFromUrl && categoryFromUrl !== 'shop' && categoryFromUrl !== '') {
-      const formattedCategory = categoryFromUrl.charAt(0).toUpperCase() + categoryFromUrl.slice(1);
+    const searchParams = new URLSearchParams(location.search);
+    const categoryFromQuery = searchParams.get('category');
+    
+    if (categoryFromQuery) {
+      const formattedCategory = categoryFromQuery.charAt(0).toUpperCase() + categoryFromQuery.slice(1);
       const availableCategories = ['All Categories', 'Chicks', 'Feeds', 'Eggs', 'Vitamins', 'Equipment'];
       if (availableCategories.includes(formattedCategory)) {
         setSelectedCategory(formattedCategory);
@@ -37,9 +38,22 @@ const ShopPage = () => {
         setSelectedCategory('All Categories');
       }
     } else {
-      setSelectedCategory('All Categories');
+      // Also check path-based routing for backward compatibility
+      const pathParts = location.pathname.split('/');
+      const categoryFromUrl = pathParts[pathParts.length - 1];
+      if (categoryFromUrl && categoryFromUrl !== 'shop' && categoryFromUrl !== '') {
+        const formattedCategory = categoryFromUrl.charAt(0).toUpperCase() + categoryFromUrl.slice(1);
+        const availableCategories = ['All Categories', 'Chicks', 'Feeds', 'Eggs', 'Vitamins', 'Equipment'];
+        if (availableCategories.includes(formattedCategory)) {
+          setSelectedCategory(formattedCategory);
+        } else {
+          setSelectedCategory('All Categories');
+        }
+      } else {
+        setSelectedCategory('All Categories');
+      }
     }
-  }, [location.pathname]); // Only depend on location.pathname
+  }, [location.search, location.pathname]); // Depend on both search params and pathname
 
   // Effect to trigger product fetch whenever filters or sort options change
   useEffect(() => {
