@@ -24,6 +24,21 @@ header {
   transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
 }
 
+/* Enhanced Navbar Styles */
+/* Smooth focus transitions */
+.focus-visible\:outline-2:focus-visible {
+  outline: 2px solid;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Backdrop blur support fallback */
+@supports not (backdrop-filter: blur(8px)) {
+  .navbar-blur-fallback {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+}
+
 /* Custom Animations (for Navbar, Header, Testimonials, Products, Services) */
 @keyframes slideInRight {
   from { transform: translateX(100%); }

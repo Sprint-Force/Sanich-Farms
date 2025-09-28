@@ -17,8 +17,9 @@ export const useNavbar = () => {
   const [mobileSearchQuery, setMobileSearchQuery] = useState('');
   const [desktopSearchQuery, setDesktopSearchQuery] = useState('');
   
-  // Navbar visibility for scroll behavior
+  // Navbar visibility and compact states for scroll behavior
   const [isNavbarHidden, setIsNavbarHidden] = useState(false);
+  const [isNavbarCompact, setIsNavbarCompact] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [navbarAnimationClass, setNavbarAnimationClass] = useState('');
   
@@ -43,7 +44,7 @@ export const useNavbar = () => {
     setIsMobileSearchOpen(false);
   }, [location]);
 
-  // Handle scroll behavior for navbar visibility
+  // Handle scroll behavior for navbar visibility and compactness
   useEffect(() => {
     let timeoutId = null;
     
@@ -56,12 +57,16 @@ export const useNavbar = () => {
         return;
       }
 
+      // Compact navbar when scrolling down past 50px
+      const compactThreshold = 50;
+      setIsNavbarCompact(scrollY > compactThreshold);
+
       // Simplified responsive threshold - lower for all screen sizes
-      const scrollThreshold = 100; // Fixed 100px threshold for all screens
+      const scrollThreshold = 150; // Increased threshold to account for compact state
       
       // Minimum movement to register (prevent tiny movements)
       const scrollDiff = Math.abs(scrollY - lastScrollY);
-      if (scrollDiff < 10) return;
+      if (scrollDiff < 15) return;
 
       // Clear any existing timeout
       if (timeoutId) {
@@ -109,6 +114,8 @@ export const useNavbar = () => {
       }
     };
   }, [lastScrollY, isMobileMenuOpen, isNavbarHidden]);
+
+
 
   // Handle escape key for mobile menu
   useEffect(() => {
@@ -214,6 +221,7 @@ export const useNavbar = () => {
     mobileSearchQuery,
     desktopSearchQuery,
     isNavbarHidden,
+    isNavbarCompact,
     navbarAnimationClass,
     
     // Refs

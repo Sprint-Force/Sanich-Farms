@@ -51,6 +51,7 @@ const Navbar = forwardRef((_, ref) => {
   const { 
     isMobileMenuOpen, 
     isNavbarHidden, 
+    isNavbarCompact,
     navbarAnimationClass,
     showShopDropdown, 
     mobileSearchQuery,
@@ -125,12 +126,23 @@ const Navbar = forwardRef((_, ref) => {
     }, 200); // Shorter delay for content
   };
 
+
+
   return (
     <header
       ref={ref}
-      className={`fixed top-0 z-50 w-full bg-white shadow-md font-poppins transition-all duration-500 ease-in-out
+      role="banner"
+      aria-label="Primary navigation"
+      className={`fixed top-0 z-50 w-full bg-white font-poppins transition-all duration-500 ease-in-out
                  ${isNavbarHidden ? '-translate-y-full opacity-90' : 'translate-y-0 opacity-100'}
+                 ${isNavbarCompact ? 'shadow-lg backdrop-blur-md bg-white/95' : 'shadow-md'}
                  ${navbarAnimationClass}`}
+      style={{
+        backdropFilter: isNavbarCompact ? 'blur(8px)' : 'none',
+        boxShadow: isNavbarCompact 
+          ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' 
+          : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+      }}
     >
       <style>{style}</style>
       
@@ -138,13 +150,16 @@ const Navbar = forwardRef((_, ref) => {
       <TopBar />
 
       {/* Main Navigation */}
-      <div className="px-4 md:px-6 lg:px-10 py-3 md:py-4">
+      <div className={`px-4 md:px-6 lg:px-10 transition-all duration-300 ${
+        isNavbarCompact ? 'py-2 md:py-3' : 'py-3 md:py-4'
+      }`}>
         {/* Mobile/Tablet Navigation */}
         <MobileNavbar
           isMobileMenuOpen={isMobileMenuOpen}
           toggleMobileMenu={toggleMobileMenu}
           cartCount={cartCount}
           wishlistCount={wishlistCount}
+          isCompact={isNavbarCompact}
         />
 
         {/* Mobile Search Bar */}
@@ -162,6 +177,7 @@ const Navbar = forwardRef((_, ref) => {
           wishlistCount={wishlistCount}
           isAuthenticated={isAuthenticated}
           user={user}
+          isCompact={isNavbarCompact}
           desktopSearchQuery={desktopSearchQuery}
           setDesktopSearchQuery={setDesktopSearchQuery}
           handleDesktopSearchSubmit={handleDesktopSearchSubmit}
@@ -169,16 +185,30 @@ const Navbar = forwardRef((_, ref) => {
       </div>
 
       {/* Navigation Links (Desktop) */}
-      <nav className="hidden lg:flex justify-between items-center bg-gray-800 px-4 md:px-6 lg:px-10 py-3 text-white text-base font-medium">
+      <nav 
+        className={`hidden lg:flex justify-between items-center bg-gray-800 px-4 md:px-6 lg:px-10 text-white text-base font-medium transition-all duration-300 ${
+          isNavbarCompact ? 'py-2' : 'py-3'
+        }`}
+        role="navigation"
+        aria-label="Main navigation"
+      >
         <div className="flex gap-6 lg:gap-8">
-          <Link to="/" className="hover:text-green-400 transition duration-200">Home</Link>
-          <Link to="/about" className="hover:text-green-400 transition duration-200">About Us</Link>
+          <Link to="/" className="hover:text-green-400 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2">
+            Home
+          </Link>
+          <Link to="/about" className="hover:text-green-400 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2">
+            About Us
+          </Link>
           <div
             className="relative"
             onMouseEnter={handleDropdownEnter}
             onMouseLeave={handleDropdownLeave}
           >
-            <button className="hover:text-green-400 transition duration-200 flex items-center gap-1 focus:outline-none">
+            <button 
+              className="hover:text-green-400 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2 flex items-center gap-1"
+              aria-expanded={showShopDropdown}
+              aria-haspopup="true"
+            >
               Shop
               <FiChevronRight className={`inline-block ml-1 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : 'rotate-0'}`} />
             </button>
@@ -187,15 +217,21 @@ const Navbar = forwardRef((_, ref) => {
                 className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-2"
                 onMouseEnter={handleDropdownEnterContent}
                 onMouseLeave={handleDropdownLeaveContent}
+                role="menu"
+                aria-label="Shop categories"
               >
-                <Link to="/shop" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-150">All Products</Link>
-                <Link to="/shop/chicks" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-150">Chicks</Link>
-                <Link to="/shop/feeds" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-150">Feeds</Link>
+                <Link to="/shop" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-150 focus-visible:outline-2 focus-visible:outline-green-400" role="menuitem">All Products</Link>
+                <Link to="/shop/chicks" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-150 focus-visible:outline-2 focus-visible:outline-green-400" role="menuitem">Chicks</Link>
+                <Link to="/shop/feeds" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-150 focus-visible:outline-2 focus-visible:outline-green-400" role="menuitem">Feeds</Link>
               </div>
             )}
           </div>
-          <Link to="/services" className="hover:text-green-400 transition duration-200">Services</Link>
-          <Link to="/contact" className="hover:text-green-400 transition duration-200">Contact Us</Link>
+          <Link to="/services" className="hover:text-green-400 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2">
+            Services
+          </Link>
+          <Link to="/contact" className="hover:text-green-400 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2">
+            Contact Us
+          </Link>
         </div>
         <div className="flex items-center gap-2 text-white">
           <FiPhoneCall className="text-white text-xl" />

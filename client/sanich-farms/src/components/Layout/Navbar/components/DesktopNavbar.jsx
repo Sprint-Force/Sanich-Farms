@@ -14,6 +14,7 @@ const DesktopNavbar = ({
   wishlistCount, 
   isAuthenticated, 
   user,
+  isCompact = false,
   desktopSearchQuery,
   setDesktopSearchQuery,
   handleDesktopSearchSubmit
@@ -25,13 +26,15 @@ const DesktopNavbar = ({
         <img 
           src={logo} 
           alt="Sanich Farms Logo" 
-          className="h-12" 
+          className={`transition-all duration-300 ${isCompact ? 'h-10' : 'h-12'}`}
           onError={(e) => { 
             e.target.onerror = null; 
             e.target.src="https://placehold.co/120x48/cccccc/333333?text=Logo"; 
           }}
         />
-        <span className={`${getTypographyClasses('logo')} text-[#00B207] hidden sm:block`}>
+        <span className={`${getTypographyClasses('logo')} text-[#00B207] hidden sm:block transition-all duration-300 ${
+          isCompact ? 'text-xl' : ''
+        }`}>
           Sanich Farms
         </span>
       </Link>

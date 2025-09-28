@@ -11,22 +11,25 @@ const MobileNavbar = ({
   isMobileMenuOpen, 
   toggleMobileMenu, 
   cartCount, 
-  wishlistCount 
+  wishlistCount,
+  isCompact = false
 }) => {
   return (
-    <div className="flex items-center justify-between lg:hidden mb-2">
+    <div className={`flex items-center justify-between lg:hidden transition-all duration-300 ${isCompact ? 'mb-1' : 'mb-2'}`}>
       {/* Logo on the left */}
       <Link to="/" className="flex items-center gap-2 flex-shrink-0">
         <img 
           src={logo} 
           alt="Sanich Farms Logo" 
-          className="h-10 md:h-12" 
+          className={`transition-all duration-300 ${isCompact ? 'h-8 md:h-10' : 'h-10 md:h-12'}`}
           onError={(e) => { 
             e.target.onerror = null; 
             e.target.src="https://placehold.co/120x48/cccccc/333333?text=Logo"; 
           }}
         />
-        <span className={`${getTypographyClasses('logo')} text-[#00B207] whitespace-nowrap ml-2`}>
+        <span className={`${getTypographyClasses('logo')} text-[#00B207] whitespace-nowrap ml-2 transition-all duration-300 ${
+          isCompact ? 'text-base md:text-lg' : ''
+        }`}>
           Sanich Farms
         </span>
       </Link>
@@ -70,8 +73,9 @@ const MobileNavbar = ({
         {/* Hamburger Button */}
         <button 
           onClick={toggleMobileMenu} 
-          className="text-gray-700 hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100 relative overflow-hidden" 
-          aria-label="Toggle mobile menu"
+          className="text-gray-700 hover:text-green-600 transition duration-200 p-2 rounded-full hover:bg-gray-100 relative overflow-hidden focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2" 
+          aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+          aria-expanded={isMobileMenuOpen}
         >
           <div className={`hamburger-icon ${isMobileMenuOpen ? 'open' : 'closed'}`}>
             {isMobileMenuOpen ? (

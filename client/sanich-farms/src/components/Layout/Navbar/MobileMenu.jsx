@@ -29,29 +29,40 @@ const MobileMenu = ({
       <div
         className="lg:hidden fixed inset-y-0 right-0 z-40 flex flex-col w-full bg-white overflow-y-auto animate-slide-in-from-right shadow-lg"
         style={{ top: '0', height: '100vh' }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile navigation menu"
       >
         <div className="flex-1 p-4 overflow-y-auto">
           {/* Mobile Header with Logo and Close Button */}
           <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
             <div className="w-10"></div>
-            <Link to="/" onClick={onClose} className="flex-grow flex justify-center items-center gap-2">
+            <Link 
+              to="/" 
+              onClick={onClose} 
+              className="flex-grow flex justify-center items-center gap-2 focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2 rounded-lg"
+            >
               <img src={logo} alt="Sanich Farms Logo" className="h-10" />
               <span className="text-xl font-bold text-[#00B207]">Sanich Farms</span>
             </Link>
             <button
               onClick={onClose}
-              className="text-gray-600 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition duration-200"
+              className="text-gray-600 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition duration-200 focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2"
               aria-label="Close mobile menu"
             >
               <FiX size={28} />
             </button>
           </div>
         
-          <nav className="flex flex-col gap-4 text-gray-800 text-lg font-medium">
-            <Link to="/" onClick={onClose} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">
+          <nav 
+            className="flex flex-col gap-4 text-gray-800 text-lg font-medium"
+            role="navigation"
+            aria-label="Mobile navigation"
+          >
+            <Link to="/" onClick={onClose} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200 focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2">
               Home
             </Link>
-            <Link to="/about" onClick={onClose} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">
+            <Link to="/about" onClick={onClose} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200 focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2">
               About Us
             </Link>
             
@@ -59,7 +70,9 @@ const MobileMenu = ({
             <div className="relative">
               <button
                 onClick={onShopDropdownToggle}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200 flex items-center justify-between focus:outline-none"
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200 flex items-center justify-between focus-visible:outline-2 focus-visible:outline-green-400 focus-visible:outline-offset-2"
+                aria-expanded={showShopDropdown}
+                aria-haspopup="true"
               >
                 Shop
                 <FiChevronRight className={`w-5 h-5 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : 'rotate-0'}`} />
