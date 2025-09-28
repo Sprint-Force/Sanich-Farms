@@ -91,7 +91,7 @@ const Products = () => {
             {/* Mobile Horizontal Scroll - Enhanced */}
             <div className="sm:hidden mb-12">
               <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 px-4 -mx-4 hide-scrollbar
-                           snap-x snap-mandatory touch-pan-x">
+                           snap-x snap-mandatory">
                 {featuredProducts.map((product, index) => (
                   <div
                     key={product.id}

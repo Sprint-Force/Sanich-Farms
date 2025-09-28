@@ -274,6 +274,23 @@ header {
   display: none;  /* Chrome, Safari and Opera */
 }
 
+/* Improved touch scrolling behavior for horizontal scroll containers */
+.hide-scrollbar {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Allow both horizontal and vertical touch gestures */
+.horizontal-scroll-container {
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Ensure content has minimum height for scrolling */
   main, .main-content, #root {
     min-height: 100vh;
