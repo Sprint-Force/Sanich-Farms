@@ -1,7 +1,7 @@
-import React, { useRef, useEffect, forwardRef } from 'react';
+import React, { useRef, useEffect, forwardRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Link } from 'react-router-dom';
-import { FiX, FiChevronRight, FiHeart, FiPhoneCall } from 'react-icons/fi';
+import { FiX, FiChevronRight, FiHeart, FiPhoneCall, FiSearch } from 'react-icons/fi';
 import logo from '../../../assets/logo.png';
 import { useCart } from '../../../context/CartContext';
 import { useWishlist } from '../../../context/WishlistContext';
@@ -34,6 +34,17 @@ const style = `
   }
 }
 
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .animate-slide-in-from-right {
   animation: slideInFromRight 0.3s ease-out forwards;
 }
@@ -41,11 +52,18 @@ const style = `
 .animate-slide-out-to-right {
   animation: slideOutToRight 0.3s ease-in forwards;
 }
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out forwards;
+}
 `;
 
 const Navbar = forwardRef((_, ref) => {
   // Ref for dropdown close timeout
   const dropdownTimeoutRef = useRef(null);
+  
+  // State for mobile search modal
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   // Use custom navbar hook for state management
   const { 
@@ -128,31 +146,28 @@ const Navbar = forwardRef((_, ref) => {
   return (
     <header
       ref={ref}
-      className={`fixed top-0 z-50 w-full bg-white shadow-md font-poppins transition-all duration-500 ease-in-out
-                 ${isNavbarHidden ? '-translate-y-full opacity-90' : 'translate-y-0 opacity-100'}
-                 ${navbarAnimationClass}`}
+      className={`fixed top-0 z-50 w-full bg-white font-poppins transition-all duration-500 ease-in-out
+                 ${isNavbarHidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}
+                 ${navbarAnimationClass}
+                 shadow-sm hover:shadow-md`}
     >
       <style>{style}</style>
       
       {/* Top Bar */}
       <TopBar />
 
-      {/* Main Navigation */}
-      <div className="px-4 md:px-6 lg:px-10 py-3 md:py-4">
+      {/* Main Navigation - Enhanced Responsiveness */}
+      <div className="px-3 xs:px-4 sm:px-6 lg:px-8 py-1.5 sm:py-2 lg:py-2.5 bg-gradient-to-r from-white via-gray-50 to-white border-b border-gray-100">{/* Enhanced responsive padding */}
         {/* Mobile/Tablet Navigation */}
         <MobileNavbar
           isMobileMenuOpen={isMobileMenuOpen}
           toggleMobileMenu={toggleMobileMenu}
           cartCount={cartCount}
-          wishlistCount={wishlistCount}
-        />
-
-        {/* Mobile Search Bar */}
-        <SearchBar
-          isMobile={true}
-          searchQuery={mobileSearchQuery}
-          setSearchQuery={setMobileSearchQuery}
-          onSearchSubmit={handleMobileSearchSubmit}
+          showMobileSearch={showMobileSearch}
+          setShowMobileSearch={setShowMobileSearch}
+          mobileSearchQuery={mobileSearchQuery}
+          setMobileSearchQuery={setMobileSearchQuery}
+          handleMobileSearchSubmit={handleMobileSearchSubmit}
           searchInputRef={searchInputRef}
         />
 
@@ -168,40 +183,71 @@ const Navbar = forwardRef((_, ref) => {
         />
       </div>
 
-      {/* Navigation Links (Desktop) */}
-      <nav className="hidden lg:flex justify-between items-center bg-gray-800 px-4 md:px-6 lg:px-10 py-3 text-white text-base font-medium">
-        <div className="flex gap-6 lg:gap-8">
-          <Link to="/" className="hover:text-green-400 transition duration-200">Home</Link>
-          <Link to="/about" className="hover:text-green-400 transition duration-200">About Us</Link>
+      {/* Navigation Links (Desktop) - Enhanced Responsiveness */}
+      <nav className="hidden lg:flex justify-between items-center bg-gradient-to-r from-gray-800 via-gray-850 to-gray-800 px-3 md:px-6 lg:px-8 py-1.5 text-white text-sm font-medium border-t border-gray-700 shadow-inner">{/* Enhanced responsive padding */}
+        <div className="flex gap-4 lg:gap-6">
+          <Link to="/" className="relative group hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 flex items-center">
+            <span className="relative z-10">Home</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-purple-500/20 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+          </Link>
+          <Link to="/about" className="relative group hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 flex items-center">
+            <span className="relative z-10">About Us</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-purple-500/20 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+          </Link>
           <div
-            className="relative"
+            className="relative group"
             onMouseEnter={handleDropdownEnter}
             onMouseLeave={handleDropdownLeave}
           >
-            <button className="hover:text-green-400 transition duration-200 flex items-center gap-1 focus:outline-none">
-              Shop
-              <FiChevronRight className={`inline-block ml-1 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : 'rotate-0'}`} />
+            <button className="relative group hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50">
+              <span className="relative z-10">Shop</span>
+              <FiChevronRight className={`inline-block transform transition-transform duration-300 ${showShopDropdown ? 'rotate-90' : 'rotate-0'} w-4 h-4 relative z-10`} />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-purple-500/20 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
             </button>
             {showShopDropdown && (
               <div 
-                className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-2"
+                className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 py-2 backdrop-blur-sm animate-fade-in-down"
                 onMouseEnter={handleDropdownEnterContent}
                 onMouseLeave={handleDropdownLeaveContent}
               >
-                <Link to="/shop" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-150">All Products</Link>
-                <Link to="/shop/chicks" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-150">Chicks</Link>
-                <Link to="/shop/feeds" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition duration-150">Feeds</Link>
+                <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100 mb-1">
+                  Product Categories
+                </div>
+                <Link to="/shop" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-gray-900 transition-all duration-200 text-sm font-medium">
+                  All Products
+                </Link>
+                <Link to="/shop?category=chicks" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-gray-900 transition-all duration-200 text-sm">
+                  Chicks
+                </Link>
+                <Link to="/shop?category=feeds" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-gray-900 transition-all duration-200 text-sm">
+                  Feeds
+                </Link>
+                <Link to="/shop?category=eggs" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-gray-900 transition-all duration-200 text-sm">
+                  Eggs
+                </Link>
+                <Link to="/shop?category=vitamins" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-gray-900 transition-all duration-200 text-sm">
+                  Vitamins
+                </Link>
+                <Link to="/shop?category=equipment" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-gray-900 transition-all duration-200 text-sm">
+                  Equipment
+                </Link>
               </div>
             )}
           </div>
-          <Link to="/services" className="hover:text-green-400 transition duration-200">Services</Link>
-          <Link to="/contact" className="hover:text-green-400 transition duration-200">Contact Us</Link>
+          <Link to="/services" className="relative group hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 flex items-center">
+            <span className="relative z-10">Services</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-purple-500/20 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+          </Link>
+          <Link to="/contact" className="relative group hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 flex items-center">
+            <span className="relative z-10">Contact Us</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/20 group-hover:to-purple-500/20 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+          </Link>
         </div>
-        <div className="flex items-center gap-2 text-white">
-          <FiPhoneCall className="text-white text-xl" />
+        <div className="flex items-center gap-3 text-white px-4 py-2">
+          <FiPhoneCall className="text-white text-lg" />
           <ClickablePhone 
             phone="0243826137" 
-            className="text-base font-semibold text-white hover:text-green-300" 
+            className="text-sm font-semibold text-white hover:text-gray-300 transition-colors duration-200" 
           />
         </div>
       </nav>
@@ -218,28 +264,28 @@ const Navbar = forwardRef((_, ref) => {
             className="flex flex-col w-full h-full bg-white overflow-hidden mobile-menu-content animate-slide-in-from-right"
             style={{ zIndex: 10001 }}
           >
-            {/* Header */}
-            <div className="flex justify-between items-center px-4 py-4 border-b border-gray-100 bg-white flex-shrink-0">
-              <div className="w-10" />
+            {/* Header - Enhanced Responsiveness */}
+            <div className="flex justify-between items-center px-3 xs:px-4 py-3 xs:py-4 border-b border-gray-100 bg-white flex-shrink-0">
+              <div className="w-8 xs:w-10" />
               <Link to="/" onClick={closeMobileMenu} className="flex justify-center items-center gap-2 flex-1 min-w-0">
-                <img src={logo} alt="Sanich Farms Logo" className="h-10 flex-shrink-0" />
-                <span className={`${getTypographyClasses('mobileMenu.title')} text-[#00B207] font-bold truncate`}>
+                <img src={logo} alt="Sanich Farms Logo" className="h-8 xs:h-9 sm:h-10 flex-shrink-0" />
+                <span className={`${getTypographyClasses('mobileMenu.title')} text-[#00B207] font-bold text-base xs:text-lg truncate`}>
                   Sanich Farms
                 </span>
               </Link>
               <button
                 onClick={closeMobileMenu}
-                className="text-gray-600 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition duration-200 flex-shrink-0"
+                className="text-gray-600 hover:text-gray-800 p-1.5 xs:p-2 rounded-full hover:bg-gray-100 transition duration-200 flex-shrink-0"
                 aria-label="Close mobile menu"
               >
-                <FiX size={28} />
+                <FiX size={24} className="xs:w-7 xs:h-7" />
               </button>
             </div>
 
-            {/* User Greeting - Compact */}
+            {/* User Greeting - Enhanced Responsiveness */}
             {isAuthenticated && user && (
-              <div className="px-4 py-2 bg-green-50 border-b border-gray-100 flex-shrink-0 mobile-menu-item">
-                <span className="text-green-600 font-medium text-sm">
+              <div className="px-3 xs:px-4 py-2 bg-green-50 border-b border-gray-100 flex-shrink-0 mobile-menu-item">
+                <span className="text-green-600 font-medium text-xs xs:text-sm">
                   Hi! {user?.name?.split(' ')[0] || 'User'}, welcome back
                 </span>
               </div>
@@ -269,11 +315,20 @@ const Navbar = forwardRef((_, ref) => {
                       <Link to="/shop" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
                         All Products
                       </Link>
-                      <Link to="/shop/chicks" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
+                      <Link to="/shop?category=chicks" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
                         Chicks
                       </Link>
-                      <Link to="/shop/feeds" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
+                      <Link to="/shop?category=feeds" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
                         Feeds
+                      </Link>
+                      <Link to="/shop?category=eggs" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
+                        Eggs
+                      </Link>
+                      <Link to="/shop?category=vitamins" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
+                        Vitamins
+                      </Link>
+                      <Link to="/shop?category=equipment" onClick={closeMobileMenu} className={`block py-1.5 px-4 ${getTypographyClasses('mobileMenu.subLinks')} text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150`}>
+                        Equipment
                       </Link>
                     </div>
                   )}
