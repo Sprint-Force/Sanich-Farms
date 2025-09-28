@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
+import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import ProductCard from '../components/UI/ProductCard';
 // We will no longer need this import after we implement the API call
 // import { productsData } from '../data/productsData';
@@ -14,6 +15,7 @@ const ProductDetailPage = () => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToast } = useToast();
+  const { addToRecentlyViewed } = useRecentlyViewed();
 
   // Define your backend API URL
   const BASE_URL = 'https://sanich-farms-tnac.onrender.com/api/products';
@@ -40,6 +42,9 @@ const ProductDetailPage = () => {
         } else {
           setProduct(fetchedProduct);
           setMainImage(fetchedProduct.image_url || fetchedProduct.image || fetchedProduct.images?.[0] || '');
+          
+          // Add to recently viewed after successfully fetching product
+          addToRecentlyViewed(fetchedProduct);
         }
       } catch (err) {
         console.error("Failed to fetch product:", err);
@@ -51,7 +56,7 @@ const ProductDetailPage = () => {
     };
 
     fetchProduct();
-  }, [productId, addToast]);
+  }, [productId, addToast, addToRecentlyViewed]);
 
   const handleQuantityChange = (type) => {
     if (type === 'increase') {
