@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiSettings, FiLogOut, FiX, FiCreditCard, FiTruck } from 'react-icons/fi';
+import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiSettings, FiLogOut, FiX, FiCreditCard, FiTruck, FiClock } from 'react-icons/fi';
 import { useAuthContext } from '../hooks/useAuthContext';
 
 // Import dashboard section components
@@ -26,6 +26,7 @@ const UserDashboardPage = () => {
     if (location.pathname.includes('/dashboard/payments')) return 'payments';
     if (location.pathname.includes('/dashboard/wishlist')) return 'wishlist';
     if (location.pathname.includes('/dashboard/track-orders')) return 'track-orders';
+    if (location.pathname.includes('/dashboard/recently-viewed')) return 'recently-viewed';
     return 'overview'; // Default to overview
   };
 
@@ -178,6 +179,14 @@ const UserDashboardPage = () => {
                 ${activeSection === 'bookings' ? 'bg-green-100 text-green-700' : 'text-gray-700 hover:bg-gray-100'}`}
             >
               <FiCalendar size={20} /> My Bookings
+            </Link>
+            <Link
+              to="/dashboard/recently-viewed"
+              onClick={closeMobileMenu}
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg text-lg font-medium transition-colors duration-200
+                ${activeSection === 'recently-viewed' ? 'bg-green-100 text-green-700' : 'text-gray-700 hover:bg-gray-100'}`}
+            >
+              <FiClock size={20} /> Recently Viewed
             </Link>
             {/* DASHBOARD AUDIT FIX: Add payments section like Amazon - HIDDEN FOR NOW */}
             {/* <Link

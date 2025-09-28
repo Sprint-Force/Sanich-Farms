@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiShoppingBag, FiCalendar, FiUser, FiHeart, FiRepeat, FiShoppingCart, FiTrendingUp, FiCreditCard } from 'react-icons/fi';
 import { ordersAPI, bookingsAPI } from '../../services/api'; // DASHBOARD API INTEGRATION: Import real APIs
 import { useAuthContext } from '../../hooks/useAuthContext';
+import RecentlyViewed from '../UI/RecentlyViewed';
 
 const DashboardOverview = () => {
   const { user } = useAuthContext();
@@ -299,6 +300,15 @@ const DashboardOverview = () => {
         ) : (
           <p className="text-gray-600">No upcoming bookings found.</p>
         )}
+      </div>
+
+      {/* Recently Viewed Products */}
+      <div className="col-span-full">
+        <RecentlyViewed 
+          limit={6}
+          compact={false}
+          className="shadow-none border-0 p-0 bg-transparent"
+        />
       </div>
     </div>
   );
