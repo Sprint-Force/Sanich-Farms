@@ -5,7 +5,6 @@ import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiFilter, FiStar, FiToggleLeft, Fi
 const ProductMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'inactive'
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
@@ -39,38 +38,26 @@ const ProductMgmt = () => {
     const load = async () => {
       setLoadingProducts(true);
       try {
-        // Use admin endpoint that includes inactive products
-        const data = await productsAPI.getAllAdmin();
+        const data = await productsAPI.getAll();
         if (!mounted) return;
         setProducts(Array.isArray(data) ? data : data.products || []);
       } catch {
-        console.warn('Failed to fetch products from admin API, trying regular API');
-        // fallback to regular API
-        try {
-          const data = await productsAPI.getAll();
-          if (!mounted) return;
-          setProducts(Array.isArray(data) ? data : data.products || []);
-        } catch {
-          console.warn('Failed to fetch products from both APIs, using empty array');
-          if (mounted) setProducts([]);
-        }
+        console.warn('Failed to fetch products from API, using local mock data');
+        // fallback: keep products empty or provide a small mock
+        setProducts([]);
       } finally {
-        if (mounted) setLoadingProducts(false);
+        setLoadingProducts(false);
       }
     };
     load();
     return () => { mounted = false; };
   }, []);
 
-  const categories = ['all', 'chicks', 'feeds', 'eggs', 'vitamins', 'equipment'];
+  const categories = ['all', 'feeds', 'poultry', 'equipment', 'supplies', 'tools', 'seeds'];
 
   const formatCategoryLabel = (key) => {
     if (!key) return '';
     if (key === 'feeds') return 'Feeds';
-    if (key === 'chicks') return 'Chicks';
-    if (key === 'eggs') return 'Eggs';
-    if (key === 'vitamins') return 'Vitamins';
-    if (key === 'equipment') return 'Equipment';
     return String(key).charAt(0).toUpperCase() + String(key).slice(1);
   };
 
@@ -102,21 +89,9 @@ const ProductMgmt = () => {
   const filteredProducts = products.filter(product => {
     const name = (product && product.name) ? String(product.name) : '';
     const category = (product && product.category) ? String(product.category).toLowerCase() : '';
-    const isActive = product.is_available !== false; // Default to true if undefined
-    
     const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || category === String(filterCategory).toLowerCase();
-    
-    // Status filter logic
-    let matchesStatusFilter = true;
-    if (statusFilter === 'active') {
-      matchesStatusFilter = isActive;
-    } else if (statusFilter === 'inactive') {
-      matchesStatusFilter = !isActive;
-    }
-    // If statusFilter === 'all', matchesStatusFilter remains true
-    
-    return matchesSearch && matchesCategory && matchesStatusFilter;
+    return matchesSearch && matchesCategory;
   });
 
   const handleInputChange = (e) => {
@@ -217,24 +192,7 @@ const ProductMgmt = () => {
     
     // PRODUCT API FIX: Validate required fields
     if (!formData.name.trim() || !formData.category || !formData.price || !formData.stock) {
-      console.error('Validation failed:', {
-        name: formData.name?.trim(),
-        category: formData.category,
-        price: formData.price,
-        stock: formData.stock
-      });
       setError('Please fill in all required fields: name, category, price, and stock quantity.');
-      return;
-    }
-
-    // Additional validation
-    if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
-      setError('Please enter a valid price greater than 0.');
-      return;
-    }
-
-    if (isNaN(parseInt(formData.stock)) || parseInt(formData.stock) < 0) {
-      setError('Please enter a valid stock quantity (0 or greater).');
       return;
     }
 
@@ -255,59 +213,25 @@ const ProductMgmt = () => {
       submitData.append('rating', 0); // Default rating
       submitData.append('is_available', formData.active ? 'true' : 'false'); // Map active to is_available
       
-      // Add optional fields if they have values
-      if (formData.originalPrice && formData.originalPrice !== '') {
-        submitData.append('original_price', parseFloat(formData.originalPrice));
-      }
-      if (formData.discount && formData.discount !== '') {
-        submitData.append('discount', parseFloat(formData.discount));
-      }
-      if (formData.featured !== undefined) {
-        submitData.append('featured', formData.featured ? 'true' : 'false');
-      }
-      if (formData.tags && formData.tags !== '') {
-        submitData.append('tags', formData.tags);
-      }
-      
       // Add image if present
       const imageFile = formData.images.find(img => img.file)?.file;
       if (imageFile) {
         submitData.append('file', imageFile);
       }
 
-      // Log what we're sending for debugging
-      console.log('Submitting product data:', {
-        name: formData.name.trim(),
-        category: formData.category,
-        price: formData.price,
-        stock_quantity: formData.stock,
-        is_available: formData.active,
-        isEdit: !!editingProduct,
-        productId: editingProduct?.id || editingProduct?._id
-      });
-
       if (editingProduct) {
         // Update existing product
         const idToUse = editingProduct._id || editingProduct.id;
-        console.log('Updating product with ID:', idToUse);
-        
-        if (!idToUse) {
-          throw new Error('Product ID is missing for update operation');
-        }
-        
-        const result = await productsAPI.updateAdmin(idToUse, submitData);
-        console.log('Update result:', result);
+        await productsAPI.updateAdmin(idToUse, submitData);
         setSuccessMessage('Product updated successfully!');
       } else {
         // Create new product
-        console.log('Creating new product');
-        const result = await productsAPI.createAdmin(submitData);
-        console.log('Create result:', result);
+        await productsAPI.createAdmin(submitData);
         setSuccessMessage('Product added successfully!');
       }
 
       // Reload all products to ensure fresh data
-      const refreshedData = await productsAPI.getAllAdmin();
+      const refreshedData = await productsAPI.getAll();
       setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
       
       // Invalidate product cache for other components
@@ -320,29 +244,7 @@ const ProductMgmt = () => {
       
     } catch (error) {
       console.error('Product save failed:', error);
-      console.error('Error details:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
-      
-      // More detailed error handling
-      let errorMessage = 'Failed to save product. Please try again.';
-      
-      if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response?.status === 400) {
-        errorMessage = 'Invalid data provided. Please check all fields.';
-      } else if (error.response?.status === 404) {
-        errorMessage = 'Product not found. Please refresh and try again.';
-      } else if (error.response?.status === 500) {
-        errorMessage = 'Server error. Please try again later.';
-      } else if (error.message) {
-        errorMessage = `Error: ${error.message}`;
-      }
-      
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Failed to save product. Please try again.';
       setError(errorMessage);
     } finally {
       setLoadingAction(false);
@@ -364,7 +266,7 @@ const ProductMgmt = () => {
         }
         
         // Reload all products to ensure fresh data
-        const refreshedData = await productsAPI.getAllAdmin();
+        const refreshedData = await productsAPI.getAll();
         setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
         
         // Invalidate product cache for other components
@@ -499,21 +401,6 @@ const ProductMgmt = () => {
                     {category === 'all' ? 'All Categories' : formatCategoryLabel(category)}
                   </option>
                 ))}
-              </select>
-              <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-700">Status:</span>
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none text-sm"
-              >
-                <option value="all">All Products</option>
-                <option value="active">Active Only</option>
-                <option value="inactive">Inactive Only</option>
               </select>
               <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
