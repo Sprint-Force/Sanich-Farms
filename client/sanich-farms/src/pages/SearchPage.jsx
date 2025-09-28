@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { FiHome, FiChevronRight, FiSearch } from 'react-icons/fi';
+import { FiHome, FiChevronRight, FiSearch, FiFilter, FiGrid, FiList } from 'react-icons/fi';
 import axios from 'axios';
 import ProductCard from '../components/UI/ProductCard';
 import ServiceCard from '../components/UI/ServiceCard';
+import SimpleFilter from '../components/UI/SimpleFilter';
+import searchAnalytics from '../utils/searchAnalytics';
 
 const SearchPage = () => {
   const location = useLocation();
@@ -17,6 +19,59 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Faceted search states
+  const [filters, setFilters] = useState({ categories: [], priceRange: null });
+  const [sortBy, setSortBy] = useState('relevance');
+  const [viewMode, setViewMode] = useState('grid');
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Filter and sort products client-side
+  const filteredProducts = useMemo(() => {
+    let filtered = [...productResults];
+
+    // Apply category filter
+    if (filters.categories.length > 0) {
+      filtered = filtered.filter(product => 
+        filters.categories.includes(product.category)
+      );
+    }
+
+    // Apply price range filter
+    if (filters.priceRange) {
+      filtered = filtered.filter(product => {
+        const price = parseFloat(product.price) || 0;
+        return price >= filters.priceRange.min && 
+               (filters.priceRange.max === Infinity || price <= filters.priceRange.max);
+      });
+    }
+
+    // Sort products
+    switch (sortBy) {
+      case 'price-low':
+        filtered.sort((a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0));
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0));
+        break;
+      case 'name':
+        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        break;
+      case 'relevance':
+      default:
+        // Keep original order for relevance
+        break;
+    }
+
+    return filtered;
+  }, [productResults, filters, sortBy]);
+
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
+    
+    // Track filter usage
+    searchAnalytics.trackSearch(searchQuery, filteredProducts.length, newFilters);
+  };
 
   useEffect(() => {
     const fetchSearchResults = async () => {
@@ -27,8 +82,14 @@ const SearchPage = () => {
         try {
           // Make an API call to the backend search endpoint
           const response = await axios.get(`${BASE_URL}?query=${encodeURIComponent(searchQuery)}`);
-          setProductResults(response.data.productResults || []);
-          setServiceResults(response.data.serviceResults || []);
+          const products = response.data.productResults || [];
+          const services = response.data.serviceResults || [];
+          
+          setProductResults(products);
+          setServiceResults(services);
+          
+          // Track search with analytics
+          searchAnalytics.trackSearch(searchQuery, products.length + services.length, filters);
         } catch (err) {
           console.error("Failed to fetch search results:", err);
           setError("Failed to load search results. Please try again.");
@@ -45,7 +106,7 @@ const SearchPage = () => {
     };
 
     fetchSearchResults();
-  }, [searchQuery]);
+  }, [searchQuery, filters]);
 
   return (
     <div className="font-poppins bg-gray-50 min-h-screen">
@@ -63,9 +124,83 @@ const SearchPage = () => {
 
       {/* Search Results Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 mb-8 text-center">
-          Search Results for "{searchQuery}"
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800">
+            Search Results for "{searchQuery}"
+          </h1>
+          
+          {/* Mobile Filter Toggle */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="lg:hidden flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            <FiFilter className="w-4 h-4" />
+            Filters
+          </button>
+        </div>
+
+        {/* Search Controls */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Filters Sidebar */}
+          <div className={`lg:w-1/4 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+            <SimpleFilter
+              products={productResults}
+              onFiltersChange={handleFiltersChange}
+              className="mb-6"
+            />
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:w-3/4">
+            {/* Results Info & Sort */}
+            {hasSearched && (productResults.length > 0 || serviceResults.length > 0) && (
+              <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-lg border border-gray-200">
+                <div className="text-sm text-gray-600">
+                  Showing {filteredProducts.length + serviceResults.length} results
+                  {filteredProducts.length !== productResults.length && (
+                    <span className="text-green-600 ml-1">(filtered)</span>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  {/* Sort Dropdown */}
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="border border-gray-300 rounded px-3 py-1 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="relevance">Most Relevant</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="name">Name A-Z</option>
+                  </select>
+
+                  {/* View Mode Toggle */}
+                  <div className="flex rounded border border-gray-300 overflow-hidden">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-2 ${
+                        viewMode === 'grid'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <FiGrid className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-2 ${
+                        viewMode === 'list'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <FiList className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
         {loading ? (
           <div className="text-center py-20 text-gray-600 text-xl">
@@ -76,7 +211,7 @@ const SearchPage = () => {
           <div className="text-center py-20 text-gray-600 text-xl">
             <p className="text-red-500">{error}</p>
           </div>
-        ) : hasSearched && productResults.length === 0 && serviceResults.length === 0 ? (
+        ) : hasSearched && filteredProducts.length === 0 && serviceResults.length === 0 ? (
           <div className="text-center py-20 text-gray-600 text-xl">
             <FiSearch size={60} className="mx-auto mb-4 text-gray-400" />
             <p className="mb-2">No products or services found matching your search.</p>
@@ -87,14 +222,28 @@ const SearchPage = () => {
           </div>
         ) : (
           <>
-            {productResults.length > 0 && (
+            {filteredProducts.length > 0 && (
               <div className="mb-12">
                 <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-3 border-gray-200">
-                  Products ({productResults.length})
+                  Products ({filteredProducts.length})
+                  {filteredProducts.length !== productResults.length && (
+                    <span className="text-sm font-normal text-green-600 ml-2">
+                      (filtered from {productResults.length})
+                    </span>
+                  )}
                 </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-                  {productResults.map(product => (
-                    <ProductCard key={product.id} product={product} />
+                <div className={`
+                  ${viewMode === 'grid' 
+                    ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8'
+                    : 'space-y-4'
+                  }
+                `}>
+                  {filteredProducts.map(product => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product}
+                      viewMode={viewMode}
+                    />
                   ))}
                 </div>
               </div>
@@ -114,6 +263,8 @@ const SearchPage = () => {
             )}
           </>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );
