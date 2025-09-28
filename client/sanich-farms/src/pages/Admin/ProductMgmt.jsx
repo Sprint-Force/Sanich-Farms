@@ -5,6 +5,7 @@ import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiFilter, FiStar, FiToggleLeft, Fi
 const ProductMgmt = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'inactive'
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
@@ -89,9 +90,21 @@ const ProductMgmt = () => {
   const filteredProducts = products.filter(product => {
     const name = (product && product.name) ? String(product.name) : '';
     const category = (product && product.category) ? String(product.category).toLowerCase() : '';
+    const isActive = product.is_available !== false; // Default to true if undefined
+    
     const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || category === String(filterCategory).toLowerCase();
-    return matchesSearch && matchesCategory;
+    
+    // Status filter logic
+    let matchesStatusFilter = true;
+    if (statusFilter === 'active') {
+      matchesStatusFilter = isActive;
+    } else if (statusFilter === 'inactive') {
+      matchesStatusFilter = !isActive;
+    }
+    // If statusFilter === 'all', matchesStatusFilter remains true
+    
+    return matchesSearch && matchesCategory && matchesStatusFilter;
   });
 
   const handleInputChange = (e) => {
@@ -474,6 +487,21 @@ const ProductMgmt = () => {
                     {category === 'all' ? 'All Categories' : formatCategoryLabel(category)}
                   </option>
                 ))}
+              </select>
+              <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-700">Status:</span>
+            <div className="relative">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 appearance-none text-sm"
+              >
+                <option value="all">All Products</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
               </select>
               <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
