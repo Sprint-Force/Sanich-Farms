@@ -72,12 +72,15 @@ const WhyUs = () => {
                 onClick={() => navigate('/shop')}
                 className="inline-flex items-center justify-center gap-2
                            bg-green-600 hover:bg-green-700 active:bg-green-800
-                           text-white px-8 py-4 rounded-xl font-semibold text-lg
-                           shadow-lg hover:shadow-xl transform hover:-translate-y-1
+                           text-white px-4 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 
+                           rounded-lg sm:rounded-xl font-medium sm:font-semibold 
+                           text-sm sm:text-base lg:text-lg
+                           shadow-md hover:shadow-lg sm:shadow-lg sm:hover:shadow-xl 
+                           transform hover:-translate-y-1
                            transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-300"
               >
                 Shop Now
-                <FiArrowRight className="w-5 h-5" />
+                <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               
               {/* Secondary CTA */}
@@ -85,8 +88,11 @@ const WhyUs = () => {
                 onClick={() => navigate('/about')}
                 className="inline-flex items-center justify-center gap-2
                            bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-green-200
-                           text-gray-700 hover:text-green-600 px-8 py-4 rounded-xl font-semibold text-lg
-                           shadow-sm hover:shadow-md transform hover:-translate-y-1
+                           text-gray-700 hover:text-green-600 px-4 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 
+                           rounded-lg sm:rounded-xl font-medium sm:font-semibold 
+                           text-sm sm:text-base lg:text-lg
+                           shadow-sm hover:shadow-md sm:shadow-sm sm:hover:shadow-md 
+                           transform hover:-translate-y-1
                            transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-gray-200"
               >
                 Learn More

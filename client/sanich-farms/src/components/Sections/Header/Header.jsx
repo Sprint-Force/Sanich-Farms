@@ -107,14 +107,16 @@ const Header = () => {
                       {/* Simple CTA Button */}
                       <button
                         onClick={() => handleSlideClick(slide.ctaAction)}
-                        className='inline-flex items-center gap-3 px-8 py-4 
+                        className='inline-flex items-center gap-2 sm:gap-3 
+                                   px-4 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 
                                    bg-green-600 hover:bg-green-700 text-white 
-                                   rounded-lg font-semibold text-lg
-                                   shadow-lg hover:shadow-xl 
+                                   rounded-lg sm:rounded-lg font-medium sm:font-semibold 
+                                   text-sm sm:text-base lg:text-lg
+                                   shadow-md hover:shadow-lg sm:shadow-lg sm:hover:shadow-xl 
                                    transform hover:-translate-y-0.5
                                    transition-all duration-200'
                       >
-                        <FiShoppingCart className="w-5 h-5" />
+                        <FiShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                         <span>{slide.ctaText}</span>
                       </button>
                       

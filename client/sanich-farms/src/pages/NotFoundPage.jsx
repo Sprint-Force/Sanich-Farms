@@ -12,8 +12,12 @@ const NotFoundPage = () => {
       </p>
       <Link
         to="/"
-        className="inline-block bg-green-600 text-white px-8 py-4 rounded-full text-lg font-semibold
-                   hover:bg-green-700 transition duration-300 shadow-md hover:shadow-lg
+        className="inline-block bg-green-600 text-white 
+                   px-4 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 
+                   rounded-lg sm:rounded-full font-medium sm:font-semibold 
+                   text-sm sm:text-base lg:text-lg
+                   hover:bg-green-700 transition duration-300 
+                   shadow-md hover:shadow-lg sm:shadow-md sm:hover:shadow-lg
                    focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50"
       >
         Go to Homepage
