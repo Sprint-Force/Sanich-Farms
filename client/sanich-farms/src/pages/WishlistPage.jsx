@@ -149,7 +149,7 @@ const WishlistPage = () => {
                     {/* Remove Button */}
                     <button
                       onClick={() => handleRemoveFromWishlist(item.id, item.name)}
-                      className="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-500 shadow-md transition-all duration-200 opacity-0 group-hover:opacity-100"
+                      className="absolute top-2 right-2 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-red-500 shadow-md transition-all duration-200 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                     >
                       <FiX className="w-3 h-3" />
                     </button>
