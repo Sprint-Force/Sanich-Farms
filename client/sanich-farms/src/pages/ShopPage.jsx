@@ -24,9 +24,6 @@ const ShopPage = () => {
   // State for active filters (to display below the filter bar)
   const [activeFilters, setActiveFilters] = useState([]);
 
-  // State for mobile filter menu visibility
-  const [isMobileFilterMenuOpen, setIsMobileFilterMenuOpen] = useState(false);
-
   // Effect to set initial category from URL and fetch products
   useEffect(() => {
     const pathParts = location.pathname.split('/');
@@ -141,14 +138,12 @@ const ShopPage = () => {
     if (filterText.includes('Sort:')) setSortBy('latest');
   };
 
-  // Toggle mobile filter menu
-  const toggleMobileFilterMenu = () => {
-    setIsMobileFilterMenuOpen(!isMobileFilterMenuOpen);
-  };
-
-  // Close mobile filter menu on apply/clear
-  const closeMobileFilterMenu = () => {
-    setIsMobileFilterMenuOpen(false);
+  // Function to clear all filters
+  const clearAllFilters = () => {
+    setSelectedCategory('All Categories');
+    setSelectedPriceRange('All Prices');
+    setSelectedRating('All Ratings');
+    setSortBy('latest');
   };
 
   return (
@@ -185,17 +180,132 @@ const ShopPage = () => {
       </div>
 
       {/* Main Shop Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
-        {/* Enhanced Mobile Filter Toggle Button */}
-        <div className="md:hidden flex justify-end mb-6">
-          <button
-            type="button"
-            onClick={toggleMobileFilterMenu}
-            className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-5 py-3 rounded-full shadow-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium"
-          >
-            <FiFilter className="w-5 h-5" />
-            <span>Filters & Sort</span>
-          </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-16">
+        
+        {/* Mobile Horizontal Scrollable Filter Bar */}
+        <div className="md:hidden mb-4">
+          <div className="bg-white p-3 rounded-xl shadow-md border border-gray-100">
+            {/* Mobile Filter Controls - Horizontal Scrollable */}
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 pb-1 min-w-max">
+                {/* Category Filter */}
+                <div className="relative min-w-[120px]">
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-2.5 py-2 border border-gray-300 rounded-md appearance-none bg-white pr-6 text-gray-700 text-xs focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                  >
+                    <option value="All Categories">All Categories</option>
+                    <option value="Chicks">Chicks</option>
+                    <option value="Feeds">Feeds</option>
+                    <option value="Eggs">Eggs</option>
+                    <option value="Vitamins">Vitamins</option>
+                    <option value="Equipment">Equipment</option>
+                  </select>
+                  <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-3 h-3" />
+                </div>
+
+                {/* Price Filter */}
+                <div className="relative min-w-[110px]">
+                  <select
+                    value={selectedPriceRange}
+                    onChange={(e) => setSelectedPriceRange(e.target.value)}
+                    className="w-full px-2.5 py-2 border border-gray-300 rounded-md appearance-none bg-white pr-6 text-gray-700 text-xs focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                  >
+                    <option value="All Prices">All Prices</option>
+                    <option value="0-10">₵0-₵10</option>
+                    <option value="10-20">₵10-₵20</option>
+                    <option value="20-50">₵20-₵50</option>
+                    <option value="50-100">₵50-₵100</option>
+                    <option value="100-500">₵100-₵500</option>
+                  </select>
+                  <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-3 h-3" />
+                </div>
+
+                {/* Rating Filter */}
+                <div className="relative min-w-[100px]">
+                  <select
+                    value={selectedRating}
+                    onChange={(e) => setSelectedRating(e.target.value)}
+                    className="w-full px-2.5 py-2 border border-gray-300 rounded-md appearance-none bg-white pr-6 text-gray-700 text-xs focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                  >
+                    <option value="All Ratings">All Ratings</option>
+                    <option value="5 Stars">5 Stars</option>
+                    <option value="4 Stars">4+ Stars</option>
+                    <option value="3 Stars">3+ Stars</option>
+                  </select>
+                  <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-3 h-3" />
+                </div>
+
+                {/* Sort By */}
+                <div className="relative min-w-[120px]">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full px-2.5 py-2 border border-gray-300 rounded-md appearance-none bg-white pr-6 text-gray-700 text-xs focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="price-asc">Price: Low-High</option>
+                    <option value="price-desc">Price: High-Low</option>
+                    <option value="name-asc">Name: A-Z</option>
+                  </select>
+                  <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-3 h-3" />
+                </div>
+
+                {/* Show Count */}
+                <div className="relative min-w-[85px]">
+                  <select
+                    value={showCount}
+                    onChange={(e) => setShowCount(e.target.value)}
+                    className="w-full px-2.5 py-2 border border-gray-300 rounded-md appearance-none bg-white pr-6 text-gray-700 text-xs focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+                  >
+                    <option value="12">Show 12</option>
+                    <option value="24">Show 24</option>
+                    <option value="48">Show 48</option>
+                  </select>
+                  <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-3 h-3" />
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Active Filters & Clear All - Horizontal Layout */}
+            {activeFilters.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-gray-100">
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                  <FiGrid className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                  <span className="text-gray-600 font-medium text-[10px] flex-shrink-0">Filters:</span>
+                  <div className="flex gap-1 min-w-max">
+                    {activeFilters.map((filter, index) => (
+                      <span key={index} className="bg-gradient-to-r from-green-100 to-green-200 text-green-700 text-[9px] font-medium px-1.5 py-0.5 rounded-full flex items-center gap-1 border border-green-200 flex-shrink-0">
+                        <FiTag className="w-2 h-2" />
+                        {filter}
+                      </span>
+                    ))}
+                    <button
+                      onClick={clearAllFilters}
+                      className="bg-red-100 text-red-600 text-[9px] font-medium px-1.5 py-0.5 rounded-full flex items-center gap-1 border border-red-200 hover:bg-red-200 transition-colors duration-200 flex-shrink-0"
+                    >
+                      <FiX className="w-2 h-2" />
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile Results Count - Compact */}
+            <div className="mt-2 pt-2 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 font-medium text-xs flex items-center gap-1.5">
+                  <FiPackage className="w-3 h-3" />
+                  {totalProducts} {totalProducts === 1 ? 'product' : 'products'}
+                </span>
+                <div className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
+                  Swipe →
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Enhanced Filter and Sort Bar (Desktop View) */}
@@ -329,163 +439,6 @@ const ShopPage = () => {
             </div>
           </div>
         </div>
-
-        {/* Enhanced Mobile Filter Sidebar (Off-Canvas Menu) */}
-        <div
-          className={`fixed inset-y-0 left-0 w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out md:hidden shadow-2xl border-r border-gray-200
-            ${isMobileFilterMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        >
-          <div className="flex items-center justify-between p-6 bg-gradient-to-r from-green-600 to-green-700 text-white">
-            <div className="flex items-center gap-3">
-              <FiFilter className="w-6 h-6" />
-              <h3 className="text-xl font-bold">Filters & Sort</h3>
-            </div>
-            <button 
-              type="button" 
-              onClick={toggleMobileFilterMenu} 
-              className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-all duration-200" 
-              aria-label="Close filters"
-            >
-              <FiX className="w-6 h-6" />
-            </button>
-          </div>
-
-          {/* Filter Content */}
-          <div className="p-6 space-y-8 overflow-y-auto h-[calc(100vh-120px)]">
-            {/* Category Filter */}
-            <div>
-              <label htmlFor="mobile-category" className="flex items-center gap-2 text-gray-700 font-semibold mb-3 text-lg">
-                <FiGrid className="w-5 h-5 text-green-600" />
-                Category
-              </label>
-              <div className="relative">
-                <select
-                  id="mobile-category"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl appearance-none bg-white pr-10 text-gray-700 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-400"
-                >
-                  <option value="All Categories">All Categories</option>
-                  <option value="Chicks">Chicks</option>
-                  <option value="Feeds">Feeds</option>
-                  <option value="Eggs">Eggs</option>
-                  <option value="Vitamins">Vitamins</option>
-                  <option value="Equipment">Equipment</option>
-                </select>
-                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-5 h-5" />
-              </div>
-            </div>
-
-            {/* Price Filter */}
-            <div>
-              <label htmlFor="mobile-price" className="flex items-center gap-2 text-gray-700 font-semibold mb-3 text-lg">
-                <FiTag className="w-5 h-5 text-blue-600" />
-                Price Range
-              </label>
-              <div className="relative">
-                <select
-                  id="mobile-price"
-                  value={selectedPriceRange}
-                  onChange={(e) => setSelectedPriceRange(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl appearance-none bg-white pr-10 text-gray-700 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-400"
-                >
-                  <option value="All Prices">All Prices</option>
-                  <option value="0-10">GH₵0 - GH₵10</option>
-                  <option value="10-20">GH₵10 - GH₵20</option>
-                  <option value="20-50">GH₵20 - GH₵50</option>
-                  <option value="50-100">GH₵50 - GH₵100</option>
-                  <option value="100-500">GH₵100 - GH₵500</option>
-                </select>
-                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-5 h-5" />
-              </div>
-            </div>
-
-            {/* Rating Filter */}
-            <div>
-              <label htmlFor="mobile-rating" className="flex items-center gap-2 text-gray-700 font-semibold mb-3 text-lg">
-                <FiStar className="w-5 h-5 text-yellow-600" />
-                Rating
-              </label>
-              <div className="relative">
-                <select
-                  id="mobile-rating"
-                  value={selectedRating}
-                  onChange={(e) => setSelectedRating(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl appearance-none bg-white pr-10 text-gray-700 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-400"
-                >
-                  <option value="All Ratings">All Ratings</option>
-                  <option value="5 Stars">5 Stars</option>
-                  <option value="4 Stars">4 Stars & Up</option>
-                  <option value="3 Stars">3 Stars & Up</option>
-                </select>
-                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-5 h-5" />
-              </div>
-            </div>
-
-            {/* Sort By */}
-            <div>
-              <label htmlFor="mobile-sort" className="flex items-center gap-2 text-gray-700 font-semibold mb-3 text-lg">
-                <FiTrendingUp className="w-5 h-5 text-purple-600" />
-                Sort By
-              </label>
-              <div className="relative">
-                <select
-                  id="mobile-sort"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl appearance-none bg-white pr-10 text-gray-700 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-400"
-                >
-                  <option value="latest">Latest</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="name-asc">Name: A to Z</option>
-                </select>
-                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-5 h-5" />
-              </div>
-            </div>
-
-            {/* Show Count */}
-            <div>
-              <label htmlFor="mobile-show-count" className="flex items-center gap-2 text-gray-700 font-semibold mb-3 text-lg">
-                <FiPackage className="w-5 h-5 text-indigo-600" />
-                Show
-              </label>
-              <div className="relative">
-                <select
-                  id="mobile-show-count"
-                  value={showCount}
-                  onChange={(e) => setShowCount(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl appearance-none bg-white pr-10 text-gray-700 text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-400"
-                >
-                  <option value="12">12</option>
-                  <option value="24">24</option>
-                  <option value="48">48</option>
-                </select>
-                <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none w-5 h-5" />
-              </div>
-            </div>
-          </div>
-
-          {/* Sticky Apply Button */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200">
-            <button
-              type="button"
-              onClick={closeMobileFilterMenu}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 text-lg shadow-lg flex items-center justify-center gap-2"
-            >
-              <FiPackage className="w-5 h-5" />
-              Apply Filters
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Filter Menu Backdrop */}
-        {isMobileFilterMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-            onClick={toggleMobileFilterMenu}
-          ></div>
-        )}
 
         {/* Enhanced Product Grid and Loading/Error States */}
         {loading ? (
