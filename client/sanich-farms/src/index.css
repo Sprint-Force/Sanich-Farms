@@ -264,6 +264,16 @@ header {
   animation: fadeInUp 0.5s ease-out forwards;
 }
 
+/* Hide scrollbars while maintaining functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
 /* Ensure content has minimum height for scrolling */
   main, .main-content, #root {
     min-height: 100vh;
