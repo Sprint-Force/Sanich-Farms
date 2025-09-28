@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FiX, FiChevronRight, FiHeart, FiPhoneCall } from 'react-icons/fi';
 import logo from '../../../assets/logo.png';
 import { useCart } from '../../../context/CartContext';
-import { useWishlist } from '../../../context/WishlistContext';
+import { useWishlist } from '../../../context/WishlistContext.jsx';
 import { useAuthContext } from '../../../hooks/useAuthContext';
 import { useNavbar } from './hooks/useNavbar';
 import { getTypographyClasses } from './config/typography';
