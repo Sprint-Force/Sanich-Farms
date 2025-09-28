@@ -270,7 +270,7 @@ export const cartAPI = {
   },
 
   clearCart: async () => {
-    const response = await apiClient.delete('/cart');
+    const response = await apiClient.delete('/cart/clear');
     return response.data;
   },
 };
@@ -282,8 +282,9 @@ export const wishlistAPI = {
     return response.data;
   },
 
-  addToWishlist: async (productId, wishlistData) => {
-    const response = await apiClient.post(`/wishlist/${productId}`, wishlistData);
+  addToWishlist: async (wishlistData) => {
+    const productId = wishlistData.productId;
+    const response = await apiClient.post(`/wishlist/${productId}`, {});
     return response.data;
   },
 

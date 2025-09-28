@@ -52,7 +52,6 @@ export const WishlistProvider = ({ children }) => {
     setError(null);
     try {
       const response = await wishlistAPI.getWishlist();
-      console.log("Wishlist API response:", response);
       
       // Handle the API response structure: {status: 'success', wishlist: Array}
       const wishlistData = response.wishlist || response.data || response || [];
@@ -113,25 +112,11 @@ export const WishlistProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await wishlistAPI.addToWishlist({ productId: product.id });
-        console.log("Add to wishlist response:", response);
+        await wishlistAPI.addToWishlist({ productId: product.id });
         
-        // Handle the response and update wishlist
-        if (response.wishlist) {
-          // Transform and set the updated wishlist from response
-          const transformedWishlist = response.wishlist.map(item => ({
-            id: item.Product?.id || item.product_id,
-            name: item.Product?.name || item.name,
-            price: item.Product?.price || item.price,
-            image: item.Product?.image_url || item.image_url || item.image,
-            category: item.Product?.category || item.category,
-            description: item.Product?.description || item.description
-          }));
-          setWishlistItems(transformedWishlist);
-        } else {
-          // Refresh wishlist from server if no wishlist in response
-          await fetchWishlist();
-        }
+        // After successful API call, refresh the wishlist to get updated data from server
+        await fetchWishlist();
+        
       } catch (err) {
         console.error("Failed to add to wishlist via API:", err);
         setError("Failed to add item to wishlist. Please try again.");
@@ -177,25 +162,11 @@ export const WishlistProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await wishlistAPI.removeFromWishlist(productId);
-        console.log("Remove from wishlist response:", response);
+        await wishlistAPI.removeFromWishlist(productId);
         
-        // Handle the response and update wishlist
-        if (response.wishlist) {
-          // Transform and set the updated wishlist from response
-          const transformedWishlist = response.wishlist.map(item => ({
-            id: item.Product?.id || item.product_id,
-            name: item.Product?.name || item.name,
-            price: item.Product?.price || item.price,
-            image: item.Product?.image_url || item.image_url || item.image,
-            category: item.Product?.category || item.category,
-            description: item.Product?.description || item.description
-          }));
-          setWishlistItems(transformedWishlist);
-        } else {
-          // Refresh wishlist from server if no wishlist in response
-          await fetchWishlist();
-        }
+        // After successful API call, refresh the wishlist to get updated data from server
+        await fetchWishlist();
+        
       } catch (err) {
         console.error("Failed to remove from wishlist:", err);
         setError("Failed to remove item from wishlist. Please try again.");
