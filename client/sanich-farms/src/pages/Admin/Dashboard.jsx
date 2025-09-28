@@ -410,12 +410,14 @@ const Dashboard = () => {
               ))}
             </div>
             
-            <div className="px-4 sm:px-6 py-3 border-t border-gray-200">
-              <Link to="/admin/orders" className="text-green-600 hover:text-green-700 hover:underline text-sm font-medium flex items-center gap-1">
-                <FiEye className="w-4 h-4" />
-                View all orders
-              </Link>
-            </div>
+            {recentOrdersDisplay.length > 0 && (
+              <div className="px-4 sm:px-6 py-3 border-t border-gray-200">
+                <Link to="/admin/orders" className="text-green-600 hover:text-green-700 hover:underline text-sm font-medium flex items-center gap-1">
+                  <FiEye className="w-4 h-4" />
+                  View all orders
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Recent Bookings */}
@@ -481,12 +483,14 @@ const Dashboard = () => {
               ))}
             </div>
             
-            <div className="px-4 sm:px-6 py-3 border-t border-gray-200">
-              <Link to="/admin/bookings" className="text-green-600 hover:text-green-700 hover:underline text-sm font-medium flex items-center gap-1">
-                <FiEye className="w-4 h-4" />
-                View all bookings
-              </Link>
-            </div>
+            {recentBookingsDisplay.length > 0 && (
+              <div className="px-4 sm:px-6 py-3 border-t border-gray-200">
+                <Link to="/admin/bookings" className="text-green-600 hover:text-green-700 hover:underline text-sm font-medium flex items-center gap-1">
+                  <FiEye className="w-4 h-4" />
+                  View all bookings
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Top Products */}
@@ -508,19 +512,23 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <p className="font-semibold text-gray-900 text-sm sm:text-base">{product.isAvailable ? 'Active' : 'Inactive'}</p>
+                      <p className="font-semibold text-gray-900 text-sm sm:text-base">
+                        {product.isAvailable ? (product.stock > 0 ? 'In Stock' : 'Out of Stock') : 'Inactive'}
+                      </p>
                       <p className="text-xs sm:text-sm text-gray-500">{product.stock} in stock</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="px-4 sm:px-6 py-3 border-t border-gray-200">
-              <Link to="/admin/products" className="text-green-600 hover:text-green-700 hover:underline text-sm font-medium flex items-center gap-1">
-                <FiEye className="w-4 h-4" />
-                View all products
-              </Link>
-            </div>
+            {topProductsDisplay.length > 0 && (
+              <div className="px-4 sm:px-6 py-3 border-t border-gray-200">
+                <Link to="/admin/products" className="text-green-600 hover:text-green-700 hover:underline text-sm font-medium flex items-center gap-1">
+                  <FiEye className="w-4 h-4" />
+                  View all products
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
