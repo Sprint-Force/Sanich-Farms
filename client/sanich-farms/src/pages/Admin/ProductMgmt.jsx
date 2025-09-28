@@ -38,15 +38,23 @@ const ProductMgmt = () => {
     const load = async () => {
       setLoadingProducts(true);
       try {
-        const data = await productsAPI.getAll();
+        // Use admin endpoint that includes inactive products
+        const data = await productsAPI.getAllAdmin();
         if (!mounted) return;
         setProducts(Array.isArray(data) ? data : data.products || []);
       } catch {
-        console.warn('Failed to fetch products from API, using local mock data');
-        // fallback: keep products empty or provide a small mock
-        setProducts([]);
+        console.warn('Failed to fetch products from admin API, trying regular API');
+        // fallback to regular API
+        try {
+          const data = await productsAPI.getAll();
+          if (!mounted) return;
+          setProducts(Array.isArray(data) ? data : data.products || []);
+        } catch {
+          console.warn('Failed to fetch products from both APIs, using empty array');
+          if (mounted) setProducts([]);
+        }
       } finally {
-        setLoadingProducts(false);
+        if (mounted) setLoadingProducts(false);
       }
     };
     load();
@@ -235,7 +243,7 @@ const ProductMgmt = () => {
       }
 
       // Reload all products to ensure fresh data
-      const refreshedData = await productsAPI.getAll();
+      const refreshedData = await productsAPI.getAllAdmin();
       setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
       
       // Invalidate product cache for other components
@@ -270,7 +278,7 @@ const ProductMgmt = () => {
         }
         
         // Reload all products to ensure fresh data
-        const refreshedData = await productsAPI.getAll();
+        const refreshedData = await productsAPI.getAllAdmin();
         setProducts(Array.isArray(refreshedData) ? refreshedData : refreshedData.products || []);
         
         // Invalidate product cache for other components
