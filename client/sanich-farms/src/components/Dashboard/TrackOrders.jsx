@@ -113,12 +113,12 @@ const TrackOrders = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/30">
       {/* Header Card with reduced size */}
-      <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl sm:rounded-2xl shadow-lg text-white px-4 sm:px-6 py-4 sm:py-6 mb-4 sm:mb-6 mx-4 sm:mx-6">
+  <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl sm:rounded-2xl shadow-lg text-white px-3 sm:px-6 py-3 sm:py-6 mb-4 sm:mb-6 mx-3 sm:mx-6">
         <div className="flex items-center gap-3 mb-2 sm:mb-3">
           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-lg flex items-center justify-center">
             <FiPackage className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Track Your Orders</h1>
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-bold">Track Your Orders</h1>
         </div>
         <p className="text-green-100 text-sm sm:text-base leading-relaxed">
           Monitor your order status and delivery progress in real-time

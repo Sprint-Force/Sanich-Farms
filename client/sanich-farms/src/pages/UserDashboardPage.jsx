@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiSettings, FiLogOut, FiX, FiCreditCard, FiTruck, FiClock } from 'react-icons/fi';
+import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiHeart, FiMenu, FiLogOut, FiX, FiCreditCard, FiTruck } from 'react-icons/fi';
 import { useAuthContext } from '../hooks/useAuthContext';
 
 // Import dashboard section components
@@ -26,7 +26,6 @@ const UserDashboardPage = () => {
     if (location.pathname.includes('/dashboard/payments')) return 'payments';
     if (location.pathname.includes('/dashboard/wishlist')) return 'wishlist';
     if (location.pathname.includes('/dashboard/track-orders')) return 'track-orders';
-    if (location.pathname.includes('/dashboard/recently-viewed')) return 'recently-viewed';
     return 'overview'; // Default to overview
   };
 
@@ -128,8 +127,6 @@ const UserDashboardPage = () => {
           </nav>
         </div>
       </div>
-
-      {/* Main Dashboard Content Area Wrapper */}
       {/* This container will be block on mobile, and flex on large screens */}
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:flex relative">
 
@@ -182,14 +179,7 @@ const UserDashboardPage = () => {
             >
               <FiCalendar size={20} /> My Bookings
             </Link>
-            <Link
-              to="/dashboard/recently-viewed"
-              onClick={closeMobileMenu}
-              className={`flex items-center gap-3 px-4 py-2 rounded-lg text-lg font-medium transition-colors duration-200
-                ${activeSection === 'recently-viewed' ? 'bg-green-100 text-green-700' : 'text-gray-700 hover:bg-gray-100'}`}
-            >
-              <FiClock size={20} /> Recently Viewed
-            </Link>
+            {/* Recently Viewed intentionally removed from sidebar to simplify dashboard */}
             {/* DASHBOARD AUDIT FIX: Add payments section like Amazon - HIDDEN FOR NOW */}
             {/* <Link
               to="/dashboard/payments"
@@ -238,18 +228,18 @@ const UserDashboardPage = () => {
         {/* Content Area */}
         {/* This div now acts as the main content area for both mobile and desktop. */}
         {/* On mobile, it's always w-full. The mobile menu button is inside it. */}
-        <main className={`flex-1 w-full lg:ml-8 bg-white rounded-xl shadow-md p-6 sm:p-8
+        <main className={`flex-1 w-full lg:ml-8 bg-white rounded-xl shadow-md p-4 sm:p-6
                          ${isMobileMenuOpen ? 'hidden' : 'block'}`}> {/* Hide main content when mobile menu is open */}
-          {/* Mobile Menu Toggle Button - Moved inside main content to manage its layout */}
-          <div className="lg:hidden w-full mb-6">
+          {/* Mobile Menu Toggle Button - compact hamburger for small screens */}
+          <div className="lg:hidden w-full mb-4 flex items-center justify-between">
             <button
               onClick={toggleMobileMenu}
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition duration-300 shadow-md"
-              aria-label="Toggle Dashboard Menu"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:bg-gray-100 transition duration-150 mobile-touch-target mobile-nav-button"
+              aria-label={isMobileMenuOpen ? 'Close dashboard menu' : 'Open dashboard menu'}
             >
-              <FiSettings size={20} />
-              {isMobileMenuOpen ? 'Close Menu' : 'Open Dashboard Menu'}
+              <FiMenu size={20} />
             </button>
+            <div className="text-sm font-semibold text-gray-800">My Dashboard</div>
           </div>
           <Outlet /> {/* Renders the nested route component */}
         </main>
