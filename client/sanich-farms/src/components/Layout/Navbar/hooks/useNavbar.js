@@ -56,37 +56,37 @@ export const useNavbar = () => {
         return;
       }
 
-      // Simplified responsive threshold - lower for all screen sizes
-      const scrollThreshold = 100; // Fixed 100px threshold for all screens
+      // Enhanced responsive threshold for better UX
+      const scrollThreshold = 80; // Reduced for quicker response
       
-      // Minimum movement to register (prevent tiny movements)
+      // Optimized minimum movement detection
       const scrollDiff = Math.abs(scrollY - lastScrollY);
-      if (scrollDiff < 10) return;
+      if (scrollDiff < 8) return; // More responsive
 
-      // Clear any existing timeout
+      // Clear any existing timeout for better performance
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
 
-      // Simple logic: hide when scrolling down past threshold, show when scrolling up
+      // Enhanced logic with smoother transitions
       if (scrollY > scrollThreshold && scrollY > lastScrollY) {
-        // Scrolling down past threshold - hide navbar
+        // Scrolling down past threshold - hide navbar with modern animation
         if (!isNavbarHidden) {
           setIsNavbarHidden(true);
-          setNavbarAnimationClass('navbar-slide-up');
+          setNavbarAnimationClass('navbar-slide-up gpu-accelerated');
         }
-      } else if (scrollY < lastScrollY || scrollY <= 50) {
-        // Scrolling up or near top - show navbar
+      } else if (scrollY < lastScrollY || scrollY <= 40) {
+        // Scrolling up or near top - show navbar with smooth entrance
         if (isNavbarHidden) {
           setIsNavbarHidden(false);
-          setNavbarAnimationClass('navbar-slide-down');
+          setNavbarAnimationClass('navbar-slide-down gpu-accelerated');
         }
       }
 
-      // Debounce scroll position update
+      // Optimized debounce for smoother performance
       timeoutId = setTimeout(() => {
         setLastScrollY(scrollY);
-      }, 10);
+      }, 8);
     };
 
     // Simpler event handling - focus on scroll event

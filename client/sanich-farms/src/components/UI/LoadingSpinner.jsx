@@ -49,8 +49,8 @@ const LoadingSpinner = ({
 
   if (overlay) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 shadow-lg">
+      <div className="fixed inset-0 backdrop-blur-sm bg-white/10 flex items-center justify-center z-50">
+        <div className="bg-white/95 backdrop-blur-lg border border-white/30 rounded-lg p-6 shadow-2xl">
           {spinnerElement}
         </div>
       </div>

@@ -115,15 +115,17 @@ const UserDashboardPage = () => {
 
   return (
     <div className="font-poppins bg-gray-50 min-h-screen flex flex-col">
-      {/* Breadcrumbs */}
-      <div className="w-full py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-white">
-          <Link to="/" className="flex items-center gap-1 text-gray-300 hover:text-white transition-colors duration-200" aria-label="Go to Home page">
-            <FiHome className="w-5 h-5" />
-            <span className="text-base font-medium hidden sm:inline">Home</span>
-          </Link>
-          <FiChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-green-400 text-base font-semibold">My Dashboard</span>
+      {/* Modern Breadcrumbs - Clean & Responsive */}
+      <div className="w-full breadcrumb-modern">
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
+          <nav className="flex items-center gap-1.5 xs:gap-2 text-sm" aria-label="Breadcrumb">
+            <Link to="/" className="breadcrumb-link flex items-center gap-1 text-slate-600 hover:text-green-600" aria-label="Go to Home page">
+              <FiHome className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
+              <span className="font-medium hidden xs:inline">Home</span>
+            </Link>
+            <FiChevronRight className="w-3 h-3 xs:w-3.5 xs:h-3.5 breadcrumb-separator" />
+            <span className="breadcrumb-current text-sm xs:text-base font-semibold">My Dashboard</span>
+          </nav>
         </div>
       </div>
 

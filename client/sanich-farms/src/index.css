@@ -3,12 +3,58 @@
 /* Import admin responsive utilities */
 @import "./styles/admin-responsive.css";
 
-/* Global Poppins Font Application */
+/* Global /* Enhanced Animation delay utilities for staggered animations */
+.animation-delay-50 { animation-delay: 50ms; }
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-150 { animation-delay: 150ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-500 { animation-delay: 500ms; }
+.animation-delay-600 { animation-delay: 600ms; }
+
+/* Custom responsive utilities for extra small devices (384px+ to match Tailwind xs) */
+@media (min-width: 384px) {
+  .xs\:h-8 { height: 2rem; }
+  .xs\:h-9 { height: 2.25rem; }
+  .xs\:h-5 { height: 1.25rem; }
+  .xs\:w-5 { width: 1.25rem; }
+  .xs\:w-7 { width: 1.75rem; }
+  .xs\:h-7 { height: 1.75rem; }
+  .xs\:p-2 { padding: 0.5rem; }
+  .xs\:px-4 { padding-left: 1rem; padding-right: 1rem; }
+  .xs\:py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+  .xs\:gap-1 { gap: 0.25rem; }
+  .xs\:ml-3 { margin-left: 0.75rem; }
+  .xs\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+  .xs\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .xs\:w-10 { width: 2.5rem; }
+}
+
+/* Touch-friendly improvements for mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  /* Mobile touch targets - minimum 44px */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Enhanced mobile hover states */
+  .mobile-nav-item:active {
+    background-color: rgba(59, 130, 246, 0.1);
+    transform: scale(0.98);
+  }
+  
+  /* Better mobile tap highlighting */
+  .mobile-nav-button {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+  }
+}ont Application */
 body {
   font-family: 'Poppins', sans-serif;
 }
 
-/* Navbar hide/show behavior - works on all devices */
+/* Navbar hide/show behavior - Modern E-commerce Style */
 header.navbar-hidden {
   transform: translateY(-100%) !important;
   opacity: 0 !important;
@@ -19,37 +65,72 @@ header.navbar-visible {
   opacity: 1 !important;
 }
 
-/* Ensure smooth transitions on all devices */
+/* Enhanced smooth transitions for all devices with modern easing */
 header {
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  will-change: transform, opacity, box-shadow;
+  backface-visibility: hidden;
 }
 
-/* Custom Animations (for Navbar, Header, Testimonials, Products, Services) */
+/* Enhanced Custom Animations - Modern E-commerce Style */
 @keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from { 
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to { 
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 @keyframes slideInFromRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from { 
+    transform: translateX(100%); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
 }
 @keyframes slideDown {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { 
+    transform: translateY(-100%); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateY(0); 
+    opacity: 1; 
+  }
 }
 @keyframes slideUpHide {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(-100%); opacity: 0; }
+  from { 
+    transform: translateY(0); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translateY(-100%); 
+    opacity: 0; 
+  }
 }
 @keyframes fadeAndScaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from { 
+    opacity: 0; 
+    transform: scale(0.95) translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
 }
 @keyframes bounceOnce {
   0%, 100% { transform: translateY(0); }
   20% { transform: translateY(-3px); }
-  40% { transform: translateY(0); }
+  40% { transform: translateY(-2px); }
   60% { transform: translateY(-1px); }
+  80% { transform: translateY(0px); }
 }
 @keyframes fadeInLeft {
   from { opacity: 0; transform: translateX(-20px); }
@@ -68,20 +149,58 @@ header {
   100% { transform: translateX(100%); }
 }
 
-.animate-slide-in-right { animation: slideInRight 0.3s ease-out forwards; }
-.animate-slide-in-from-right { animation: slideInFromRight 0.4s ease-out forwards; }
-.animate-slide-down { animation: slideDown 0.3s ease-out forwards; }
-.animate-slide-up { animation: slideUp 0.6s ease-out forwards; }
-.animate-fade-in-down { animation: fadeAndScaleIn 0.2s ease-out forwards; }
-.animate-bounce-once { animation: bounceOnce 0.8s ease-in-out; }
-.animate-fade-in-left { animation: fadeInLeft 0.8s ease-out forwards; }
-.animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
+/* Modern animation classes with enhanced easing */
+.animate-slide-in-right { animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.animate-slide-in-from-right { animation: slideInFromRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.animate-slide-down { animation: slideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.animate-fade-in-down { animation: fadeAndScaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.animate-bounce-once { animation: bounceOnce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+.animate-fade-in-left { animation: fadeInLeft 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.animate-fadeIn { animation: fadeIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
 .animate-shimmer { animation: shimmer 1.5s infinite linear; }
 
-/* Animation delay utilities for staggered animations */
+/* Enhanced animation delay utilities for staggered animations */
+.animation-delay-50 { animation-delay: 50ms; }
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-150 { animation-delay: 150ms; }
 .animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
 .animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-500 { animation-delay: 500ms; }
 .animation-delay-600 { animation-delay: 600ms; }
+
+/* Modern hover effects for navbar */
+.navbar-link-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.navbar-link-hover::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  transition: left 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.navbar-link-hover:hover::before {
+  left: 0;
+}
+
+/* Performance optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
 
 /* --- Horizontal Scrollbar Hiding --- */
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -197,27 +316,29 @@ header {
     animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   }
 
-  /* Navbar slide animations */
+  /* Enhanced Navbar slide animations - Modern E-commerce */
   .navbar-slide-down {
-    animation: slideDown 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: slideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   }
 
   .navbar-slide-up {
-    animation: slideUpHide 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: slideUpHide 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   }
 
-  /* Mobile menu content staggered animation */
+  /* Enhanced mobile menu content staggered animation */
   .mobile-menu-item {
     opacity: 0;
     transform: translateX(20px);
-    animation: slideInLeft 0.3s ease-out forwards;
+    animation: slideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   }
 
-  .mobile-menu-item:nth-child(1) { animation-delay: 0.1s; }
-  .mobile-menu-item:nth-child(2) { animation-delay: 0.15s; }
-  .mobile-menu-item:nth-child(3) { animation-delay: 0.2s; }
-  .mobile-menu-item:nth-child(4) { animation-delay: 0.25s; }
-  .mobile-menu-item:nth-child(5) { animation-delay: 0.3s; }
+  .mobile-menu-item:nth-child(1) { animation-delay: 0.05s; }
+  .mobile-menu-item:nth-child(2) { animation-delay: 0.1s; }
+  .mobile-menu-item:nth-child(3) { animation-delay: 0.15s; }
+  .mobile-menu-item:nth-child(4) { animation-delay: 0.2s; }
+  .mobile-menu-item:nth-child(5) { animation-delay: 0.25s; }
+  .mobile-menu-item:nth-child(6) { animation-delay: 0.3s; }
+  .mobile-menu-item:nth-child(7) { animation-delay: 0.35s; }
   .mobile-menu-item:nth-child(6) { animation-delay: 0.35s; }
 
   @keyframes slideInLeft {
@@ -295,4 +416,81 @@ header {
   main, .main-content, #root {
     min-height: 100vh;
   }
+}
+
+/* Modern modal backdrop effects - Jumia-style blurred backgrounds */
+.modal-backdrop-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Modal glassmorphism effect */
+.modal-glass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+}
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(12px)) {
+  .modal-backdrop-blur {
+    background: rgba(255, 255, 255, 0.4);
+  }
+  
+  .modal-glass {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Modern Breadcrumb Styles - Clean E-commerce Design */
+.breadcrumb-modern {
+  background: linear-gradient(135deg, #ffffff 0%, #f8faff 50%, #ffffff 100%);
+  border-bottom: 1px solid rgba(34, 197, 94, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.5rem 0;
+}
+
+.breadcrumb-modern-compact {
+  padding: 0.375rem 0;
+}
+
+@media (min-width: 640px) {
+  .breadcrumb-modern {
+    padding: 0.625rem 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .breadcrumb-modern {
+    padding: 0.75rem 0;
+  }
+}
+
+/* Breadcrumb link hover effects */
+.breadcrumb-link {
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.breadcrumb-link:hover {
+  color: #22c55e;
+  transform: translateX(2px);
+}
+
+.breadcrumb-separator {
+  color: #94a3b8;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-current {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
 }

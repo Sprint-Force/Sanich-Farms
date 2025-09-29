@@ -1,11 +1,15 @@
 // Main Layout Components
 import React, { useEffect, useRef } from 'react';
-import { Outlet } from 'react-router-dom'; 
+import { Outlet, useLocation } from 'react-router-dom'; 
 import Navbar from './Navbar/Navbar'; 
 import Footer from './Footer/Footer'; 
 
 const MainLayout = () => {
   const navbarRef = useRef(null);
+  const location = useLocation();
+  
+  // Check if we're on the homepage
+  const isHomepage = location.pathname === '/';
 
   // Sets a CSS variable for the navbar height
   // Fixed elements like the mobile menu to start below the navbar
@@ -41,7 +45,12 @@ const MainLayout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar ref={navbarRef} /> {/* Pass ref to Navbar */}
-      <main className="flex-grow" style={{ paddingTop: 'var(--content-padding-top, 120px)' }}>
+      <main 
+        className="flex-grow" 
+        style={{ 
+          paddingTop: isHomepage ? 'var(--navbar-height, 80px)' : 'var(--content-padding-top, 120px)' 
+        }}
+      >
         <Outlet /> {/* This is where nested route components (like Home, Login, etc.) will render */}
       </main>
       <Footer />

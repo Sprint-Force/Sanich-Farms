@@ -14,15 +14,17 @@ const AboutUsPage = () => {
 
   return (
     <div className="font-poppins bg-white min-h-screen">
-      {/* Breadcrumbs */}
-      <div className="w-full py-2 xs:py-3 sm:py-4 bg-gray-900 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-white">
-          <Link to="/" className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors" aria-label="Home">
-            <FiHome className="w-3 h-3 xs:w-4 xs:h-4" />
-            <span className="text-xs xs:text-sm hidden sm:inline">Home</span>
-          </Link>
-          <FiChevronRight className="w-3 h-3 text-gray-500" />
-          <span className="text-green-400 text-xs xs:text-sm font-medium">About</span>
+      {/* Modern Breadcrumbs - Clean & Compact */}
+      <div className="w-full breadcrumb-modern">
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
+          <nav className="flex items-center gap-1.5 xs:gap-2 text-sm" aria-label="Breadcrumb">
+            <Link to="/" className="breadcrumb-link flex items-center gap-1 text-slate-600 hover:text-green-600" aria-label="Home">
+              <FiHome className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
+              <span className="font-medium hidden xs:inline">Home</span>
+            </Link>
+            <FiChevronRight className="w-3 h-3 xs:w-3.5 xs:h-3.5 breadcrumb-separator" />
+            <span className="breadcrumb-current text-sm xs:text-base font-semibold">About</span>
+          </nav>
         </div>
       </div>
 
