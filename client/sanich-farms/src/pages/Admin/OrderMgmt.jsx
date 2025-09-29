@@ -141,25 +141,61 @@ const OrderMgmt = () => {
 
   // Normalize order date from different API shapes and format
   const getOrderDate = (order, withTime = false) => {
-    if (!order) return '';
-    const raw = order?.date || order?.orderDate || order?.createdAt || order?.created_at || order?.timestamp || order?.created || order?.order_date || '';
-    if (!raw) return '';
-    try {
-      const d = new Date(raw);
-      return withTime ? d.toLocaleString() : d.toLocaleDateString();
-    } catch {
-      return String(raw);
+    if (!order) return 'N/A';
+    
+    // Try multiple possible date field names from backend
+    const dateFields = [
+      order.ordered_at,
+      order.created_at, 
+      order.createdAt,
+      order.date,
+      order.orderDate,
+      order.timestamp,
+      order.created,
+      order.order_date,
+      order.updatedAt,
+      order.updated_at
+    ];
+    
+    // Find the first valid date
+    for (const dateField of dateFields) {
+      if (dateField) {
+        try {
+          const d = new Date(dateField);
+          if (!isNaN(d.getTime())) {
+            return withTime ? d.toLocaleString() : d.toLocaleDateString();
+          }
+        } catch {
+          continue; // Try next field
+        }
+      }
     }
+    
+    // If no valid date found, return current date as fallback
+    const fallbackDate = new Date();
+    return withTime ? fallbackDate.toLocaleString() : fallbackDate.toLocaleDateString();
   };
 
-  const getNextStatus = (currentStatus) => {
-    const s = String(currentStatus || '').toLowerCase();
-    const statusFlow = {
-      pending: 'Processing',
-      processing: 'Shipped',
-      shipped: 'Delivered'
-    };
-    return statusFlow[s] || null;
+  const getNextStatus = () => {
+    // Remove manual status progression - status updates are automatic
+    return null;
+  };
+
+  const canCompleteOrder = (order) => {
+    const status = String(order?.status || '').toLowerCase();
+    // Can complete if order is processing (paid and ready for delivery)
+    return status === 'processing';
+  };
+
+  const canCancelOrder = (order) => {
+    const status = String(order?.status || '').toLowerCase();
+    return status !== 'delivered' && status !== 'cancelled' && status !== 'refunded';
+  };
+
+  const completeOrder = (orderId) => {
+    if (window.confirm('Mark this order as completed/delivered?')) {
+      updateOrderStatus(orderId, 'delivered');
+    }
   };
 
   // Load orders from API on mount
@@ -171,6 +207,22 @@ const OrderMgmt = () => {
         const data = await ordersAPI.getAll();
         const list = Array.isArray(data) ? data : data?.orders || data?.data || [];
         if (mounted && Array.isArray(list)) {
+          // Debug: Log the first order to see available fields
+          if (list.length > 0) {
+            console.log('Sample order data:', list[0]);
+            console.log('Available date fields:', {
+              ordered_at: list[0].ordered_at,
+              created_at: list[0].created_at,
+              createdAt: list[0].createdAt,
+              date: list[0].date,
+              orderDate: list[0].orderDate,
+              timestamp: list[0].timestamp,
+              created: list[0].created,
+              order_date: list[0].order_date,
+              updatedAt: list[0].updatedAt,
+              updated_at: list[0].updated_at
+            });
+          }
           setOrders(list);
         }
       } catch (err) {
@@ -204,21 +256,31 @@ const OrderMgmt = () => {
   const updateOrderStatus = (orderId, newStatus) => {
     const doUpdate = async () => {
       try {
+        // Try to update status on server first
+        let apiSuccess = false;
         try {
-          // try a patch endpoint on server
           await apiClient.patch(`/orders/${orderId}`, { status: newStatus });
-        } catch {
-          console.warn('Status patch failed, proceeding with local update');
+          console.log(`Successfully updated order ${orderId} status to ${newStatus} in backend`);
+          apiSuccess = true;
+        } catch (error) {
+          console.error('Status patch failed:', error);
+          alert(`Failed to update order status on server. Error: ${error.response?.data?.message || error.message || 'Unknown error'}`);
+          return; // Don't update UI if backend update failed
         }
 
-        setOrders(prev => prev.map(order => 
-          matchesOrderId(order, orderId) ? { ...order, status: newStatus } : order
-        ));
-        if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
-          setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+        // Only update local state if backend update was successful
+        if (apiSuccess) {
+          setOrders(prev => prev.map(order => 
+            matchesOrderId(order, orderId) ? { ...order, status: newStatus } : order
+          ));
+          if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
+            setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+          }
+          console.log(`Local state updated for order ${orderId}`);
         }
-      } catch {
-        console.warn('Failed to update order status');
+      } catch (error) {
+        console.error('Failed to update order status:', error);
+        alert('Failed to update order status. Please try again.');
       }
     };
 
@@ -241,28 +303,38 @@ const OrderMgmt = () => {
       const currentTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
       try {
+        // Try to verify payment on server first
+        let apiSuccess = false;
         try {
           await apiClient.post(`/orders/${orderId}/verify-payment`);
-        } catch {
-          console.warn('Payment verify endpoint failed, falling back to local update');
+          console.log(`Successfully verified payment for order ${orderId} in backend`);
+          apiSuccess = true;
+        } catch (error) {
+          console.error('Payment verify endpoint failed:', error);
+          alert(`Failed to verify payment on server. Error: ${error.response?.data?.message || error.message || 'Unknown error'}`);
+          return; // Don't update UI if backend update failed
         }
 
-        setOrders(prev => prev.map(order => 
-          matchesOrderId(order, orderId) ? { 
-            ...order, 
-            paymentStatus: 'Paid',
-            paymentVerifiedBy: currentAdmin,
-            paymentVerifiedAt: currentTime
-          } : order
-        ));
+        // Only update local state if backend update was successful
+        if (apiSuccess) {
+          setOrders(prev => prev.map(order => 
+            matchesOrderId(order, orderId) ? { 
+              ...order, 
+              paymentStatus: 'Paid',
+              paymentVerifiedBy: currentAdmin,
+              paymentVerifiedAt: currentTime
+            } : order
+          ));
 
-        if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
-          setSelectedOrder(prev => ({ 
-            ...prev, 
-            paymentStatus: 'Paid',
-            paymentVerifiedBy: currentAdmin,
-            paymentVerifiedAt: currentTime
-          }));
+          if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
+            setSelectedOrder(prev => ({ 
+              ...prev, 
+              paymentStatus: 'Paid',
+              paymentVerifiedBy: currentAdmin,
+              paymentVerifiedAt: currentTime
+            }));
+          }
+          console.log(`Payment verification updated for order ${orderId}`);
         }
       } catch (err) {
         console.warn('Failed to verify payment', err);
@@ -275,28 +347,38 @@ const OrderMgmt = () => {
   const markPaymentPending = (orderId) => {
     const doPending = async () => {
       try {
+        // Try to mark payment pending on server first
+        let apiSuccess = false;
         try {
           await apiClient.post(`/orders/${orderId}/mark-pending`);
-        } catch {
-          console.warn('mark-pending endpoint failed, updating locally');
+          console.log(`Successfully marked payment as pending for order ${orderId} in backend`);
+          apiSuccess = true;
+        } catch (error) {
+          console.error('mark-pending endpoint failed:', error);
+          alert(`Failed to mark payment as pending on server. Error: ${error.response?.data?.message || error.message || 'Unknown error'}`);
+          return; // Don't update UI if backend update failed
         }
 
-        setOrders(prev => prev.map(order => 
-          matchesOrderId(order, orderId) ? { 
-            ...order, 
-            paymentStatus: 'Pending',
-            paymentVerifiedBy: null,
-            paymentVerifiedAt: null
-          } : order
-        ));
+        // Only update local state if backend update was successful
+        if (apiSuccess) {
+          setOrders(prev => prev.map(order => 
+            matchesOrderId(order, orderId) ? { 
+              ...order, 
+              paymentStatus: 'Pending',
+              paymentVerifiedBy: null,
+              paymentVerifiedAt: null
+            } : order
+          ));
 
-        if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
-          setSelectedOrder(prev => ({ 
-            ...prev, 
-            paymentStatus: 'Pending',
-            paymentVerifiedBy: null,
-            paymentVerifiedAt: null
-          }));
+          if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
+            setSelectedOrder(prev => ({ 
+              ...prev, 
+              paymentStatus: 'Pending',
+              paymentVerifiedBy: null,
+              paymentVerifiedAt: null
+            }));
+          }
+          console.log(`Payment status updated to pending for order ${orderId}`);
         }
       } catch {
         console.warn('Failed to mark payment pending');
@@ -308,43 +390,15 @@ const OrderMgmt = () => {
 
   const cancelOrder = (orderId) => {
     if (window.confirm('Are you sure you want to cancel this order?')) {
-      const doCancel = async () => {
-        try {
-          try {
-            await ordersAPI.cancel(orderId);
-          } catch {
-            console.warn('ordersAPI.cancel failed, trying patch');
-            try { await apiClient.patch(`/orders/${orderId}`, { status: 'Cancelled' }); } catch (err) { console.warn('patch cancel failed', err); }
-          }
-          updateOrderStatus(orderId, 'Cancelled');
-        } catch {
-          console.warn('Failed to cancel order');
-          updateOrderStatus(orderId, 'Cancelled');
-        }
-      };
-
-      doCancel();
+      // Use the improved updateOrderStatus function which ensures backend persistence
+      updateOrderStatus(orderId, 'Cancelled');
     }
   };
 
   const refundOrder = (orderId) => {
     if (window.confirm('Are you sure you want to refund this order?')) {
-      const doRefund = async () => {
-        try {
-          try {
-            await apiClient.patch(`/orders/${orderId}/refund`);
-          } catch {
-            console.warn('refund endpoint failed, trying status patch');
-            try { await apiClient.patch(`/orders/${orderId}`, { status: 'Refunded' }); } catch (err) { console.warn('patch refund failed', err); }
-          }
-          updateOrderStatus(orderId, 'Refunded');
-        } catch {
-          console.warn('Failed to refund order');
-          updateOrderStatus(orderId, 'Refunded');
-        }
-      };
-
-      doRefund();
+      // Use the improved updateOrderStatus function which ensures backend persistence  
+      updateOrderStatus(orderId, 'Refunded');
     }
   };
 
@@ -369,10 +423,22 @@ const OrderMgmt = () => {
       return;
     }
 
-  const refundValue = refundAmount || Number(selectedOrder?.total || 0);
+    // Validate refund amount
+    const orderTotal = Number(selectedOrder?.total || selectedOrder?.amount || 0);
+    const refundValue = refundAmount ? Number(refundAmount) : orderTotal;
+    
+    if (isNaN(refundValue) || refundValue < 0) {
+      alert('Please enter a valid refund amount');
+      return;
+    }
+    
+    if (refundValue > orderTotal) {
+      alert(`Refund amount cannot exceed order total (GH₵${orderTotal.toFixed(2)})`);
+      return;
+    }
     
     // Process the return/refund
-    updateOrderStatus(selectedOrder.id, 'Refunded');
+    updateOrderStatus(selectedOrder?.id || selectedOrder?._id, 'Refunded');
     
     // In a real app, you would also:
     // - Create a return record
@@ -387,23 +453,146 @@ const OrderMgmt = () => {
   };
 
   const downloadInvoice = () => {
-    // In a real app, you would generate a PDF invoice
+    // Generate a professional invoice HTML
     const invoiceData = {
-  orderNumber: selectedOrder?.id || selectedOrder?._id || '',
-  customer: {
-    name: getCustomerName(selectedOrder),
-    email: getCustomerEmail(selectedOrder),
-    phone: getCustomerPhone(selectedOrder)
-  },
-  items: getOrderItems(selectedOrder).map(it => ({ id: it.id, name: it.name, qty: it.quantity, price: it.price })),
-  total: Number(selectedOrder?.total || selectedOrder?.amount || getOrderItems(selectedOrder).reduce((s,it)=>s + (it.price * it.quantity),0) || 0),
-  date: selectedOrder?.date || '',
-  paymentMethod: selectedOrder?.paymentMethod || ''
+      orderNumber: selectedOrder?.id || selectedOrder?._id || '',
+      customer: {
+        name: getCustomerName(selectedOrder),
+        email: getCustomerEmail(selectedOrder),
+        phone: getCustomerPhone(selectedOrder),
+        address: selectedOrder?.delivery_address || selectedOrder?.shippingAddress || 'N/A'
+      },
+      items: getOrderItems(selectedOrder),
+      subtotal: getOrderItems(selectedOrder).reduce((sum, item) => sum + (item.price * item.quantity), 0),
+      deliveryFee: selectedOrder?.delivery_fee || 0,
+      total: Number(selectedOrder?.total || selectedOrder?.amount || 0),
+      date: getOrderDate(selectedOrder),
+      paymentMethod: selectedOrder?.payment_method || selectedOrder?.paymentMethod || 'N/A',
+      status: selectedOrder?.status || 'N/A'
     };
-    
-    // For demo purposes, we'll just log the invoice data
-    console.log('Invoice data:', invoiceData);
-    alert('Invoice downloaded successfully!');
+
+    // Create professional invoice HTML
+    const invoiceHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Invoice - ${invoiceData.orderNumber}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; color: #333; background: #f8f9fa; }
+          .invoice-container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+          .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 2px solid #10b981; padding-bottom: 20px; }
+          .logo { color: #10b981; font-size: 28px; font-weight: bold; }
+          .invoice-info { text-align: right; color: #666; }
+          .invoice-title { font-size: 24px; color: #10b981; margin-bottom: 10px; }
+          .billing-section { display: flex; justify-content: space-between; margin-bottom: 40px; }
+          .billing-info h3 { color: #10b981; margin-bottom: 10px; }
+          .billing-info p { margin: 5px 0; color: #666; }
+          .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+          .items-table th { background: #10b981; color: white; padding: 12px; text-align: left; }
+          .items-table td { padding: 12px; border-bottom: 1px solid #eee; }
+          .items-table tr:nth-child(even) { background: #f8f9fa; }
+          .total-section { margin-top: 30px; text-align: right; }
+          .total-row { display: flex; justify-content: space-between; padding: 8px 0; }
+          .total-row.final { border-top: 2px solid #10b981; font-size: 18px; font-weight: bold; color: #10b981; margin-top: 10px; padding-top: 15px; }
+          .footer { margin-top: 40px; text-align: center; color: #666; border-top: 1px solid #eee; padding-top: 20px; }
+          .status-badge { background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+          @media print { body { background: white; } .invoice-container { box-shadow: none; padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <div class="invoice-container">
+          <div class="header">
+            <div>
+              <div class="logo">SANICH FARMS</div>
+              <p style="color: #666; margin: 5px 0;">Premium Agricultural Products & Services</p>
+              <p style="color: #666; margin: 0;">📍 Ghana | 📞 +233 XX XXX XXXX | 📧 info@sanichfarms.com</p>
+            </div>
+            <div class="invoice-info">
+              <div class="invoice-title">INVOICE</div>
+              <p><strong>Invoice #:</strong> INV-${invoiceData.orderNumber}</p>
+              <p><strong>Date:</strong> ${invoiceData.date}</p>
+              <p><strong>Status:</strong> <span class="status-badge">${invoiceData.status.toUpperCase()}</span></p>
+            </div>
+          </div>
+
+          <div class="billing-section">
+            <div class="billing-info">
+              <h3>Bill To:</h3>
+              <p><strong>${invoiceData.customer.name}</strong></p>
+              <p>📧 ${invoiceData.customer.email}</p>
+              <p>📞 ${invoiceData.customer.phone}</p>
+              <p>📍 ${invoiceData.customer.address}</p>
+            </div>
+            <div class="billing-info">
+              <h3>Order Details:</h3>
+              <p><strong>Order #:</strong> ${invoiceData.orderNumber}</p>
+              <p><strong>Payment Method:</strong> ${invoiceData.paymentMethod}</p>
+              <p><strong>Items:</strong> ${invoiceData.items.length} item(s)</p>
+            </div>
+          </div>
+
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Item Description</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: right;">Unit Price</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${invoiceData.items.map(item => `
+                <tr>
+                  <td><strong>${item.name || 'Product'}</strong></td>
+                  <td style="text-align: center;">${item.quantity || 0}</td>
+                  <td style="text-align: right;">GH₵${Number(item.price || 0).toFixed(2)}</td>
+                  <td style="text-align: right;"><strong>GH₵${(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}</strong></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="total-section">
+            <div class="total-row">
+              <span>Subtotal:</span>
+              <span>GH₵${invoiceData.subtotal.toFixed(2)}</span>
+            </div>
+            ${invoiceData.deliveryFee > 0 ? `
+              <div class="total-row">
+                <span>Delivery Fee:</span>
+                <span>GH₵${invoiceData.deliveryFee.toFixed(2)}</span>
+              </div>
+            ` : ''}
+            <div class="total-row final">
+              <span>TOTAL AMOUNT:</span>
+              <span>GH₵${invoiceData.total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p><strong>Thank you for choosing Sanich Farms!</strong></p>
+            <p>For questions about this invoice, contact us at info@sanichfarms.com</p>
+            <p style="font-size: 12px; margin-top: 15px;">This is a computer-generated invoice and is valid without signature.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Create and download the invoice
+    const blob = new Blob([invoiceHtml], { type: 'text/html' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Invoice-${invoiceData.orderNumber}-${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    alert('Invoice downloaded successfully! You can open the HTML file in any browser to view or print.');
     setShowInvoiceModal(false);
   };
 
@@ -635,7 +824,7 @@ const OrderMgmt = () => {
               </div>
               <div className="text-right ml-3">
                 <p className="text-lg font-bold text-gray-900">GH₵{Number(order?.total || order?.amount || 0).toFixed(2)}</p>
-                <p className="text-xs text-gray-500">{getOrderDate(order)}</p>
+                <p className="text-xs text-gray-500">{getOrderDate(order) || 'Date N/A'}</p>
               </div>
             </div>
 
@@ -704,7 +893,7 @@ const OrderMgmt = () => {
               <div className="flex items-center gap-2">
                 {String(order?.paymentStatus || '').toLowerCase() === 'pending' && (
                   <button
-                    onClick={() => verifyPayment(order.id)}
+                    onClick={() => verifyPayment(order?.id || order?._id)}
                     className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-medium transition"
                     title="Verify Payment"
                   >
@@ -713,11 +902,29 @@ const OrderMgmt = () => {
                 )}
                 {getNextStatus(order?.status) && (
                   <button
-                    onClick={() => updateOrderStatus(order.id, getNextStatus(order?.status))}
+                    onClick={() => updateOrderStatus(order?.id || order?._id, getNextStatus(order?.status))}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium transition"
                     title={`Update to ${getNextStatus(order?.status)}`}
                   >
                     Update
+                  </button>
+                )}
+                {canCompleteOrder(order) && (
+                  <button
+                    onClick={() => completeOrder(order?.id || order?._id)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-medium transition"
+                    title="Mark as Completed/Delivered"
+                  >
+                    Complete
+                  </button>
+                )}
+                {canCancelOrder(order) && (
+                  <button
+                    onClick={() => cancelOrder(order?.id || order?._id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-medium transition"
+                    title="Cancel Order"
+                  >
+                    Cancel
                   </button>
                 )}
               </div>
@@ -830,7 +1037,7 @@ const OrderMgmt = () => {
                       </span>
                       {String(order?.paymentStatus || '').toLowerCase() === 'pending' && (
                         <button
-                          onClick={() => verifyPayment(order.id)}
+                          onClick={() => verifyPayment(order?.id || order?._id)}
                           className="text-green-600 hover:text-green-900 p-1"
                           title="Verify Payment"
                         >
@@ -840,7 +1047,10 @@ const OrderMgmt = () => {
                     </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {getOrderDate(order)}
+                    <div className="flex flex-col">
+                      <span>{getOrderDate(order)}</span>
+                      <span className="text-xs text-gray-500">{getOrderDate(order, true).split(' ')[1] || ''}</span>
+                    </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
@@ -881,6 +1091,24 @@ const OrderMgmt = () => {
                           title={`Update to ${getNextStatus(order?.status)}`}
                         >
                           <FiEdit2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      {canCompleteOrder(order) && (
+                        <button
+                          onClick={() => completeOrder(order?.id || order?._id)}
+                          className="text-green-600 hover:text-green-900 p-1"
+                          title="Mark as Completed/Delivered"
+                        >
+                          <FiCheck className="w-4 h-4" />
+                        </button>
+                      )}
+                      {canCancelOrder(order) && (
+                        <button
+                          onClick={() => cancelOrder(order?.id || order?._id)}
+                          className="text-red-600 hover:text-red-900 p-1"
+                          title="Cancel Order"
+                        >
+                          <FiXCircle className="w-4 h-4" />
                         </button>
                       )}
                     </div>
@@ -1014,14 +1242,30 @@ const OrderMgmt = () => {
                   
                   {selectedOrder.status !== 'Cancelled' && selectedOrder.status !== 'Refunded' && (
                     <>
+                      {canCompleteOrder(selectedOrder) && (
+                        <button
+                          onClick={() => completeOrder(selectedOrder?.id || selectedOrder?._id)}
+                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                        >
+                          Complete Order
+                        </button>
+                      )}
+                      {canCancelOrder(selectedOrder) && (
+                        <button
+                          onClick={() => cancelOrder(selectedOrder?.id || selectedOrder?._id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                        >
+                          Cancel Order
+                        </button>
+                      )}
                       <button
-                        onClick={() => cancelOrder(selectedOrder.id)}
+                        onClick={() => cancelOrder(selectedOrder?.id || selectedOrder?._id)}
                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                       >
                         Cancel Order
                       </button>
                       <button
-                        onClick={() => refundOrder(selectedOrder.id)}
+                        onClick={() => refundOrder(selectedOrder?.id || selectedOrder?._id)}
                         className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                       >
                         Refund Order
@@ -1068,107 +1312,176 @@ const OrderMgmt = () => {
 
       {/* Invoice Modal */}
       {showInvoiceModal && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">Generate Invoice</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b z-10 p-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900">Invoice Preview</h3>
                 <button
                   onClick={() => setShowInvoiceModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 p-1"
                 >
                   <FiX className="w-6 h-6" />
                 </button>
               </div>
+            </div>
 
-              <div className="space-y-6">
-                {/* Invoice Header */}
-                <div className="text-center border-b pb-4">
-                  <h2 className="text-2xl font-bold text-green-600">SANICH FARMS</h2>
-                  <p className="text-sm text-gray-600">Agricultural Products & Services</p>
-                  <p className="text-sm text-gray-600">
-                    <FiMapPin className="inline w-4 h-4 mr-1" />
-                    Ghana | 
-                    <FiPhone className="inline w-4 h-4 ml-2 mr-1" />
-                    +233 XX XXX XXXX | 
-                    <FiMail className="inline w-4 h-4 ml-2 mr-1" />
-                    info@sanichfarms.com
-                  </p>
-                </div>
-
-                {/* Invoice Details */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Bill To:</h4>
-                    <p className="text-sm text-gray-600">{getCustomerName(selectedOrder)}</p>
-                    <p className="text-sm text-gray-600">{getCustomerEmail(selectedOrder)}</p>
-                    <p className="text-sm text-gray-600">{getCustomerPhone(selectedOrder)}</p>
-                  </div>
-                  <div className="text-right">
-                    <h4 className="font-semibold text-gray-900 mb-2">Invoice Details:</h4>
-                    <p className="text-sm text-gray-600">Invoice #: INV-{selectedOrder.id}</p>
-                    <p className="text-sm text-gray-600">Order #: {selectedOrder.id}</p>
-                    <p className="text-sm text-gray-600">Date: {getOrderDate(selectedOrder)}</p>
-                    <p className="text-sm text-gray-600">Payment: {selectedOrder.paymentMethod}</p>
-                  </div>
-                </div>
-
-                {/* Items Table */}
+            <div className="p-8">
+              {/* Invoice Header */}
+              <div className="flex justify-between items-start mb-8 pb-6 border-b-2 border-green-500">
                 <div>
-                  <table className="w-full border border-gray-200">
-                    <thead className="bg-gray-50">
+                  <h1 className="text-3xl font-bold text-green-600 mb-2">SANICH FARMS</h1>
+                  <p className="text-gray-600 mb-1">Premium Agricultural Products & Services</p>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p className="flex items-center">
+                      <FiMapPin className="w-4 h-4 mr-2" />
+                      Ghana
+                    </p>
+                    <p className="flex items-center">
+                      <FiPhone className="w-4 h-4 mr-2" />
+                      +233 XX XXX XXXX
+                    </p>
+                    <p className="flex items-center">
+                      <FiMail className="w-4 h-4 mr-2" />
+                      info@sanichfarms.com
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <h2 className="text-2xl font-bold text-green-600 mb-4">INVOICE</h2>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="font-semibold">Invoice #:</span> INV-{selectedOrder?.id || selectedOrder?._id}</p>
+                    <p><span className="font-semibold">Order #:</span> {selectedOrder?.id || selectedOrder?._id}</p>
+                    <p><span className="font-semibold">Date:</span> {getOrderDate(selectedOrder)}</p>
+                    <p><span className="font-semibold">Status:</span> 
+                      <span className={`ml-2 px-2 py-1 text-xs rounded-full ${getStatusColor(selectedOrder?.status)}`}>
+                        {selectedOrder?.status?.toUpperCase()}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Billing Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div>
+                  <h3 className="text-lg font-semibold text-green-600 mb-4">Bill To:</h3>
+                  <div className="space-y-2 text-sm">
+                    <p className="font-semibold text-lg">{getCustomerName(selectedOrder)}</p>
+                    <p className="flex items-center text-gray-600">
+                      <FiMail className="w-4 h-4 mr-2" />
+                      {getCustomerEmail(selectedOrder)}
+                    </p>
+                    <p className="flex items-center text-gray-600">
+                      <FiPhone className="w-4 h-4 mr-2" />
+                      {getCustomerPhone(selectedOrder)}
+                    </p>
+                    <p className="flex items-start text-gray-600">
+                      <FiMapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>{selectedOrder?.delivery_address || selectedOrder?.shippingAddress || 'N/A'}</span>
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-green-600 mb-4">Order Details:</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="font-semibold">Payment Method:</span> {selectedOrder?.payment_method || selectedOrder?.paymentMethod || 'N/A'}</p>
+                    <p><span className="font-semibold">Payment Status:</span> 
+                      <span className={`ml-2 px-2 py-1 text-xs rounded-full ${getPaymentStatusColor(selectedOrder?.paymentStatus)}`}>
+                        {selectedOrder?.paymentStatus}
+                      </span>
+                    </p>
+                    <p><span className="font-semibold">Total Items:</span> {getOrderItems(selectedOrder).length} item(s)</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Items Ordered</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
+                    <thead className="bg-green-500 text-white">
                       <tr>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-900">Item</th>
-                        <th className="px-4 py-2 text-center text-sm font-medium text-gray-900">Qty</th>
-                        <th className="px-4 py-2 text-right text-sm font-medium text-gray-900">Price</th>
-                        <th className="px-4 py-2 text-right text-sm font-medium text-gray-900">Total</th>
+                        <th className="px-6 py-3 text-left font-semibold">Item Description</th>
+                        <th className="px-4 py-3 text-center font-semibold">Qty</th>
+                        <th className="px-4 py-3 text-right font-semibold">Unit Price</th>
+                        <th className="px-4 py-3 text-right font-semibold">Total</th>
                       </tr>
                     </thead>
-                    <tbody>
-                            {getOrderItems(selectedOrder).map((item, index) => (
-                              <tr key={index} className="border-t border-gray-200">
-                                <td className="px-4 py-2 text-sm text-gray-900">{item?.name || ''}</td>
-                                <td className="px-4 py-2 text-sm text-gray-600 text-center">{item?.quantity || 0}</td>
-                                <td className="px-4 py-2 text-sm text-gray-600 text-right">GH₵{Number(item?.price || 0).toFixed(2)}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900 text-right font-medium">
-                                  GH₵{(Number(item?.price || 0) * Number(item?.quantity || 0)).toFixed(2)}
-                                </td>
-                              </tr>
-                            ))}
-                            <tr className="border-t-2 border-gray-300 bg-gray-50">
-                              <td colSpan="3" className="px-4 py-2 text-sm font-semibold text-gray-900 text-right">
-                                Total Amount:
-                              </td>
-                              <td className="px-4 py-2 text-lg font-bold text-green-600 text-right">
-                                GH₵{Number(selectedOrder?.total || selectedOrder?.amount || 0).toFixed(2)}
-                              </td>
-                            </tr>
+                    <tbody className="divide-y divide-gray-200">
+                      {getOrderItems(selectedOrder).map((item, index) => (
+                        <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center">
+                              {item.image && (
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name} 
+                                  className="w-8 h-8 rounded object-cover mr-3"
+                                />
+                              )}
+                              <span className="font-medium text-gray-900">{item.name || 'Product'}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-center text-gray-600">{item.quantity || 0}</td>
+                          <td className="px-4 py-4 text-right text-gray-600">GH₵{Number(item.price || 0).toFixed(2)}</td>
+                          <td className="px-4 py-4 text-right font-semibold text-gray-900">
+                            GH₵{(Number(item.price || 0) * Number(item.quantity || 0)).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
+              </div>
 
-                {/* Footer */}
-                <div className="text-center text-sm text-gray-500 border-t pt-4">
-                  <p>Thank you for your business!</p>
-                  <p>This is a computer-generated invoice.</p>
+              {/* Totals */}
+              <div className="flex justify-end">
+                <div className="w-72">
+                  <div className="space-y-2">
+                    <div className="flex justify-between py-2">
+                      <span className="text-gray-600">Subtotal:</span>
+                      <span className="font-medium">GH₵{getOrderItems(selectedOrder).reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}</span>
+                    </div>
+                    {(selectedOrder?.delivery_fee && Number(selectedOrder.delivery_fee) > 0) && (
+                      <div className="flex justify-between py-2">
+                        <span className="text-gray-600">Delivery Fee:</span>
+                        <span className="font-medium">GH₵{Number(selectedOrder.delivery_fee).toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="border-t-2 border-green-500 pt-3 mt-3">
+                      <div className="flex justify-between">
+                        <span className="text-lg font-bold text-green-600">TOTAL AMOUNT:</span>
+                        <span className="text-xl font-bold text-green-600">GH₵{Number(selectedOrder?.total || selectedOrder?.amount || 0).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
-                <button
-                  onClick={() => setShowInvoiceModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={downloadInvoice}
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition flex items-center gap-2"
-                >
-                  <FiFileText className="w-4 h-4" />
-                  Download Invoice
-                </button>
+              {/* Footer */}
+              <div className="mt-12 pt-6 border-t text-center text-gray-600">
+                <p className="text-lg font-semibold text-green-600 mb-2">Thank you for choosing Sanich Farms!</p>
+                <p className="mb-2">For questions about this invoice, contact us at info@sanichfarms.com</p>
+                <p className="text-xs text-gray-500">This is a computer-generated invoice and is valid without signature.</p>
               </div>
+            </div>
+
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t flex justify-end gap-3">
+              <button
+                onClick={() => setShowInvoiceModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={downloadInvoice}
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition flex items-center gap-2"
+              >
+                <FiFileText className="w-4 h-4" />
+                Download Invoice
+              </button>
             </div>
           </div>
         </div>
