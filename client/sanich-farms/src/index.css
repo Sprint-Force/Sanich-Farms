@@ -33,23 +33,28 @@
 
 /* Touch-friendly improvements for mobile devices */
 @media (hover: none) and (pointer: coarse) {
-  /* Mobile touch targets - minimum 44px */
+  /* Mobile touch targets - minimum 48px for comfortable tapping */
   .mobile-touch-target {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px;
+    min-width: 48px;
+    padding: 6px; /* extra tappable area */
   }
   
   /* Enhanced mobile hover states */
   .mobile-nav-item:active {
-    background-color: rgba(59, 130, 246, 0.1);
-    transform: scale(0.98);
+    background-color: rgba(59, 130, 246, 0.06);
+    transform: scale(0.99);
   }
   
-  /* Better mobile tap highlighting */
+  /* Better mobile tap highlighting and spacing */
   .mobile-nav-button {
-    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.08);
+    padding: 6px; /* ensure comfortable touch area */
+    border-radius: 0.5rem;
   }
-}ont Application */
+}
+
+/* Font Application */
 body {
   font-family: 'Poppins', sans-serif;
 }
