@@ -3,15 +3,18 @@ import {
   FiCalendar,
   FiCheck,
   FiChevronDown,
+  FiClock,
   FiCreditCard,
   FiDollarSign,
   FiDownload,
   FiEdit2,
   FiEye,
   FiFilter,
+  FiHome,
   FiPackage,
   FiRefreshCw,
   FiSearch,
+  FiSmartphone,
   FiTruck,
   FiUser,
   FiX,
@@ -82,14 +85,73 @@ const OrderMgmt = () => {
     }
   };
 
+  // Comprehensive payment information getter - matches backend Order and Payment models
+  const getPaymentInfo = (order) => {
+    if (!order) return {
+      status: 'unknown',
+      method: 'unknown',
+      amount: 0,
+      reference: '',
+      paidAt: null,
+      currency: 'GHS'
+    };
+
+    return {
+      // Payment status from Order model (unpaid, paid, failed, refunded)
+      status: order.payment_status || order.paymentStatus || 'unpaid',
+      
+      // Payment method from Order model (cash, mobile_money, bank_transfer) 
+      method: order.payment_method || order.paymentMethod || 'unknown',
+      
+      // Amount and currency
+      amount: Number(order.total_amount || order.totalAmount || order.total || order.amount || 0),
+      currency: order.currency || 'GHS',
+      
+      // Transaction reference from Payment model
+      reference: order.transaction_reference || order.paymentReference || order.reference || '',
+      
+      // Payment timestamp
+      paidAt: order.paid_at || order.paidAt || null,
+      
+      // Provider response for debugging
+      providerResponse: order.provider_response || order.providerResponse || null
+    };
+  };
+
   const getPaymentStatusColor = (status) => {
     const s = String(status || '').toLowerCase();
     switch (s) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'refunded': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'paid': return 'bg-green-100 text-green-800 border-green-200';
+      case 'unpaid': 
+      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'failed': return 'bg-red-100 text-red-800 border-red-200';
+      case 'refunded': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'cancelled': return 'bg-gray-100 text-gray-800 border-gray-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getPaymentMethodDisplay = (method) => {
+    const m = String(method || '').toLowerCase();
+    switch (m) {
+      case 'cash': return { text: 'Cash Payment', icon: <FiDollarSign className="w-3 h-3" /> };
+      case 'mobile_money': return { text: 'Mobile Money', icon: <FiSmartphone className="w-3 h-3" /> };
+      case 'bank_transfer': return { text: 'Bank Transfer', icon: <FiHome className="w-3 h-3" /> };
+      case 'card': return { text: 'Card Payment', icon: <FiCreditCard className="w-3 h-3" /> };
+      default: return { text: 'Unknown', icon: <FiX className="w-3 h-3" /> };
+    }
+  };
+
+  const getPaymentStatusIcon = (status) => {
+    const s = String(status || '').toLowerCase();
+    switch (s) {
+      case 'paid': return <FiCheck className="w-4 h-4" />;
+      case 'unpaid':
+      case 'pending': return <FiClock className="w-4 h-4" />;
+      case 'failed': return <FiXCircle className="w-4 h-4" />;
+      case 'refunded': return <FiRotateCcw className="w-4 h-4" />;
+      case 'cancelled': return <FiX className="w-4 h-4" />;
+      default: return <FiCreditCard className="w-4 h-4" />;
     }
   };
 
@@ -109,25 +171,37 @@ const OrderMgmt = () => {
   // Normalize items for an order so UI can assume an array of items with {id,name,image,price,quantity}
   const getOrderItems = (order) => {
     if (!order) return [];
-    const raw = order.items || order.orderItems || order.products || order.items_list || [];
+    const raw = order.items || order.orderItems || order.products || order.items_list || order.cart_items || [];
     if (!raw) return [];
+    
     if (Array.isArray(raw)) {
       return raw.map(it => ({
         id: it?.id || it?._id || it?.productId || it?.product_id || it?.product?.id,
-        name: it?.name || it?.title || it?.product?.name || it?.product?.title || '',
+        name: it?.name || it?.title || it?.product?.name || it?.product?.title || 'Unknown Product',
+        description: it?.description || it?.product?.description || '',
         image: it?.image || it?.thumbnail || it?.product?.image || it?.product?.thumbnail || '',
-        price: Number(it?.price ?? it?.unitPrice ?? it?.product?.price ?? 0) || 0,
-        quantity: Number(it?.quantity ?? it?.qty ?? it?.count ?? it?.product?.quantity ?? 1) || 1
+        category: it?.category || it?.product?.category || 'General',
+        sku: it?.sku || it?.product?.sku || '',
+        unit: it?.unit || it?.product?.unit || 'pcs',
+        price: Number(it?.price ?? it?.unitPrice ?? it?.unit_price ?? it?.product?.price ?? 0) || 0,
+        quantity: Number(it?.quantity ?? it?.qty ?? it?.count ?? it?.amount ?? it?.product?.quantity ?? 1) || 1,
+        subtotal: (Number(it?.price ?? it?.unitPrice ?? it?.product?.price ?? 0) * Number(it?.quantity ?? it?.qty ?? it?.count ?? 1)) || 0
       }));
     }
+    
     // If raw is an object map, convert to array
     if (typeof raw === 'object') {
       return Object.values(raw).map(it => ({
         id: it?.id || it?._id || it?.productId || it?.product?.id,
-        name: it?.name || it?.title || it?.product?.name || '',
+        name: it?.name || it?.title || it?.product?.name || 'Unknown Product',
+        description: it?.description || it?.product?.description || '',
         image: it?.image || it?.thumbnail || it?.product?.image || '',
+        category: it?.category || it?.product?.category || 'General',
+        sku: it?.sku || it?.product?.sku || '',
+        unit: it?.unit || it?.product?.unit || 'pcs',
         price: Number(it?.price ?? it?.unitPrice ?? it?.product?.price ?? 0) || 0,
-        quantity: Number(it?.quantity ?? it?.qty ?? it?.count ?? 1) || 1
+        quantity: Number(it?.quantity ?? it?.qty ?? it?.count ?? 1) || 1,
+        subtotal: (Number(it?.price ?? it?.unitPrice ?? it?.product?.price ?? 0) * Number(it?.quantity ?? it?.qty ?? it?.count ?? 1)) || 0
       }));
     }
     return [];
@@ -869,12 +943,17 @@ const OrderMgmt = () => {
                 <span className="text-xs text-gray-500">{getOrderItems(order).length} item(s)</span>
               </div>
 
-              <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order?.paymentStatus)}`}>
-                {String(order?.paymentStatus || '').toLowerCase() === 'paid' ? <FiCheck className="w-3 h-3" /> : 
-                 String(order?.paymentStatus || '').toLowerCase() === 'pending' ? <FiCreditCard className="w-3 h-3" /> : 
-                 <FiXCircle className="w-3 h-3" />}
-                {String(order?.paymentStatus || '')}
-              </span>
+              <div className="flex items-center justify-between">
+                <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border ${getPaymentStatusColor(getPaymentInfo(order).status)}`}>
+                  {getPaymentStatusIcon(getPaymentInfo(order).status)}
+                  {getPaymentInfo(order).status.charAt(0).toUpperCase() + getPaymentInfo(order).status.slice(1)}
+                </span>
+                
+                <div className="flex items-center text-xs text-gray-600">
+                  <span className="mr-1">{getPaymentMethodDisplay(getPaymentInfo(order).method).icon}</span>
+                  <span>{getPaymentMethodDisplay(getPaymentInfo(order).method).text}</span>
+                </div>
+              </div>
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-gray-100">
@@ -912,22 +991,13 @@ const OrderMgmt = () => {
               </div>
               
               <div className="flex items-center gap-2">
-                {String(order?.paymentStatus || '').toLowerCase() === 'pending' && (
+                {(getPaymentInfo(order).status === 'unpaid' || getPaymentInfo(order).status === 'pending') && (
                   <button
                     onClick={() => verifyPayment(order?.id || order?._id)}
                     className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-medium transition"
                     title="Verify Payment"
                   >
                     Verify
-                  </button>
-                )}
-                {getNextStatus(order?.status) && (
-                  <button
-                    onClick={() => updateOrderStatus(order?.id || order?._id, getNextStatus(order?.status))}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium transition"
-                    title={`Update to ${getNextStatus(order?.status)}`}
-                  >
-                    Update
                   </button>
                 )}
                 {canCompleteOrder(order) && (
@@ -1049,21 +1119,24 @@ const OrderMgmt = () => {
                     </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(order?.paymentStatus)}`}>
-                        {String(order?.paymentStatus || '').toLowerCase() === 'paid' ? <FiCheck className="w-3 h-3" /> : 
-                         String(order?.paymentStatus || '').toLowerCase() === 'pending' ? <FiCreditCard className="w-3 h-3" /> : 
-                         <FiXCircle className="w-3 h-3" />}
-                        {String(order?.paymentStatus || '')}
+                    <div className="flex flex-col gap-2">
+                      {/* Payment Status */}
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border ${getPaymentStatusColor(getPaymentInfo(order).status)}`}>
+                        {getPaymentStatusIcon(getPaymentInfo(order).status)}
+                        {getPaymentInfo(order).status.charAt(0).toUpperCase() + getPaymentInfo(order).status.slice(1)}
                       </span>
-                      {String(order?.paymentStatus || '').toLowerCase() === 'pending' && (
-                        <button
-                          onClick={() => verifyPayment(order?.id || order?._id)}
-                          className="text-green-600 hover:text-green-900 p-1"
-                          title="Verify Payment"
-                        >
-                          <FiDollarSign className="w-4 h-4" />
-                        </button>
+                      
+                      {/* Payment Method */}
+                      <div className="flex items-center text-xs text-gray-600">
+                        <span className="mr-1">{getPaymentMethodDisplay(getPaymentInfo(order).method).icon}</span>
+                        <span>{getPaymentMethodDisplay(getPaymentInfo(order).method).text}</span>
+                      </div>
+                      
+                      {/* Transaction Reference (if available) */}
+                      {getPaymentInfo(order).reference && (
+                        <span className="text-xs text-gray-500 font-mono">
+                          Ref: {getPaymentInfo(order).reference.slice(-8)}...
+                        </span>
                       )}
                     </div>
                   </td>
@@ -1161,94 +1234,271 @@ const OrderMgmt = () => {
             <div className="p-6 space-y-6">
               {/* Order Info */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Name:</span> {getCustomerName(selectedOrder) || ''}</p>
-                    <p><span className="font-medium">Email:</span> <ClickableEmail email={getCustomerEmail(selectedOrder) || ''} className="text-gray-900 hover:text-green-600" /></p>
-                    <p><span className="font-medium">Phone:</span> <ClickablePhone phone={getCustomerPhone(selectedOrder) || ''} className="text-gray-900 hover:text-green-600" /></p>
-                    <p><span className="font-medium">Address:</span> {selectedOrder?.customer?.address || selectedOrder?.shippingAddress || ''}</p>
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+                  <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                    <FiUser className="w-4 h-4" />
+                    Customer Information
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FiUser className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Full Name</p>
+                        <p className="font-medium text-gray-900">{getCustomerName(selectedOrder) || 'N/A'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiMail className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Email Address</p>
+                        <ClickableEmail email={getCustomerEmail(selectedOrder) || ''} className="text-gray-900 hover:text-blue-600 font-medium" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiPhone className="w-4 h-4 text-blue-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Phone Number</p>
+                        <ClickablePhone phone={getCustomerPhone(selectedOrder) || ''} className="text-gray-900 hover:text-blue-600 font-medium" />
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <FiMapPin className="w-4 h-4 text-blue-600 mt-1" />
+                      <div>
+                        <p className="text-xs text-gray-500">Delivery Address</p>
+                        <p className="font-medium text-gray-900">{selectedOrder?.customer?.address || selectedOrder?.shippingAddress || selectedOrder?.delivery_address || 'N/A'}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-3">Order Information</h3>
-                  <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Order ID:</span> {selectedOrder?.id || selectedOrder?._id || ''}</p>
-                    <p><span className="font-medium">Date:</span> {selectedOrder?.date ? new Date(selectedOrder.date).toLocaleDateString() : ''}</p>
-                    <p><span className="font-medium">Payment:</span> {selectedOrder?.paymentMethod || ''}</p>
-                    <p><span className="font-medium">Payment Ref:</span> {selectedOrder?.paymentReference || ''}</p>
-                    <p><span className="font-medium">Shipping:</span> {selectedOrder?.shippingMethod || ''}</p>
-                    {selectedOrder.notes && (
-                      <p><span className="font-medium">Notes:</span> {selectedOrder.notes}</p>
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100">
+                  <h3 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                    <FiPackage className="w-4 h-4" />
+                    Order Information
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FiPackage className="w-4 h-4 text-green-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Order ID</p>
+                        <p className="font-mono text-sm font-medium text-gray-900">#{selectedOrder?.id || selectedOrder?._id || 'N/A'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiCalendar className="w-4 h-4 text-green-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Order Date</p>
+                        <p className="font-medium text-gray-900">{getOrderDate(selectedOrder) || 'N/A'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiTruck className="w-4 h-4 text-green-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Delivery Method</p>
+                        <p className="font-medium text-gray-900">{selectedOrder?.shippingMethod || selectedOrder?.delivery_method || 'Standard Delivery'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiDollarSign className="w-4 h-4 text-green-600" />
+                      <div>
+                        <p className="text-xs text-gray-500">Total Amount</p>
+                        <p className="font-bold text-lg text-green-700">GH₵{Number(selectedOrder?.total || selectedOrder?.amount || 0).toFixed(2)}</p>
+                      </div>
+                    </div>
+                    {(selectedOrder?.notes || selectedOrder?.special_instructions) && (
+                      <div className="flex items-start gap-2">
+                        <FiFileText className="w-4 h-4 text-green-600 mt-1" />
+                        <div>
+                          <p className="text-xs text-gray-500">Order Notes</p>
+                          <p className="font-medium text-gray-900 text-sm">{selectedOrder?.notes || selectedOrder?.special_instructions}</p>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {/* Payment Information */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-3">Payment Information</h3>
-                  <div className="space-y-2 text-sm">
+                {/* Enhanced Payment Information */}
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
+                  <h3 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                    <FiCreditCard className="w-4 h-4" />
+                    Payment Information
+                  </h3>
+                  <div className="space-y-3">
+                    {/* Payment Status */}
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">Status:</span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getPaymentStatusColor(selectedOrder.paymentStatus)}`}>
-                        {selectedOrder.paymentStatus === 'Paid' ? <FiCheck className="w-3 h-3" /> : 
-                         selectedOrder.paymentStatus === 'Pending' ? <FiCreditCard className="w-3 h-3" /> : 
+                      <span className="text-xs text-gray-500">Status:</span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${
+                        getPaymentInfo(selectedOrder).status === 'paid' ? 'bg-green-100 text-green-800' :
+                        getPaymentInfo(selectedOrder).status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        getPaymentInfo(selectedOrder).status === 'failed' ? 'bg-red-100 text-red-800' :
+                        getPaymentInfo(selectedOrder).status === 'refunded' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {getPaymentInfo(selectedOrder).status === 'paid' ? <FiCheck className="w-3 h-3" /> : 
+                         getPaymentInfo(selectedOrder).status === 'pending' ? <FiCreditCard className="w-3 h-3" /> : 
+                         getPaymentInfo(selectedOrder).status === 'failed' ? <FiXCircle className="w-3 h-3" /> :
+                         getPaymentInfo(selectedOrder).status === 'refunded' ? <FiRefreshCw className="w-3 h-3" /> :
                          <FiXCircle className="w-3 h-3" />}
-                        {selectedOrder.paymentStatus}
+                        {getPaymentInfo(selectedOrder).status.charAt(0).toUpperCase() + getPaymentInfo(selectedOrder).status.slice(1)}
                       </span>
                     </div>
-                    {selectedOrder.paymentVerifiedBy && (
-                      <>
-                        <p><span className="font-medium">Verified by:</span> {selectedOrder.paymentVerifiedBy}</p>
-                        <p><span className="font-medium">Verified at:</span> {new Date(selectedOrder.paymentVerifiedAt).toLocaleString()}</p>
-                      </>
+
+                    {/* Payment Method */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">Method:</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm">{getPaymentMethodDisplay(getPaymentInfo(selectedOrder).method).icon}</span>
+                        <span className="text-sm font-medium">{getPaymentMethodDisplay(getPaymentInfo(selectedOrder).method).text}</span>
+                      </div>
+                    </div>
+
+                    {/* Transaction Reference */}
+                    {getPaymentInfo(selectedOrder).reference && (
+                      <div>
+                        <p className="text-xs text-gray-500">Transaction Reference</p>
+                        <p className="text-sm font-mono bg-gray-100 px-2 py-1 rounded border">
+                          {getPaymentInfo(selectedOrder).reference}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Payment Amount */}
+                    {getPaymentInfo(selectedOrder).amount && (
+                      <div>
+                        <p className="text-xs text-gray-500">Paid Amount</p>
+                        <p className="text-sm font-semibold text-green-600">
+                          GH₵ {parseFloat(getPaymentInfo(selectedOrder).amount).toFixed(2)}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Payment Verification Info */}
+                    {selectedOrder?.paymentVerifiedBy && (
+                      <div className="border-t border-purple-200 pt-2 mt-2">
+                        <p className="text-xs text-gray-500 mb-1">Verification Details</p>
+                        <p className="text-sm"><span className="font-medium">Verified by:</span> {selectedOrder.paymentVerifiedBy}</p>
+                        <p className="text-sm"><span className="font-medium">Verified at:</span> {new Date(selectedOrder.paymentVerifiedAt).toLocaleString()}</p>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Order Items */}
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Order Items</h3>
-                <div className="bg-gray-50 rounded-lg overflow-hidden">
-                  <table className="min-w-full">
-                    <thead className="bg-gray-100">
+              {/* Enhanced Order Items */}
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <FiPackage className="w-4 h-4" />
+                    Order Items ({getOrderItems(selectedOrder).length} {getOrderItems(selectedOrder).length === 1 ? 'item' : 'items'})
+                  </h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Product</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Price</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Quantity</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Total</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Details</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {getOrderItems(selectedOrder).map((item, index) => (
-                        <tr key={index}>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center">
-                              <img
-                                src={item?.image || item?.thumbnail || ''}
-                                alt={item?.name || ''}
-                                className="w-10 h-10 rounded object-cover"
-                              />
-                              <span className="ml-3 text-sm font-medium">{item?.name || ''}</span>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {getOrderItems(selectedOrder).length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="px-6 py-8 text-center">
+                            <div className="flex flex-col items-center justify-center text-gray-500">
+                              <FiPackage className="w-12 h-12 mb-3 text-gray-300" />
+                              <p className="text-sm font-medium">No items found</p>
+                              <p className="text-xs mt-1">This order appears to have no items or there was an issue loading them.</p>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm">GH₵{Number(item?.price || 0).toFixed(2)}</td>
-                          <td className="px-4 py-3 text-sm">{item?.quantity || 0}</td>
-                          <td className="px-4 py-3 text-sm font-medium">
-                            GH₵{(Number(item?.price || 0) * Number(item?.quantity || 0)).toFixed(2)}
+                        </tr>
+                      ) : (
+                        getOrderItems(selectedOrder).map((item, index) => (
+                          <tr key={item.id || index} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center">
+                                <div className="flex-shrink-0 h-12 w-12">
+                                  <img
+                                    src={item?.image || '/api/placeholder/48/48'}
+                                    alt={item?.name || 'Product'}
+                                    className="h-12 w-12 rounded-lg object-cover border"
+                                  onError={(e) => {
+                                    e.target.src = '/api/placeholder/48/48';
+                                  }}
+                                />
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {item?.name || 'Unknown Product'}
+                                </div>
+                                {item?.description && (
+                                  <div className="text-xs text-gray-500 mt-1 max-w-xs truncate">
+                                    {item.description}
+                                  </div>
+                                )}
+                                {item?.sku && (
+                                  <div className="text-xs text-gray-400 font-mono">
+                                    SKU: {item.sku}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {item?.category || 'General'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            GH₵{Number(item?.price || 0).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <span className="bg-gray-100 text-gray-800 text-sm font-medium px-2.5 py-1 rounded-full">
+                                {item?.quantity || 0} {item?.unit || 'pcs'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
+                            GH₵{item?.subtotal?.toFixed(2) || (Number(item?.price || 0) * Number(item?.quantity || 0)).toFixed(2)}
                           </td>
                         </tr>
-                      ))}
+                        ))
+                      )}
                     </tbody>
-                    <tfoot className="bg-gray-100">
-                      <tr>
-                        <td colSpan="3" className="px-4 py-3 text-sm font-medium text-right">Total:</td>
-                        <td className="px-4 py-3 text-sm font-bold">GH₵{Number(selectedOrder?.total || selectedOrder?.amount || 0).toFixed(2)}</td>
-                      </tr>
-                    </tfoot>
                   </table>
+                </div>
+                
+                {/* Order Summary */}
+                <div className="bg-gray-50 border-t px-6 py-4">
+                  <div className="flex justify-end">
+                    <div className="w-full max-w-xs space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Subtotal:</span>
+                        <span className="font-medium">GH₵{getOrderItems(selectedOrder).reduce((sum, item) => sum + (item?.subtotal || (Number(item?.price || 0) * Number(item?.quantity || 0))), 0).toFixed(2)}</span>
+                      </div>
+                      {selectedOrder?.delivery_fee && Number(selectedOrder.delivery_fee) > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Delivery Fee:</span>
+                          <span className="font-medium">GH₵{Number(selectedOrder.delivery_fee).toFixed(2)}</span>
+                        </div>
+                      )}
+                      {selectedOrder?.discount && Number(selectedOrder.discount) > 0 && (
+                        <div className="flex justify-between text-sm text-green-600">
+                          <span>Discount:</span>
+                          <span className="font-medium">-GH₵{Number(selectedOrder.discount).toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="border-t border-gray-200 pt-2">
+                        <div className="flex justify-between text-base font-bold">
+                          <span className="text-gray-900">Total:</span>
+                          <span className="text-green-700">GH₵{Number(selectedOrder?.total || selectedOrder?.amount || 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1290,34 +1540,78 @@ const OrderMgmt = () => {
                 </div>
 
                 {/* Payment Management */}
-                <h4 className="font-semibold text-gray-900 mb-3">Payment Verification</h4>
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 text-sm font-medium rounded-full ${getPaymentStatusColor(selectedOrder?.paymentStatus)}`}>
-                    {String(selectedOrder?.paymentStatus || '').toLowerCase() === 'paid' ? <FiCheck className="w-3 h-3" /> : 
-                     String(selectedOrder?.paymentStatus || '').toLowerCase() === 'pending' ? <FiCreditCard className="w-3 h-3" /> : 
-                     <FiXCircle className="w-3 h-3" />}
-                    {selectedOrder?.paymentStatus || ''}
-                  </span>
-                  
-                  {String(selectedOrder?.paymentStatus || '').toLowerCase() === 'pending' && (
-                    <button
-                      onClick={() => verifyPayment(selectedOrder?.id)}
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
-                    >
-                      <FiCheck className="w-4 h-4" />
-                      Verify Payment
-                    </button>
+                <h4 className="font-semibold text-gray-900 mb-3">Payment Information</h4>
+                <div className="space-y-3">
+                  {/* Payment Status */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Status:</span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${
+                      getPaymentInfo(selectedOrder).status === 'paid' ? 'bg-green-100 text-green-800' :
+                      getPaymentInfo(selectedOrder).status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      getPaymentInfo(selectedOrder).status === 'failed' ? 'bg-red-100 text-red-800' :
+                      getPaymentInfo(selectedOrder).status === 'refunded' ? 'bg-purple-100 text-purple-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {getPaymentInfo(selectedOrder).status === 'paid' ? <FiCheck className="w-3 h-3" /> : 
+                       getPaymentInfo(selectedOrder).status === 'pending' ? <FiCreditCard className="w-3 h-3" /> : 
+                       getPaymentInfo(selectedOrder).status === 'failed' ? <FiXCircle className="w-3 h-3" /> :
+                       getPaymentInfo(selectedOrder).status === 'refunded' ? <FiRefreshCw className="w-3 h-3" /> :
+                       <FiXCircle className="w-3 h-3" />}
+                      {getPaymentInfo(selectedOrder).status.charAt(0).toUpperCase() + getPaymentInfo(selectedOrder).status.slice(1)}
+                    </span>
+                  </div>
+
+                  {/* Payment Method */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Method:</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm">{getPaymentMethodDisplay(getPaymentInfo(selectedOrder).method).icon}</span>
+                      <span className="text-sm font-medium">{getPaymentMethodDisplay(getPaymentInfo(selectedOrder).method).text}</span>
+                    </div>
+                  </div>
+
+                  {/* Transaction Reference */}
+                  {getPaymentInfo(selectedOrder).reference && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">Reference:</span>
+                      <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
+                        {getPaymentInfo(selectedOrder).reference}
+                      </span>
+                    </div>
                   )}
-                  
-                  {String(selectedOrder?.paymentStatus || '').toLowerCase() === 'paid' && (
-                    <button
-                      onClick={() => markPaymentPending(selectedOrder?.id)}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
-                    >
-                      <FiCreditCard className="w-4 h-4" />
-                      Mark as Pending
-                    </button>
+
+                  {/* Payment Amount */}
+                  {getPaymentInfo(selectedOrder).amount && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">Amount:</span>
+                      <span className="text-sm font-semibold text-green-600">
+                        GH₵ {parseFloat(getPaymentInfo(selectedOrder).amount).toFixed(2)}
+                      </span>
+                    </div>
                   )}
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-3 pt-2 border-t">
+                    {(getPaymentInfo(selectedOrder).status === 'unpaid' || getPaymentInfo(selectedOrder).status === 'pending') && (
+                      <button
+                        onClick={() => verifyPayment(selectedOrder?.id)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
+                      >
+                        <FiCheck className="w-4 h-4" />
+                        Verify Payment
+                      </button>
+                    )}
+                    
+                    {getPaymentInfo(selectedOrder).status === 'paid' && (
+                      <button
+                        onClick={() => markPaymentPending(selectedOrder?.id)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
+                      >
+                        <FiCreditCard className="w-4 h-4" />
+                        Mark as Pending
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
