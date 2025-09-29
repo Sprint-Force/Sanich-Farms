@@ -125,7 +125,7 @@ const MyProfile = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-6">My Profile</h1>
+      <h1 className="text-xl sm:text-2xl font-extrabold text-gray-800 mb-6">My Profile</h1>
 
       {/* PROFILE API INTEGRATION: Error message */}
       {error && (
@@ -134,12 +134,12 @@ const MyProfile = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4 border-gray-200">
+      <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 border-b pb-4 border-gray-200">
           Personal Information
         </h2>
         <form onSubmit={handleSave}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
               <input
@@ -150,7 +150,7 @@ const MyProfile = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your first name" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
             <div>
@@ -163,7 +163,7 @@ const MyProfile = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your last name" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
             <div className="md:col-span-2">
@@ -176,7 +176,7 @@ const MyProfile = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your email address" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
             <div className="md:col-span-2">
@@ -189,7 +189,7 @@ const MyProfile = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your phone number" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
             <div className="md:col-span-2">
@@ -202,7 +202,7 @@ const MyProfile = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your address" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               ></textarea>
             </div>
             <div className="md:col-span-2">
@@ -220,21 +220,21 @@ const MyProfile = () => {
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end gap-4">
+          <div className="mt-6 flex justify-end gap-3">
             {isEditing ? (
               <>
                 <button
                   type="button"
                   onClick={handleCancel}
                   disabled={saving}
-                  className="bg-gray-200 text-gray-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gray-200 text-gray-800 px-3 py-2 rounded-full font-semibold hover:bg-gray-300 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="bg-green-600 text-white px-3 py-2 rounded-full font-semibold hover:bg-green-700 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {saving ? (
                     <>
