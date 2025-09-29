@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   FiCalendar, 
   FiClock, 
@@ -51,6 +51,31 @@ const BookingMgmt = () => {
     return String(b?.id ?? b?._id ?? b?.bookingNumber ?? '');
   };
 
+  // Helper to transform backend booking data to frontend format
+  const transformBookingData = useCallback((booking) => {
+    if (!booking) return booking;
+    
+    return {
+      ...booking,
+      bookingNumber: `BK-${String(booking.id).padStart(4, '0')}`,
+      customerName: booking.name,
+      customerPhone: booking.phone_number,
+      customerEmail: booking.email,
+      date: booking.booking_date ? new Date(booking.booking_date).toISOString().split('T')[0] : '',
+      time: booking.booking_date ? new Date(booking.booking_date).toTimeString().slice(0, 5) : '',
+      service: booking.Service?.name || 'Unknown Service',
+      serviceType: booking.Service?.description || '',
+      totalCost: booking.Service?.price || 0,
+      assignedStaff: booking.assigned_staff || '',
+      notes: booking.note || '',
+      priority: 'medium', // Default priority
+      duration: '2 hours', // Default duration
+      depositPaid: 0, // Default deposit
+      createdAt: booking.created_at,
+      lastUpdated: booking.updated_at
+    };
+  }, []);
+
   const resolveId = (idOrBooking) => {
     if (!idOrBooking) return '';
     if (typeof idOrBooking === 'object') return getBookingId(idOrBooking);
@@ -77,21 +102,21 @@ const BookingMgmt = () => {
   });
 
   const services = ['all', 'Farm Consultation', 'Equipment Installation', 'Training Session', 'Pest Control', 'Soil Testing', 'Crop Planning'];
-  const statuses = ['all', 'pending', 'approved', 'completed', 'cancelled', 'rejected'];
+  const statuses = ['all', 'pending', 'scheduled', 'completed', 'cancelled', 'rejected'];
   const staffMembers = ['Michael Asante', 'Grace Mensah', 'Kwame Osei', 'Akosua Agyei', 'Peter Nkrumah'];
 
   
 
   // Statistics calculation
   const stats = {
-  total: bookings.length,
-  pending: bookings.filter(b => toLower(b?.status) === 'pending').length,
-  approved: bookings.filter(b => toLower(b?.status) === 'approved').length,
-  completed: bookings.filter(b => toLower(b?.status) === 'completed').length,
-  cancelled: bookings.filter(b => toLower(b?.status) === 'cancelled').length,
-  rejected: bookings.filter(b => toLower(b?.status) === 'rejected').length,
-  totalRevenue: bookings.filter(b => toLower(b?.status) === 'completed').reduce((sum, b) => sum + normalizeNumber(b?.totalCost), 0),
-  avgBookingValue: bookings.length > 0 ? bookings.reduce((sum, b) => sum + normalizeNumber(b?.totalCost), 0) / bookings.length : 0
+    total: bookings.length,
+    pending: bookings.filter(b => toLower(b?.status) === 'pending').length,
+    approved: bookings.filter(b => ['scheduled', 'approved'].includes(toLower(b?.status))).length,
+    completed: bookings.filter(b => toLower(b?.status) === 'completed').length,
+    cancelled: bookings.filter(b => toLower(b?.status) === 'cancelled').length,
+    rejected: bookings.filter(b => toLower(b?.status) === 'rejected').length,
+    totalRevenue: bookings.filter(b => toLower(b?.status) === 'completed').reduce((sum, b) => sum + normalizeNumber(b?.totalCost), 0),
+    avgBookingValue: bookings.length > 0 ? bookings.reduce((sum, b) => sum + normalizeNumber(b?.totalCost), 0) / bookings.length : 0
   };
 
   // Service statistics
@@ -111,35 +136,40 @@ const BookingMgmt = () => {
     }
   }, [error, success]);
 
+  // Load bookings from API
+  const loadBookings = useCallback(async (showLoadingIndicator = true) => {
+    if (showLoadingIndicator) setLoading(true);
+    try {
+      const data = await bookingsAPI.getAll();
+      // API might return an array or an object containing the array
+      const list = Array.isArray(data) ? data : data?.bookings || data?.data || [];
+      const bookingsList = Array.isArray(list) ? list : [];
+      
+      // Transform backend data to frontend format
+      const transformedBookings = bookingsList.map(transformBookingData);
+      
+      setBookings(transformedBookings);
+      if (showLoadingIndicator) setError(null); // Clear any previous errors on successful load
+    } catch (err) {
+      console.warn('Failed to load bookings from API', err?.response?.data || err.message || err);
+      setError('Failed to load bookings from server');
+      setBookings([]);
+    } finally {
+      if (showLoadingIndicator) setLoading(false);
+    }
+  }, [transformBookingData]);
+
   // Load bookings from API on mount
   useEffect(() => {
-    let mounted = true;
-    const loadBookings = async () => {
-      setLoading(true);
-      try {
-        const data = await bookingsAPI.getAll();
-        // API might return an array or an object containing the array
-        const list = Array.isArray(data) ? data : data?.bookings || data?.data || [];
-        if (mounted) setBookings(Array.isArray(list) ? list : []);
-      } catch (err) {
-        console.warn('Failed to load bookings from API', err?.response?.data || err.message || err);
-        if (!mounted) return;
-        setError('Failed to load bookings from server');
-        setBookings([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
     loadBookings();
-    return () => { mounted = false; };
-  }, []);
+  }, [loadBookings]);
 
   const getStatusColor = (status) => {
     const s = toLower(status);
     switch (s) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'approved': return 'bg-blue-100 text-blue-800';
+      case 'scheduled': return 'bg-blue-100 text-blue-800';
+      case 'approved': return 'bg-blue-100 text-blue-800'; // Legacy support
       case 'completed': return 'bg-green-100 text-green-800';
       case 'cancelled': return 'bg-gray-100 text-gray-800';
       case 'rejected': return 'bg-red-100 text-red-800';
@@ -162,36 +192,59 @@ const BookingMgmt = () => {
     const matchesSearch = 
       toLower(booking?.name || booking?.customerName).includes(term) ||
       toLower(booking?.bookingNumber).includes(term) ||
-      toLower(booking?.service).includes(term);  const matchesStatus = filterStatus === 'all' || (toLower(booking?.status) === toLower(filterStatus));
-  const matchesService = filterService === 'all' || (toLower(booking?.service) === toLower(filterService));
+      toLower(booking?.service).includes(term);
+    
+    const matchesStatus = filterStatus === 'all' || (toLower(booking?.status) === toLower(filterStatus));
+    const matchesService = filterService === 'all' || (toLower(booking?.service) === toLower(filterService));
     
     // Date range filter
     let matchesDate = true;
     if (selectedDateRange !== 'all') {
-  const bookingDate = booking?.date ? new Date(booking.date) : null;
-      const today = new Date();
+      const bookingDate = booking?.date ? new Date(booking.date) : null;
       
-      switch (selectedDateRange) {
-        case 'today':
-          matchesDate = bookingDate ? bookingDate.toDateString() === today.toDateString() : false;
-          break;
-        case 'yesterday': {
-          const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-          matchesDate = bookingDate ? bookingDate.toDateString() === yesterday.toDateString() : false;
-          break;
+      if (bookingDate && !isNaN(bookingDate.getTime())) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+        
+        // Normalize booking date to start of day
+        const normalizedBookingDate = new Date(bookingDate);
+        normalizedBookingDate.setHours(0, 0, 0, 0);
+        
+        switch (selectedDateRange) {
+          case 'today':
+            matchesDate = normalizedBookingDate.getTime() === today.getTime();
+            break;
+          case 'yesterday': {
+            const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+            matchesDate = normalizedBookingDate.getTime() === yesterday.getTime();
+            break;
+          }
+          case 'week': {
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            matchesDate = normalizedBookingDate >= weekAgo && normalizedBookingDate <= today;
+            break;
+          }
+          case 'month': {
+            const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+            matchesDate = normalizedBookingDate >= monthAgo && normalizedBookingDate <= today;
+            break;
+          }
+          default:
+            matchesDate = true;
         }
-        case 'week': {
-          const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-          matchesDate = bookingDate ? bookingDate >= weekAgo : false;
-          break;
+        
+        // Debug logging for date filter issues
+        if (selectedDateRange !== 'all' && booking?.bookingNumber) {
+          console.log(`Date Filter Debug for ${booking.bookingNumber}:`, {
+            originalDate: booking.date,
+            bookingDate: normalizedBookingDate.toDateString(),
+            today: today.toDateString(),
+            filter: selectedDateRange,
+            matches: matchesDate
+          });
         }
-        case 'month': {
-          const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-          matchesDate = bookingDate ? bookingDate >= monthAgo : false;
-          break;
-        }
-        default:
-          matchesDate = true;
+      } else {
+        matchesDate = false;
       }
     }
     
@@ -209,13 +262,13 @@ const BookingMgmt = () => {
   const openEditModal = (booking) => {
     setEditingBooking(booking);
     setFormData({
-  date: safeStr(booking?.date),
-  time: safeStr(booking?.time),
-  duration: safeStr(booking?.duration),
-  assignedStaff: safeStr(booking?.assignedStaff),
-  notes: safeStr(booking?.notes),
-  totalCost: safeStr(booking?.totalCost),
-  status: safeStr(booking?.status)
+      date: safeStr(booking?.date),
+      time: safeStr(booking?.time),
+      duration: safeStr(booking?.duration || '2 hours'),
+      assignedStaff: safeStr(booking?.assignedStaff || booking?.assigned_staff),
+      notes: safeStr(booking?.notes || booking?.note),
+      totalCost: safeStr(booking?.totalCost || booking?.Service?.price || 0),
+      status: safeStr(booking?.status)
     });
     setShowEditModal(true);
   };
@@ -233,36 +286,35 @@ const BookingMgmt = () => {
     const submit = async () => {
       setLoading(true);
       try {
-        const updatedBooking = {
-          ...editingBooking,
-          date: formData.date,
-          time: formData.time,
-          duration: formData.duration,
-          assignedStaff: formData.assignedStaff,
-          notes: formData.notes,
-          totalCost: parseFloat(formData.totalCost),
+        const id = resolveId(editingBooking);
+        
+        // Prepare update data in backend format
+        const updateData = {
+          booking_date: `${formData.date}T${formData.time}:00.000Z`,
+          location: editingBooking.location, // Keep existing location
+          note: formData.notes,
           status: formData.status,
-          lastUpdated: new Date().toISOString()
+          assigned_staff: formData.assignedStaff
         };
 
-        try {
-          const id = resolveId(editingBooking);
-          const res = await bookingsAPI.update(id, updatedBooking);
-          // If API returned the updated booking use it
-          const updated = res?.data || res || updatedBooking;
-          setBookings(prev => prev.map(b => (getBookingId(b) === id) ? updated : b));
-        } catch {
-          // Fallback to local update if API fails
-          console.warn('API update failed, falling back to local update');
-          const id = resolveId(editingBooking);
-          setBookings(prev => prev.map(b => (getBookingId(b) === id) ? updatedBooking : b));
-        }
+        const res = await bookingsAPI.update(id, updateData);
+        const updated = transformBookingData(res?.data?.updatedBooking || res?.data || res);
+        
+        // Update local state
+        setBookings(prev => prev.map(b => (getBookingId(b) === id) ? updated : b));
 
-  setSuccess('Booking updated successfully');
-  // notify other pages (dashboard) that bookings changed
-  try { const resolvedId = resolveId(editingBooking); window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: resolvedId, action: 'updated' } })); } catch { /* ignore */ }
-  closeEditModal();
-      } catch {
+        setSuccess('Booking updated successfully');
+        
+        // Notify other components
+        try { 
+          window.dispatchEvent(new CustomEvent('bookings:changed', { 
+            detail: { id, action: 'updated' } 
+          })); 
+        } catch { /* ignore */ }
+        
+        closeEditModal();
+      } catch (err) {
+        console.error('Failed to update booking:', err);
         setError('Failed to update booking');
       } finally {
         setLoading(false);
@@ -272,39 +324,73 @@ const BookingMgmt = () => {
     submit();
   };
 
-  const updateBookingStatus = (id, newStatus) => {
-    const patchStatus = async () => {
-      setLoading(true);
-        try {
-          try {
-            // prefer using bookingsAPI.update to change status
-            const resolved = resolveId(id);
-            await bookingsAPI.update(resolved, { status: newStatus });
-            setBookings(prev => prev.map(b => (getBookingId(b) === resolved) ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
-          } catch {
-            console.warn('Failed to update status on server, updating locally');
-            const resolved = resolveId(id);
-            setBookings(prev => prev.map(b => (getBookingId(b) === resolved) ? { ...b, status: newStatus, lastUpdated: new Date().toISOString() } : b));
-          }
-  setSuccess(`Booking ${newStatus} successfully`);
-  try { window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: (typeof id === 'object' ? getBookingId(id) : resolveId(id)), action: 'status-change', status: newStatus } })); } catch { /* ignore */ }
-      } catch {
-        setError('Failed to update booking status');
-      } finally {
-        setLoading(false);
+  const updateBookingStatus = async (id, newStatus, additionalData = {}) => {
+    setLoading(true);
+    try {
+      const resolved = resolveId(id);
+      let updatedBooking;
+      
+      // Use appropriate admin endpoint based on status
+      switch (newStatus) {
+        case 'scheduled':
+          updatedBooking = await apiClient.patch(`/bookings/${resolved}/approve`, {
+            schedule_date: additionalData.schedule_date,
+            note: additionalData.note
+          });
+          break;
+        case 'rejected':
+          updatedBooking = await apiClient.patch(`/bookings/${resolved}/reject`, {
+            note: additionalData.note
+          });
+          break;
+        case 'completed':
+          updatedBooking = await apiClient.patch(`/bookings/${resolved}/complete`, {
+            note: additionalData.note
+          });
+          break;
+        default:
+          // For other status changes, use the general update endpoint
+          updatedBooking = await bookingsAPI.update(resolved, { status: newStatus, ...additionalData });
       }
-    };
-
-    patchStatus();
+      
+      // Transform and update the booking in state
+      const transformedBooking = transformBookingData(updatedBooking.data?.booking || updatedBooking.data);
+      setBookings(prev => prev.map(b => 
+        (getBookingId(b) === resolved) ? transformedBooking : b
+      ));
+      
+      setSuccess(`Booking ${newStatus} successfully`);
+      
+      // Dispatch custom event for other components
+      try { 
+        window.dispatchEvent(new CustomEvent('bookings:changed', { 
+          detail: { id: resolved, action: 'status-change', status: newStatus } 
+        })); 
+      } catch { /* ignore */ }
+      
+    } catch (err) {
+      console.warn('Failed to update status on server:', err);
+      setError(`Failed to ${newStatus.toLowerCase()} booking`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const approveBooking = (id) => {
-  updateBookingStatus(id, 'approved');
+    const scheduleDate = new Date();
+    scheduleDate.setDate(scheduleDate.getDate() + 1); // Default to tomorrow
+    updateBookingStatus(id, 'scheduled', { 
+      schedule_date: scheduleDate.toISOString(),
+      note: 'Booking approved and scheduled'
+    });
   };
 
   const rejectBooking = (id) => {
+    const reason = window.prompt('Please enter reason for rejection (optional):');
     if (window.confirm('Are you sure you want to reject this booking?')) {
-  updateBookingStatus(id, 'rejected');
+      updateBookingStatus(id, 'rejected', { 
+        note: reason || 'Booking rejected by admin'
+      });
     }
   };
 
@@ -313,18 +399,22 @@ const BookingMgmt = () => {
       const doCancel = async () => {
         setLoading(true);
         try {
-            try {
-            const resolved = resolveId(id);
-            await bookingsAPI.cancel(resolved);
-            setBookings(prev => prev.map(b => (getBookingId(b) === resolved) ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
-          } catch {
-            console.warn('Cancel API failed, updating locally');
-            const resolved = resolveId(id);
-            setBookings(prev => prev.map(b => (getBookingId(b) === resolved) ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b));
-          }
+          const resolved = resolveId(id);
+          await bookingsAPI.cancel(resolved);
+          
+          // Update booking status in state
+          setBookings(prev => prev.map(b => 
+            (getBookingId(b) === resolved) ? { ...b, status: 'cancelled', lastUpdated: new Date().toISOString() } : b
+          ));
+          
           setSuccess('Booking cancelled successfully');
-          try { window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: resolveId(id), action: 'cancelled' } })); } catch { /* ignore */ }
-        } catch {
+          try { 
+            window.dispatchEvent(new CustomEvent('bookings:changed', { 
+              detail: { id: resolved, action: 'cancelled' } 
+            })); 
+          } catch { /* ignore */ }
+        } catch (err) {
+          console.warn('Cancel API failed:', err);
           setError('Failed to cancel booking');
         } finally {
           setLoading(false);
@@ -335,7 +425,10 @@ const BookingMgmt = () => {
   };
 
   const completeBooking = (id) => {
-  updateBookingStatus(id, 'completed');
+    const note = window.prompt('Add completion notes (optional):');
+    updateBookingStatus(id, 'completed', { 
+      note: note || 'Service completed successfully'
+    });
   };
 
   const deleteBooking = (id) => {
@@ -343,21 +436,24 @@ const BookingMgmt = () => {
       const doDelete = async () => {
         setLoading(true);
         try {
-            try {
-            const resolved = resolveId(id);
-            await apiClient.delete(`/bookings/${resolved}`);
-            setBookings(prev => prev.filter(b => getBookingId(b) !== resolved));
-            setSuccess('Booking deleted successfully');
-            try { window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: resolved, action: 'deleted' } })); } catch { /* ignore */ }
-          } catch {
-            console.warn('Delete API failed, falling back to local delete');
-            // fallback to local deletion
-            const resolved = resolveId(id);
-            setBookings(prev => prev.filter(b => getBookingId(b) !== resolved));
-            setSuccess('Booking removed locally');
-            try { const resolved = resolveId(id); window.dispatchEvent(new CustomEvent('bookings:changed', { detail: { id: resolved, action: 'deleted-local' } })); } catch { /* ignore */ }
-          }
-        } catch {
+          const resolved = resolveId(id);
+          
+          // Note: Since there's no explicit delete endpoint in the backend routes,
+          // we'll use soft delete by updating status to 'cancelled'
+          await bookingsAPI.cancel(resolved);
+          
+          // Remove from local state (or keep with cancelled status based on requirements)
+          setBookings(prev => prev.filter(b => getBookingId(b) !== resolved));
+          
+          setSuccess('Booking deleted successfully');
+          
+          try { 
+            window.dispatchEvent(new CustomEvent('bookings:changed', { 
+              detail: { id: resolved, action: 'deleted' } 
+            })); 
+          } catch { /* ignore */ }
+        } catch (err) {
+          console.error('Failed to delete booking:', err);
           setError('Failed to delete booking');
         } finally {
           setLoading(false);
@@ -455,10 +551,11 @@ const BookingMgmt = () => {
             Statistics
           </button>
           <button 
-            onClick={() => window.location.reload()}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition"
+            onClick={() => loadBookings(true)}
+            disabled={loading}
+            className="bg-gray-500 hover:bg-gray-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition"
           >
-            <FiRefreshCw className="w-4 h-4" />
+            <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
         </div>
@@ -489,7 +586,7 @@ const BookingMgmt = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Approved</p>
+              <p className="text-sm font-medium text-gray-600">Scheduled</p>
               <p className="text-2xl font-bold text-blue-600">{stats.approved}</p>
             </div>
             <FiUserCheck className="w-8 h-8 text-blue-400" />
@@ -588,6 +685,34 @@ const BookingMgmt = () => {
             <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
           </div>
         </div>
+        
+        {/* Filter Results Summary */}
+        <div className="flex items-center justify-between mt-4 text-sm text-gray-600">
+          <div>
+            Showing {filteredBookings.length} of {bookings.length} bookings
+            {selectedDateRange !== 'all' && (
+              <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                Filtered by: {selectedDateRange === 'today' ? 'Today' : 
+                           selectedDateRange === 'yesterday' ? 'Yesterday' : 
+                           selectedDateRange === 'week' ? 'Last 7 Days' : 
+                           selectedDateRange === 'month' ? 'Last 30 Days' : selectedDateRange}
+              </span>
+            )}
+          </div>
+          {(searchTerm || filterStatus !== 'all' || filterService !== 'all' || selectedDateRange !== 'all') && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setFilterStatus('all');
+                setFilterService('all');
+                setSelectedDateRange('all');
+              }}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Clear all filters
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Bookings Table */}
@@ -637,21 +762,18 @@ const BookingMgmt = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{booking.name || booking.customerName}</div>
-                      <div className="text-sm text-gray-500">{safeStr(booking?.phone_number || booking?.customerPhone)}</div>
                     </div>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{booking.service}</div>
-                      <div className="text-sm text-gray-500">{safeStr(booking?.serviceType)}</div>
                     </div>
                   </td>
                   
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{booking.date}</div>
-                      <div className="text-sm text-gray-500">{safeStr(booking?.time)} ({safeStr(booking?.duration)})</div>
                     </div>
                   </td>
                   
@@ -698,7 +820,7 @@ const BookingMgmt = () => {
                         </>
                       )}
                       
-                      {toLower(booking?.status) === 'approved' && (
+                      {['scheduled', 'approved'].includes(toLower(booking?.status)) && (
                         <button
                           onClick={() => completeBooking(getBookingId(booking))}
                           className="text-green-600 hover:text-green-900 p-1"
