@@ -624,7 +624,7 @@ const OrderMgmt = () => {
               <h3>Order Details:</h3>
               <p><strong>Order #:</strong> ${invoiceData.orderNumber}</p>
               <p><strong>Payment Method:</strong> ${invoiceData.paymentMethod}</p>
-              <p><strong>Items:</strong> ${invoiceData.items.length} item(s)</p>
+              <p><strong>Items:</strong> ${invoiceData.items.length} ${invoiceData.items.length === 1 ? 'item' : 'items'}</p>
             </div>
           </div>
 
@@ -940,7 +940,7 @@ const OrderMgmt = () => {
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-gray-500">{getOrderItems(order).length} item(s)</span>
+                <span className="text-xs text-gray-500">{getOrderItems(order).length} {getOrderItems(order).length === 1 ? 'item' : 'items'}</span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -1104,7 +1104,9 @@ const OrderMgmt = () => {
                           </div>
                         )}
                       </div>
-                      <span className="ml-2 text-sm text-gray-500">{getOrderItems(order).length} item(s)</span>
+                      <span className="ml-2 text-sm text-gray-500 whitespace-nowrap">
+                        {getOrderItems(order).length} {getOrderItems(order).length === 1 ? 'item' : 'items'}
+                      </span>
                     </div>
                   </td>
                   <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -1700,7 +1702,7 @@ const OrderMgmt = () => {
                         {selectedOrder?.paymentStatus}
                       </span>
                     </p>
-                    <p><span className="font-semibold">Total Items:</span> {getOrderItems(selectedOrder).length} item(s)</p>
+                    <p><span className="font-semibold">Total Items:</span> {getOrderItems(selectedOrder).length} {getOrderItems(selectedOrder).length === 1 ? 'item' : 'items'}</p>
                   </div>
                 </div>
               </div>
