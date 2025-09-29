@@ -256,14 +256,11 @@ const OrderMgmt = () => {
   const updateOrderStatus = (orderId, newStatus) => {
     const doUpdate = async () => {
       try {
-        // Normalize status to lowercase for backend consistency
-        const normalizedStatus = String(newStatus || '').toLowerCase();
-        
         // Try to update status on server first
         let apiSuccess = false;
         try {
-          await apiClient.patch(`/orders/${orderId}`, { status: normalizedStatus });
-          console.log(`Successfully updated order ${orderId} status to ${normalizedStatus} in backend`);
+          await apiClient.patch(`/orders/${orderId}`, { status: newStatus });
+          console.log(`Successfully updated order ${orderId} status to ${newStatus} in backend`);
           apiSuccess = true;
         } catch (error) {
           console.error('Status patch failed:', error);
@@ -274,10 +271,10 @@ const OrderMgmt = () => {
         // Only update local state if backend update was successful
         if (apiSuccess) {
           setOrders(prev => prev.map(order => 
-            matchesOrderId(order, orderId) ? { ...order, status: normalizedStatus } : order
+            matchesOrderId(order, orderId) ? { ...order, status: newStatus } : order
           ));
           if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
-            setSelectedOrder(prev => ({ ...prev, status: normalizedStatus }));
+            setSelectedOrder(prev => ({ ...prev, status: newStatus }));
           }
           console.log(`Local state updated for order ${orderId}`);
         }
@@ -392,34 +389,16 @@ const OrderMgmt = () => {
   };
 
   const cancelOrder = (orderId) => {
-    if (window.confirm('Are you sure you want to cancel this order? If payment was made, a refund will be initiated.')) {
-      const doCancel = async () => {
-        try {
-          // Use dedicated cancel API method
-          await ordersAPI.cancel(orderId);
-          
-          // Update local state to reflect cancellation
-          setOrders(prev => prev.map(order => 
-            matchesOrderId(order, orderId) ? { ...order, status: 'cancelled' } : order
-          ));
-          if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
-            setSelectedOrder(prev => ({ ...prev, status: 'cancelled' }));
-          }
-          
-          console.log(`Order ${orderId} cancelled successfully`);
-        } catch (error) {
-          console.error('Failed to cancel order:', error);
-          alert(`Failed to cancel order. Error: ${error.response?.data?.message || error.message || 'Unknown error'}`);
-        }
-      };
-      doCancel();
+    if (window.confirm('Are you sure you want to cancel this order?')) {
+      // Use the improved updateOrderStatus function which ensures backend persistence
+      updateOrderStatus(orderId, 'Cancelled');
     }
   };
 
   const refundOrder = (orderId) => {
     if (window.confirm('Are you sure you want to refund this order?')) {
       // Use the improved updateOrderStatus function which ensures backend persistence  
-      updateOrderStatus(orderId, 'refunded');
+      updateOrderStatus(orderId, 'Refunded');
     }
   };
 
@@ -1279,6 +1258,12 @@ const OrderMgmt = () => {
                           Cancel Order
                         </button>
                       )}
+                      <button
+                        onClick={() => cancelOrder(selectedOrder?.id || selectedOrder?._id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                      >
+                        Cancel Order
+                      </button>
                       <button
                         onClick={() => refundOrder(selectedOrder?.id || selectedOrder?._id)}
                         className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
