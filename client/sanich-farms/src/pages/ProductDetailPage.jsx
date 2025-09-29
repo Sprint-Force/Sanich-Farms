@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import ProductCard from '../components/UI/ProductCard';
 import QuestionsAnswers from '../components/UI/QuestionsAnswers';
+import RecentlyViewed from '../components/UI/RecentlyViewed';
 // We will no longer need this import after we implement the API call
 // import { productsData } from '../data/productsData';
 
@@ -546,6 +547,15 @@ const ProductDetailPage = () => {
               No related products found.
             </div>
           )}
+        </div>
+
+        {/* Recently Viewed Section */}
+        <div className="mt-8 md:mt-12">
+          <RecentlyViewed 
+            limit={8} 
+            compact={true}
+            className="bg-white"
+          />
         </div>
       </div>
 
