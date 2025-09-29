@@ -62,11 +62,15 @@ const ProductMgmt = () => {
     return () => { mounted = false; };
   }, []);
 
-  const categories = ['all', 'feeds', 'poultry', 'equipment', 'supplies', 'tools', 'seeds'];
+  const categories = ['all', 'chicks', 'feeds', 'eggs', 'vitamins', 'equipment'];
 
   const formatCategoryLabel = (key) => {
     if (!key) return '';
     if (key === 'feeds') return 'Feeds';
+    if (key === 'chicks') return 'Chicks';
+    if (key === 'eggs') return 'Eggs';
+    if (key === 'vitamins') return 'Vitamins';
+    if (key === 'equipment') return 'Equipment';
     return String(key).charAt(0).toUpperCase() + String(key).slice(1);
   };
 
