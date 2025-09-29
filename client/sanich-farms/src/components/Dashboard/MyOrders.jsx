@@ -160,7 +160,7 @@ const MyOrders = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800">My Orders</h1>
+        <h1 className="text-xl sm:text-2xl font-extrabold text-gray-800">My Orders</h1>
         
         {/* DASHBOARD AUDIT FIX: Order filtering like Amazon */}
         <div className="flex items-center gap-2">
@@ -178,12 +178,12 @@ const MyOrders = () => {
       </div>
 
       {filteredOrders.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl shadow-sm">
-          <FiShoppingBag className="mx-auto text-gray-400 mb-4" size={48} />
-          <h3 className="text-lg font-medium text-gray-600 mb-2">
+          <div className="text-center py-8 bg-white rounded-xl shadow-sm">
+          <FiShoppingBag className="mx-auto text-gray-400 mb-3" size={44} />
+          <h3 className="text-base sm:text-lg font-medium text-gray-600 mb-2">
             {statusFilter === 'All' ? "You haven't placed any orders yet" : `No ${statusFilter.toLowerCase()} orders found`}
           </h3>
-          <Link to="/shop" className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition duration-200">
+          <Link to="/shop" className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 sm:px-6 sm:py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition duration-200">
             <FiShoppingCart size={16} />
             Start Shopping
           </Link>
@@ -193,14 +193,21 @@ const MyOrders = () => {
           {/* DASHBOARD AUDIT FIX: Card-based layout like Amazon mobile */}
           <div className="grid gap-4">
             {filteredOrders.map((order) => (
-              <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition duration-200">
+              <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 sm:p-4 hover:shadow-md transition duration-200">
+                <div className="block sm:hidden mb-2">
+                  <div className="text-sm text-gray-500">
+                    <span>Orders</span>
+                    <span className="px-1">/</span>
+                    <Link to={`/dashboard/orders/${order.id}`} className="text-green-600 font-medium">Details</Link>
+                  </div>
+                </div>
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   {/* Order Info - Fixed alignment and data mapping */}
                   <div className="flex-1">
                     <div className="flex flex-col space-y-4">
                       {/* Order Header - Fixed alignment */}
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <h3 className="text-lg font-semibold text-gray-800">Order #{order.id}</h3>
+                        <h3 className="text-sm sm:text-base font-semibold text-gray-800">Order #{order.id}</h3>
                         <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full w-fit ${
                           (order.status === 'delivered' || order.status === 'Delivered') ? 'bg-green-100 text-green-800' :
                           (order.status === 'processing' || order.status === 'Processing' || order.status === 'pending') ? 'bg-yellow-100 text-yellow-800' :
@@ -213,7 +220,7 @@ const MyOrders = () => {
                       </div>
 
                       {/* Order Details - Fixed alignment and data mapping */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div className="flex flex-col">
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Date</span>
                           <span className="text-sm text-gray-900">
@@ -253,49 +260,72 @@ const MyOrders = () => {
                   </div>
 
                   {/* DASHBOARD AUDIT FIX: Amazon-style action buttons */}
-                  <div className="flex flex-wrap gap-2">
-                    <Link
-                      to={`/dashboard/orders/${order.id}`}
-                      className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition duration-200"
-                    >
+                  <div className="flex flex-wrap gap-2 items-center">
+                    {/* Icon-only buttons for mobile, full buttons on larger screens */}
+                    <Link to={`/dashboard/orders/${order.id}`} aria-label={`View details for order ${order.id}`} className="inline-flex items-center justify-center p-2 rounded-md bg-gray-100 text-gray-700 sm:hidden">
+                      <FiEye size={16} />
+                    </Link>
+                    <Link to={`/dashboard/orders/${order.id}`} className="hidden sm:inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-2 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition duration-200">
                       <FiEye size={14} />
                       View Details
                     </Link>
-                    
+
                     {order.status === 'Processing' && (
-                      <button
-                        onClick={() => handleCancelOrder(order.id)}
-                        className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition duration-200"
-                      >
-                        <FiX size={14} />
-                        Cancel
-                      </button>
+                      <>
+                        <button onClick={() => handleCancelOrder(order.id)} aria-label={`Cancel order ${order.id}`} className="inline-flex items-center justify-center p-2 rounded-md bg-red-100 text-red-700 sm:hidden">
+                          <FiX size={16} />
+                        </button>
+                        <button onClick={() => handleCancelOrder(order.id)} className="hidden sm:inline-flex items-center gap-2 bg-red-100 text-red-700 px-2 py-1.5 rounded-lg text-sm font-medium hover:bg-red-200 transition duration-200">
+                          <FiX size={14} />
+                          Cancel
+                        </button>
+                      </>
                     )}
-                    
+
                     {order.status === 'Delivered' && (
                       <>
                         <button
                           onClick={() => handleReorder(order.id)}
-                          className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition duration-200"
+                          aria-label={`Reorder items from order ${order.id}`}
+                          className="inline-flex items-center justify-center p-2 rounded-md bg-green-100 text-green-700 sm:hidden"
+                        >
+                          <FiRepeat size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleReorder(order.id)}
+                          className="hidden sm:inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition duration-200"
                         >
                           <FiRepeat size={14} />
                           Reorder
                         </button>
+
                         <button
                           onClick={() => handleDownloadInvoice(order.id)}
-                          className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition duration-200"
+                          aria-label={`Download invoice for order ${order.id}`}
+                          className="inline-flex items-center justify-center p-2 rounded-md bg-blue-100 text-blue-700 sm:hidden"
+                        >
+                          <FiDownload size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDownloadInvoice(order.id)}
+                          className="hidden sm:inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition duration-200"
                         >
                           <FiDownload size={14} />
                           Invoice
                         </button>
                       </>
                     )}
-                    
+
                     {(order.status === 'Processing' || order.status === 'Shipped') && (
-                      <button className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition duration-200">
-                        <FiTruck size={14} />
-                        Track Order
-                      </button>
+                      <>
+                        <button aria-label={`Track order ${order.id}`} className="inline-flex items-center justify-center p-2 rounded-md bg-blue-100 text-blue-700 sm:hidden">
+                          <FiTruck size={18} />
+                        </button>
+                        <button className="hidden sm:inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition duration-200">
+                          <FiTruck size={14} />
+                          Track Order
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
