@@ -109,14 +109,16 @@ const ProductDetailPage = () => {
   if (loading) {
     return (
       <div className="font-poppins bg-gray-50 min-h-screen animate-fadeIn">
-        {/* Skeleton Breadcrumbs */}
-        <div className="w-full py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2">
-            <div className="w-16 h-5 bg-gray-600 rounded animate-pulse"></div>
-            <FiChevronRight className="w-4 h-4 text-gray-400" />
-            <div className="w-12 h-5 bg-gray-600 rounded animate-pulse"></div>
-            <FiChevronRight className="w-4 h-4 text-gray-400" />
-            <div className="w-32 h-5 bg-gray-600 rounded animate-pulse"></div>
+        {/* Modern Breadcrumb Skeleton */}
+        <div className="w-full breadcrumb-modern">
+          <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
+              <FiChevronRight className="w-3.5 h-3.5 text-gray-300" />
+              <div className="w-12 h-4 bg-gray-200 rounded animate-pulse"></div>
+              <FiChevronRight className="w-3.5 h-3.5 text-gray-300" />
+              <div className="w-32 h-4 bg-gray-200 rounded animate-pulse"></div>
+            </div>
           </div>
         </div>
 
@@ -220,19 +222,21 @@ const ProductDetailPage = () => {
 
   return (
     <div className="font-poppins bg-gray-50 min-h-screen">
-      {/* Breadcrumbs */}
-      <div className="w-full py-8 md:py-10 bg-gradient-to-r from-gray-800 to-gray-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-white">
-          <Link to="/" className="flex items-center gap-1 text-gray-300 hover:text-white transition-colors duration-200" aria-label="Go to Home page">
-            <FiHome className="w-5 h-5" />
-            <span className="text-base font-medium hidden sm:inline">Home</span>
-          </Link>
-          <FiChevronRight className="w-4 h-4 text-gray-400" />
-          <Link to="/shop" className="text-gray-300 hover:text-white transition-colors duration-200" aria-label="Go to Shop page">
-            <span className="text-base font-medium">Shop</span>
-          </Link>
-          <FiChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-green-400 text-base font-semibold truncate max-w-[150px] sm:max-w-none">{product.name}</span>
+      {/* Modern Breadcrumbs - Clean & Responsive */}
+      <div className="w-full breadcrumb-modern">
+        <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
+          <nav className="flex items-center gap-1.5 xs:gap-2 text-sm" aria-label="Breadcrumb">
+            <Link to="/" className="breadcrumb-link flex items-center gap-1 text-slate-600 hover:text-green-600" aria-label="Go to Home page">
+              <FiHome className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
+              <span className="font-medium hidden xs:inline">Home</span>
+            </Link>
+            <FiChevronRight className="w-3 h-3 xs:w-3.5 xs:h-3.5 breadcrumb-separator" />
+            <Link to="/shop" className="breadcrumb-link text-slate-600 hover:text-green-600" aria-label="Go to Shop page">
+              <span className="font-medium">Shop</span>
+            </Link>
+            <FiChevronRight className="w-3 h-3 xs:w-3.5 xs:h-3.5 breadcrumb-separator" />
+            <span className="breadcrumb-current text-sm xs:text-base font-semibold truncate max-w-[150px] sm:max-w-none">{product.name}</span>
+          </nav>
         </div>
       </div>
 
