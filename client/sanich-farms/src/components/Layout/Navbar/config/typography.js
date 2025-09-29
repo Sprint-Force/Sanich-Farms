@@ -68,8 +68,8 @@ export const getTypographyClasses = (element) => {
  * Icon sizes for different breakpoints
  */
 export const iconSizes = {
-  small: 20,
-  medium: 22,
-  large: 24,
-  xlarge: 28
+  small: 22,
+  medium: 24,
+  large: 28,
+  xlarge: 32
 };

@@ -62,21 +62,21 @@ const MobileNavbar = ({
                 <button
           type="button"
           onClick={() => setShowMobileSearch(true)}
-          className="relative flex items-center justify-center p-1.5 xs:p-2 sm:p-2.5 rounded-xl hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 mobile-touch-target mobile-nav-button"
+          className="relative flex items-center justify-center p-2 xs:p-2.5 sm:p-3 rounded-xl hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 mobile-touch-target mobile-nav-button"
           aria-label="Search products"
         >
-          <FiSearch className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
+          <FiSearch className="w-5 h-5 xs:w-6 xs:h-6 sm:w-7 sm:h-7" />
         </button>
         
         {/* Cart */}
         <Link 
           to="/cart" 
-          className="relative flex items-center justify-center p-1.5 xs:p-2 sm:p-2.5 rounded-xl hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 mobile-touch-target mobile-nav-button" 
+          className="relative flex items-center justify-center p-2 xs:p-2.5 sm:p-3 rounded-xl hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 mobile-touch-target mobile-nav-button" 
           aria-label="Shopping Cart"
         >
-          <FiShoppingCart className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
+          <FiShoppingCart className="w-5 h-5 xs:w-6 xs:h-6 sm:w-7 sm:h-7" />
           {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-bold rounded-full w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 flex items-center justify-center shadow-lg">
+            <span className="absolute -top-1 -right-1 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold rounded-full w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 flex items-center justify-center shadow-lg">
               {cartCount > 99 ? '99+' : cartCount}
             </span>
           )}
@@ -86,14 +86,14 @@ const MobileNavbar = ({
         <button
           type="button"
           onClick={toggleMobileMenu}
-          className="flex items-center justify-center p-1.5 xs:p-2 sm:p-2.5 rounded-xl hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 mobile-touch-target mobile-nav-button"
+          className="flex items-center justify-center p-2 xs:p-2.5 sm:p-3 rounded-xl hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 mobile-touch-target mobile-nav-button"
           aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={isMobileMenuOpen}
         >
           {isMobileMenuOpen ? (
-            <FiX className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
+            <FiX className="w-5 h-5 xs:w-6 xs:h-6 sm:w-7 sm:h-7" />
           ) : (
-            <FiMenu className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
+            <FiMenu className="w-5 h-5 xs:w-6 xs:h-6 sm:w-7 sm:h-7" />
           )}
         </button>
       </div>

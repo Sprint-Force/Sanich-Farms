@@ -32,16 +32,16 @@ const MobileMenu = ({
         <div className="flex-1 p-4 overflow-y-auto">
           {/* Mobile Header with Logo and Close Button */}
           <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
-            <div className="w-10"></div>
+            <div className="w-12" />
             <Link to="/" onClick={onClose} className="flex-grow flex justify-center items-center gap-2">
-              <img src={logo} alt="Sanich Farms Logo" className="h-10" />
+              <img src={logo} alt="Sanich Farms Logo" className="h-12" />
               <span className={`${getTypographyClasses('mobileMenu.title')} text-[#00B207]`}>
                 Sanich Farms
               </span>
             </Link>
             <button
               onClick={onClose}
-              className="text-gray-600 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition duration-200"
+              className="text-gray-600 hover:text-gray-800 p-3 rounded-full hover:bg-gray-100 transition duration-200 mobile-touch-target mobile-nav-button"
               aria-label="Close mobile menu"
             >
               <FiX size={iconSizes.xlarge} />
@@ -49,10 +49,10 @@ const MobileMenu = ({
           </div>
         
           <nav className={`flex flex-col gap-4 text-gray-800 ${getTypographyClasses('mobileMenu.links')}`}>
-            <Link to="/" onClick={onClose} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">
+            <Link to="/" onClick={onClose} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-nav-item">
               Home
             </Link>
-            <Link to="/about" onClick={onClose} className="block px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">
+            <Link to="/about" onClick={onClose} className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-nav-item">
               About Us
             </Link>
             
@@ -60,14 +60,14 @@ const MobileMenu = ({
             <div className="relative">
               <button
                 onClick={onShopDropdownToggle}
-                className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200 flex items-center justify-between focus:outline-none"
+                className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 flex items-center justify-between focus:outline-none mobile-nav-item"
               >
                 Shop
                 <FiChevronRight className={`w-5 h-5 transform transition-transform duration-200 ${showShopDropdown ? 'rotate-180' : 'rotate-0'}`} />
               </button>
               {showShopDropdown && (
                 <div className={`flex flex-col pl-8 mt-2 space-y-2 ${getTypographyClasses('mobileMenu.subLinks')}`}>
-                  <Link to="/shop" onClick={onClose} className="block py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150">
+                  <Link to="/shop" onClick={onClose} className="block py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150 mobile-nav-item">
                     All Products
                   </Link>
                   <Link to="/shop/chicks" onClick={onClose} className="block py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition duration-150">
@@ -88,7 +88,7 @@ const MobileMenu = ({
             </Link>
             
             {/* Wishlist */}
-            <Link to="/wishlist" onClick={onClose} className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 rounded-lg transition duration-200">
+            <Link to="/wishlist" onClick={onClose} className="flex items-center justify-between px-4 py-3 hover:bg-gray-100 rounded-lg transition duration-200 mobile-nav-item">
               <span>My Wishlist</span>
               {wishlistCount > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -104,14 +104,14 @@ const MobileMenu = ({
             {/* Authentication Section */}
             {isAuthenticated ? (
               <>
-                <div className="px-4 py-2 mt-4 border-t border-gray-100">
+                <div className="px-4 py-3 mt-4 border-t border-gray-100">
                   <span className={`${getTypographyClasses('userGreeting')} text-green-600`}>
                     Hi! {user?.name?.split(' ')[0] || 'User'}
                   </span>
                 </div>
                 <button
                   onClick={onLogout}
-                  className="block w-full text-center bg-red-600 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-red-700 transition duration-300 mt-4 shadow-md"
+                  className="block w-full text-center bg-red-600 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-red-700 transition duration-300 mt-4 shadow-md mobile-touch-target"
                 >
                   Logout
                 </button>
