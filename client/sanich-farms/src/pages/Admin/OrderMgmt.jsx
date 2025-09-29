@@ -204,21 +204,31 @@ const OrderMgmt = () => {
   const updateOrderStatus = (orderId, newStatus) => {
     const doUpdate = async () => {
       try {
+        // Try to update status on server first
+        let apiSuccess = false;
         try {
-          // try a patch endpoint on server
           await apiClient.patch(`/orders/${orderId}`, { status: newStatus });
-        } catch {
-          console.warn('Status patch failed, proceeding with local update');
+          console.log(`Successfully updated order ${orderId} status to ${newStatus} in backend`);
+          apiSuccess = true;
+        } catch (error) {
+          console.error('Status patch failed:', error);
+          alert(`Failed to update order status on server. Error: ${error.response?.data?.message || error.message || 'Unknown error'}`);
+          return; // Don't update UI if backend update failed
         }
 
-        setOrders(prev => prev.map(order => 
-          matchesOrderId(order, orderId) ? { ...order, status: newStatus } : order
-        ));
-        if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
-          setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+        // Only update local state if backend update was successful
+        if (apiSuccess) {
+          setOrders(prev => prev.map(order => 
+            matchesOrderId(order, orderId) ? { ...order, status: newStatus } : order
+          ));
+          if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
+            setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+          }
+          console.log(`Local state updated for order ${orderId}`);
         }
-      } catch {
-        console.warn('Failed to update order status');
+      } catch (error) {
+        console.error('Failed to update order status:', error);
+        alert('Failed to update order status. Please try again.');
       }
     };
 
@@ -241,28 +251,38 @@ const OrderMgmt = () => {
       const currentTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
       try {
+        // Try to verify payment on server first
+        let apiSuccess = false;
         try {
           await apiClient.post(`/orders/${orderId}/verify-payment`);
-        } catch {
-          console.warn('Payment verify endpoint failed, falling back to local update');
+          console.log(`Successfully verified payment for order ${orderId} in backend`);
+          apiSuccess = true;
+        } catch (error) {
+          console.error('Payment verify endpoint failed:', error);
+          alert(`Failed to verify payment on server. Error: ${error.response?.data?.message || error.message || 'Unknown error'}`);
+          return; // Don't update UI if backend update failed
         }
 
-        setOrders(prev => prev.map(order => 
-          matchesOrderId(order, orderId) ? { 
-            ...order, 
-            paymentStatus: 'Paid',
-            paymentVerifiedBy: currentAdmin,
-            paymentVerifiedAt: currentTime
-          } : order
-        ));
+        // Only update local state if backend update was successful
+        if (apiSuccess) {
+          setOrders(prev => prev.map(order => 
+            matchesOrderId(order, orderId) ? { 
+              ...order, 
+              paymentStatus: 'Paid',
+              paymentVerifiedBy: currentAdmin,
+              paymentVerifiedAt: currentTime
+            } : order
+          ));
 
-        if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
-          setSelectedOrder(prev => ({ 
-            ...prev, 
-            paymentStatus: 'Paid',
-            paymentVerifiedBy: currentAdmin,
-            paymentVerifiedAt: currentTime
-          }));
+          if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
+            setSelectedOrder(prev => ({ 
+              ...prev, 
+              paymentStatus: 'Paid',
+              paymentVerifiedBy: currentAdmin,
+              paymentVerifiedAt: currentTime
+            }));
+          }
+          console.log(`Payment verification updated for order ${orderId}`);
         }
       } catch (err) {
         console.warn('Failed to verify payment', err);
@@ -275,28 +295,38 @@ const OrderMgmt = () => {
   const markPaymentPending = (orderId) => {
     const doPending = async () => {
       try {
+        // Try to mark payment pending on server first
+        let apiSuccess = false;
         try {
           await apiClient.post(`/orders/${orderId}/mark-pending`);
-        } catch {
-          console.warn('mark-pending endpoint failed, updating locally');
+          console.log(`Successfully marked payment as pending for order ${orderId} in backend`);
+          apiSuccess = true;
+        } catch (error) {
+          console.error('mark-pending endpoint failed:', error);
+          alert(`Failed to mark payment as pending on server. Error: ${error.response?.data?.message || error.message || 'Unknown error'}`);
+          return; // Don't update UI if backend update failed
         }
 
-        setOrders(prev => prev.map(order => 
-          matchesOrderId(order, orderId) ? { 
-            ...order, 
-            paymentStatus: 'Pending',
-            paymentVerifiedBy: null,
-            paymentVerifiedAt: null
-          } : order
-        ));
+        // Only update local state if backend update was successful
+        if (apiSuccess) {
+          setOrders(prev => prev.map(order => 
+            matchesOrderId(order, orderId) ? { 
+              ...order, 
+              paymentStatus: 'Pending',
+              paymentVerifiedBy: null,
+              paymentVerifiedAt: null
+            } : order
+          ));
 
-        if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
-          setSelectedOrder(prev => ({ 
-            ...prev, 
-            paymentStatus: 'Pending',
-            paymentVerifiedBy: null,
-            paymentVerifiedAt: null
-          }));
+          if (selectedOrder && matchesOrderId(selectedOrder, orderId)) {
+            setSelectedOrder(prev => ({ 
+              ...prev, 
+              paymentStatus: 'Pending',
+              paymentVerifiedBy: null,
+              paymentVerifiedAt: null
+            }));
+          }
+          console.log(`Payment status updated to pending for order ${orderId}`);
         }
       } catch {
         console.warn('Failed to mark payment pending');
@@ -308,43 +338,15 @@ const OrderMgmt = () => {
 
   const cancelOrder = (orderId) => {
     if (window.confirm('Are you sure you want to cancel this order?')) {
-      const doCancel = async () => {
-        try {
-          try {
-            await ordersAPI.cancel(orderId);
-          } catch {
-            console.warn('ordersAPI.cancel failed, trying patch');
-            try { await apiClient.patch(`/orders/${orderId}`, { status: 'Cancelled' }); } catch (err) { console.warn('patch cancel failed', err); }
-          }
-          updateOrderStatus(orderId, 'Cancelled');
-        } catch {
-          console.warn('Failed to cancel order');
-          updateOrderStatus(orderId, 'Cancelled');
-        }
-      };
-
-      doCancel();
+      // Use the improved updateOrderStatus function which ensures backend persistence
+      updateOrderStatus(orderId, 'Cancelled');
     }
   };
 
   const refundOrder = (orderId) => {
     if (window.confirm('Are you sure you want to refund this order?')) {
-      const doRefund = async () => {
-        try {
-          try {
-            await apiClient.patch(`/orders/${orderId}/refund`);
-          } catch {
-            console.warn('refund endpoint failed, trying status patch');
-            try { await apiClient.patch(`/orders/${orderId}`, { status: 'Refunded' }); } catch (err) { console.warn('patch refund failed', err); }
-          }
-          updateOrderStatus(orderId, 'Refunded');
-        } catch {
-          console.warn('Failed to refund order');
-          updateOrderStatus(orderId, 'Refunded');
-        }
-      };
-
-      doRefund();
+      // Use the improved updateOrderStatus function which ensures backend persistence  
+      updateOrderStatus(orderId, 'Refunded');
     }
   };
 
@@ -369,10 +371,22 @@ const OrderMgmt = () => {
       return;
     }
 
-  const refundValue = refundAmount || Number(selectedOrder?.total || 0);
+    // Validate refund amount
+    const orderTotal = Number(selectedOrder?.total || selectedOrder?.amount || 0);
+    const refundValue = refundAmount ? Number(refundAmount) : orderTotal;
+    
+    if (isNaN(refundValue) || refundValue < 0) {
+      alert('Please enter a valid refund amount');
+      return;
+    }
+    
+    if (refundValue > orderTotal) {
+      alert(`Refund amount cannot exceed order total (GH₵${orderTotal.toFixed(2)})`);
+      return;
+    }
     
     // Process the return/refund
-    updateOrderStatus(selectedOrder.id, 'Refunded');
+    updateOrderStatus(selectedOrder?.id || selectedOrder?._id, 'Refunded');
     
     // In a real app, you would also:
     // - Create a return record
@@ -704,7 +718,7 @@ const OrderMgmt = () => {
               <div className="flex items-center gap-2">
                 {String(order?.paymentStatus || '').toLowerCase() === 'pending' && (
                   <button
-                    onClick={() => verifyPayment(order.id)}
+                    onClick={() => verifyPayment(order?.id || order?._id)}
                     className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-medium transition"
                     title="Verify Payment"
                   >
@@ -713,7 +727,7 @@ const OrderMgmt = () => {
                 )}
                 {getNextStatus(order?.status) && (
                   <button
-                    onClick={() => updateOrderStatus(order.id, getNextStatus(order?.status))}
+                    onClick={() => updateOrderStatus(order?.id || order?._id, getNextStatus(order?.status))}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium transition"
                     title={`Update to ${getNextStatus(order?.status)}`}
                   >
@@ -830,7 +844,7 @@ const OrderMgmt = () => {
                       </span>
                       {String(order?.paymentStatus || '').toLowerCase() === 'pending' && (
                         <button
-                          onClick={() => verifyPayment(order.id)}
+                          onClick={() => verifyPayment(order?.id || order?._id)}
                           className="text-green-600 hover:text-green-900 p-1"
                           title="Verify Payment"
                         >
@@ -1015,13 +1029,13 @@ const OrderMgmt = () => {
                   {selectedOrder.status !== 'Cancelled' && selectedOrder.status !== 'Refunded' && (
                     <>
                       <button
-                        onClick={() => cancelOrder(selectedOrder.id)}
+                        onClick={() => cancelOrder(selectedOrder?.id || selectedOrder?._id)}
                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                       >
                         Cancel Order
                       </button>
                       <button
-                        onClick={() => refundOrder(selectedOrder.id)}
+                        onClick={() => refundOrder(selectedOrder?.id || selectedOrder?._id)}
                         className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                       >
                         Refund Order
