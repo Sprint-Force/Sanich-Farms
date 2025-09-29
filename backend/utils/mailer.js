@@ -1,4 +1,3 @@
-import nodemailer from 'nodemailer';
 import sgMail from '@sendgrid/mail';
 import dotenv from 'dotenv';
 
@@ -24,38 +23,6 @@ export const sendEmail = async ({to, subject, html}) => {
     }
   };
 };
-
-
-
-
-
-/*
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
-    }
-});
-
-// Send email
-export const sendEmail = async ({ to, subject, html }) => {
-  try {
-    const mailOptions = {
-      from: `"Sanich Farms" <${process.env.MAIL_USER}>`,
-      to,
-      subject,
-      html,
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.messageId);
-    return info;
-  } catch (error) {
-    console.error("Failed to send email:", error);
-    throw new Error("Email sending failed");
-  }
-}; */
 
 
 
