@@ -28,7 +28,7 @@ export const ToastProvider = ({ children }) => {
     let effectiveDuration = duration;
     if (typeof effectiveDuration === 'undefined') {
       if (typeof window !== 'undefined' && window.innerWidth < 640) {
-        effectiveDuration = 2500; // compact & quick on mobile like Jumia
+        effectiveDuration = 3500; // slightly longer on mobile (Jumia-like)
       } else {
         effectiveDuration = 4000; // desktop default
       }
@@ -54,12 +54,10 @@ export const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={{ addToast, removeToast }}>
       {children}
-      {/* Toast Container: desktop top-right, mobile bottom-center. Kept breadcrumb unchanged elsewhere. */}
-      <div
-        className="fixed z-[9999] pointer-events-none w-full flex items-end justify-center sm:items-start sm:justify-end"
-        style={{ top: 16, left: 0, right: 0, bottom: 'auto', padding: '0 12px' }}
-      >
-        <div className="w-full max-w-xs sm:max-w-sm space-y-3 pointer-events-auto">
+      {/* Toast Container: bottom-center on mobile, top-right on desktop */}
+      {/* top-center on mobile, top-right on desktop */}
+      <div className="fixed z-[99999] pointer-events-none inset-x-0 top-4 sm:top-4 sm:right-4 flex flex-col items-center sm:items-start sm:justify-end px-3" style={{ paddingTop: 'env(safe-area-inset-top, 16px)' }}>
+        <div className="w-auto max-w-[90vw] sm:max-w-sm space-y-3 pointer-events-auto flex flex-col items-center sm:items-end">
           {toasts.map((toast) => (
             <Toast key={toast.id} {...toast} onDismiss={() => removeToast(toast.id)} />
           ))}
@@ -112,7 +110,8 @@ const Toast = ({ message, type = 'success', duration = 4000, onDismiss }) => {
   };
 
   const handleTouchEnd = () => {
-    if (Math.abs(translateX) > 60) {
+    // lower threshold for quicker dismiss on mobile
+    if (Math.abs(translateX) > 40) {
       // dismiss
       onDismiss();
     } else {
@@ -132,17 +131,19 @@ const Toast = ({ message, type = 'success', duration = 4000, onDismiss }) => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="w-full bg-white rounded-full sm:rounded-xl shadow-lg flex items-center gap-3 p-2 sm:p-4 border border-transparent overflow-hidden max-w-md mx-auto"
+      className="bg-white rounded-full sm:rounded-xl shadow-lg flex items-center gap-2 p-2 sm:p-4 border border-transparent overflow-hidden max-w-[90vw] sm:max-w-md"
+      title={message}
       style={{
         transform: `translateX(${translateX}px)`,
         transition: translateX === 0 ? 'transform 300ms ease' : 'none',
+        animation: 'toast-fade-in 280ms ease-out',
       }}
     >
       {/* On desktop: left accent bar. On mobile: small colored dot. We'll render both but hide based on screen size via utility classes */}
       <div className={`hidden sm:block w-1 rounded-l-xl ${accent}`} style={{ minHeight: 40 }} aria-hidden />
 
       <div className="flex items-center gap-3 flex-1">
-        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${accent} sm:hidden`} aria-hidden>
+        <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${accent} sm:hidden`} aria-hidden>
           {icon}
         </div>
         <div className="flex-1 flex items-center gap-3">
@@ -180,9 +181,10 @@ const Toast = ({ message, type = 'success', duration = 4000, onDismiss }) => {
       {/* Inline styles for simple keyframes (Tailwind doesn't ship custom keyframes here) */}
       <style>
         {`@keyframes toast-progress { from { width: 100%; } to { width: 0%; } }
+           @keyframes toast-fade-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
            @media (max-width: 639px) {
-             /* Mobile: make it pill-like and smaller */
-             .toast-mobile { padding: 8px 12px; }
+             /* Mobile: pill-like and smaller */
+             .toast-mobile { padding: 6px 10px; }
            }
         `}
       </style>
