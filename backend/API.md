@@ -25,6 +25,7 @@
 | POST   | `/api/products/add`            | Add product (**Admin only**)         |
 | PATCH  | `/api/products/:id/edit`       | Edit product (**Admin only**)        |
 | DELETE | `/api/products/:id/delete`     | Delete product (**Admin only**)      |
+| GET    | `/api/products/all`            | Get all products (Admin only)          |
 
 ---
 
