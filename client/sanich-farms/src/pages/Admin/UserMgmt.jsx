@@ -1,628 +1,496 @@
-import React, { useState, useEffect } from 'react';
-import apiClient from '../../services/api';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   FiSearch, 
-  FiFilter,
   FiChevronDown, 
   FiEye, 
   FiMail, 
   FiX, 
   FiUser,
   FiUsers,
-  FiShoppingBag,
-  FiCalendar,
-  FiActivity,
-  FiUserX,
-  FiUserCheck,
-  FiDownload,
   FiMapPin,
-  FiPhone
+  FiPhone,
+  FiHome,
+  FiCalendar,
+  FiGrid,
+  FiList,
+  FiDownload,
+  FiRefreshCw,
+  FiAlertCircle
 } from 'react-icons/fi';
-import { ClickableEmail, ClickablePhone } from '../../utils/contactUtils';
+import { adminUsersAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 const UserMgmt = () => {
+  const { addToast } = useToast();
+  
+  // State management
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [showUserDetail, setShowUserDetail] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [emailData, setEmailData] = useState({
-    subject: '',
-    message: '',
-    recipients: []
-  });
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [usersError, setUsersError] = useState('');
-  // Users state (will be loaded from API on mount; fallback to mock)
-  const [customers, setCustomers] = useState([]);
+
+  // Helper functions
+  const getUserName = (user) => user?.name || 'N/A';
+  const getUserEmail = (user) => user?.email || 'N/A';
+  const getUserPhone = (user) => user?.phone_number || user?.phone || 'N/A';
+  const getUserAddress = (user) => user?.address || 'N/A';
+  const getUserCompany = (user) => user?.company_name || 'N/A';
+
+  // Load users from API
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await adminUsersAPI.getAll();
+      const usersData = Array.isArray(response) ? response : response.users || response.data || [];
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      setError('Failed to load users. Please try again.');
+      addToast('Failed to load users', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [addToast]);
 
   useEffect(() => {
-    let mounted = true;
-    const loadUsers = async () => {
-      setLoadingUsers(true);
-      setUsersError('');
-      try {
-        const res = await apiClient.get('/users');
-        if (!mounted) return;
-        const users = Array.isArray(res.data) ? res.data : res.data.users || [];
-        setCustomers(users);
-      } catch (err) {
-        console.warn('Failed to load users from API', err?.response?.data || err.message || err);
-        if (!mounted) return;
-        setUsersError('Failed to load users from server.');
-        setCustomers([]);
-      } finally {
-        if (mounted) setLoadingUsers(false);
-      }
-    };
+    fetchUsers();
+  }, [fetchUsers]);
 
-    loadUsers();
-    return () => { mounted = false; };
-  }, []);
-
-  const statuses = ['all', 'Active', 'Suspended', 'Banned'];
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      case 'Suspended': return 'bg-yellow-100 text-yellow-800';
-      case 'Banned': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'Active': return <FiUserCheck className="w-4 h-4" />;
-      case 'Suspended': return <FiUser className="w-4 h-4" />;
-      case 'Banned': return <FiUserX className="w-4 h-4" />;
-      default: return <FiUser className="w-4 h-4" />;
-    }
-  };
-
-  const filteredCustomers = customers.filter(customer => {
-  const name = String(customer?.name || '').toLowerCase();
-  const email = String(customer?.email || '').toLowerCase();
-  const phone = String(customer?.phone_number || customer?.phone || '');
-  const search = String(searchTerm || '').toLowerCase();
-
-  const matchesSearch = name.includes(search) || email.includes(search) || phone.includes(search);
-
-  const matchesStatus = filterStatus === 'all' || String(customer?.status || '').toLowerCase() === String(filterStatus || '').toLowerCase();
-
-  return matchesSearch && matchesStatus;
+  // Filter users
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = 
+      getUserName(user).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getUserEmail(user).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getUserPhone(user).includes(searchTerm) ||
+      getUserCompany(user).toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
   });
 
-  const updateCustomerStatus = (customerId, newStatus) => {
-    // Try update via API first, fallback to local update
-    (async () => {
-      try {
-        // Attempt to PATCH the user's status. Backend admin endpoints may differ; this is a best-effort call.
-        await apiClient.patch(`/users/${customerId}`, { status: newStatus });
-      } catch (err) {
-        console.warn('Failed to update user status via API, applying local fallback', err?.response?.data || err.message || err);
-      } finally {
-        setCustomers(prev => prev.map(customer => 
-          customer.id === customerId ? { ...customer, status: newStatus } : customer
-        ));
-        if (selectedUser && selectedUser.id === customerId) {
-          setSelectedUser(prev => ({ ...prev, status: newStatus }));
-        }
-      }
-    })();
-  };
-
-  const suspendCustomer = (customerId) => {
-    if (window.confirm('Are you sure you want to suspend this customer?')) {
-  updateCustomerStatus(customerId, 'Suspended');
-    }
-  };
-
-  const banCustomer = (customerId) => {
-    if (window.confirm('Are you sure you want to ban this customer? This action is severe.')) {
-  updateCustomerStatus(customerId, 'Banned');
-    }
-  };
-
-  const activateCustomer = (customerId) => {
-  updateCustomerStatus(customerId, 'Active');
-  };
-
-  const viewUserDetail = (user) => {
+  // User action handlers
+  const handleViewUser = (user) => {
     setSelectedUser(user);
-    setShowUserDetail(true);
+    setShowDetailModal(true);
   };
 
-  const openEmailModal = (recipients = []) => {
-    setEmailData({
-      subject: '',
-      message: '',
-      recipients: recipients.length > 0 ? recipients : []
-    });
-    setShowEmailModal(true);
+  const closeModal = () => {
+    setShowDetailModal(false);
+    setSelectedUser(null);
   };
 
-  const sendEmail = () => {
-    // Email sending logic would go here
-    console.log('Sending email:', emailData);
-    alert(`Email sent to ${emailData.recipients.length} recipient(s)`);
-    setShowEmailModal(false);
-  };
+  // Export users to CSV
+  const handleExportUsers = () => {
+    try {
+      // Prepare CSV data
+      const csvHeaders = [
+        'User ID',
+        'Name',
+        'Email',
+        'Phone',
+        'Address',
+        'Company',
+        'Registration Date'
+      ];
 
-  const exportCustomers = () => {
-    const csvContent = [
-      ['Name', 'Email', 'Phone', 'Status', 'Registration Date', 'Total Orders', 'Total Spent'].join(','),
-      ...filteredCustomers.map(customer => 
-        [
-          customer.name,
-          customer.email,
-          customer.phone_number || customer.phone,
-          customer.status,
-          customer.registrationDate,
-          customer.totalOrders,
-          customer.totalSpent
-        ].join(',')
-      )
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'customers.csv';
-    a.click();
-  };
+      const csvData = filteredUsers.map(user => [
+        user?.id || '',
+        getUserName(user),
+        getUserEmail(user),
+        getUserPhone(user),
+        getUserAddress(user),
+        getUserCompany(user),
+        user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Not Available'
+      ]);
 
-  const calculateDaysSince = (date) => {
-    const diffTime = Math.abs(new Date() - new Date(date));
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      // Create CSV content
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvData.map(row => 
+          row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')
+        )
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `users-export-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        addToast('Users exported successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      addToast('Failed to export users', 'error');
+    }
   };
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-4 lg:p-6 xl:p-8 min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
-          <p className="text-gray-600 mt-1">Manage your customer database</p>
-        </div>
-        <div className="mt-3 sm:mt-0">
-          {loadingUsers && (
-            <div className="text-sm text-gray-600">Loading users...</div>
-          )}
-          {usersError && (
-            <div className="mt-2 text-sm text-yellow-700 bg-yellow-50 border border-yellow-100 px-3 py-2 rounded">{usersError}</div>
-          )}
-        </div>
-        <div className="mt-4 sm:mt-0 flex gap-2">
-          <button 
-            onClick={() => openEmailModal(filteredCustomers.map(c => c.email))}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition"
-          >
-            <FiMail className="w-4 h-4" />
-            Send Email
-          </button>
-          <button 
-            onClick={exportCustomers}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition"
-          >
-            <FiDownload className="w-4 h-4" />
-            Export
-          </button>
-        </div>
-      </div>
-
-      {filteredCustomers.length === 0 && (
-        <div className="text-center py-12">
-          <FiUsers className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No customers found</h3>
-          <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
-        </div>
-      )}
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <p className="text-sm text-gray-500">Total Customers</p>
-          <p className="text-2xl font-bold text-gray-900">{customers.length}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <p className="text-sm text-gray-500">Active</p>
-          <p className="text-2xl font-bold text-green-600">
-            {customers.filter(c => c.status === 'Active').length}
-          </p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <p className="text-sm text-gray-500">Suspended</p>
-          <p className="text-2xl font-bold text-yellow-600">
-            {customers.filter(c => c.status === 'Suspended').length}
-          </p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <p className="text-sm text-gray-500">Banned</p>
-          <p className="text-2xl font-bold text-red-600">
-            {customers.filter(c => c.status === 'Banned').length}
-          </p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search customers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-            />
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
+              User Management
+            </h1>
+            <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base leading-relaxed">
+              Manage customer accounts and information
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <FiFilter className="text-gray-400 w-4 h-4" />
-            <div className="relative">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200 appearance-none"
+          
+          {/* Controls - View Toggle and Export Button */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* View Toggle */}
+            <div className="flex items-center gap-1 bg-white rounded-lg p-1 border border-gray-200 shadow-sm">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 sm:p-2.5 rounded-md transition-all duration-200 ${
+                  viewMode === 'grid' 
+                    ? 'bg-green-100 text-green-700 shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+                title="Grid View"
               >
-                {statuses.map(status => (
-                  <option key={status} value={status}>
-                    {status === 'all' ? 'All Status' : status}
-                  </option>
-                ))}
-              </select>
-              <FiChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                <FiGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 sm:p-2.5 rounded-md transition-all duration-200 ${
+                  viewMode === 'list' 
+                    ? 'bg-green-100 text-green-700 shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+                title="List View"
+              >
+                <FiList className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Export Button */}
+            <button
+              onClick={handleExportUsers}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+              title="Export Users to CSV"
+            >
+              <FiDownload className="w-4 h-4" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className="mb-6 sm:mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 lg:p-6">
+        <div className="space-y-4 sm:space-y-0 sm:flex sm:items-center sm:gap-4">
+          <div className="flex flex-col sm:flex-row w-full gap-3 sm:gap-4">
+            <div className="relative flex-1 sm:max-w-md lg:max-w-xl xl:max-w-2xl">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search by name, email, phone, or company..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm sm:text-base transition-all duration-200 placeholder-gray-500"
+              />
             </div>
           </div>
-          <div className="text-sm text-gray-600 flex items-center">
-            {filteredCustomers.length} customers found
-          </div>
+        </div>
+
+        {/* Results count */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-600">
+            Showing <span className="font-medium text-gray-900">{filteredUsers.length}</span> of <span className="font-medium text-gray-900">{users.length}</span> users
+          </p>
         </div>
       </div>
 
-      {/* Customers Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Orders
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total Spent
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Activity
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredCustomers.map((customer) => (
-                <tr key={customer.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <img
-                        src={customer.avatar}
-                        alt={customer.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                        <div className="text-sm text-gray-500">ID: {customer.id}</div>
+      {/* Loading State */}
+      {loading ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 sm:p-12 text-center">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-green-600"></div>
+            <span className="text-sm sm:text-base text-gray-600 font-medium">Loading users...</span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 sm:p-8 text-center">
+          <FiAlertCircle className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 mx-auto mb-3 sm:mb-4" />
+          <p className="text-red-800 font-medium mb-2 text-sm sm:text-base">Error Loading Users</p>
+          <p className="text-red-600 text-xs sm:text-sm mb-4">{error}</p>
+          <button
+            onClick={fetchUsers}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 active:bg-red-800 transition-all duration-200 text-sm sm:text-base active:scale-95"
+          >
+            Try Again
+          </button>
+        </div>
+      ) : filteredUsers.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 sm:p-12 text-center">
+          <FiUsers className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4 sm:mb-6" />
+          <p className="text-gray-600 text-base sm:text-lg font-medium mb-2">
+            {users.length === 0 
+              ? 'No users found' 
+              : 'No users match your current search.'}
+          </p>
+          <p className="text-gray-500 text-sm sm:text-base">
+            {users.length === 0 
+              ? 'No users have registered yet.' 
+              : 'Try adjusting your search criteria.'}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-3 sm:p-4 lg:p-6">
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
+                {filteredUsers.map((user) => (
+                  <div key={user.id} className="group bg-gray-50 border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-green-300 hover:bg-white transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02]">
+                    <div className="p-4 sm:p-5">
+                      <div className="flex items-start justify-between mb-3 sm:mb-4">
+                        <div className="min-w-0 flex-1 pr-2">
+                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight truncate mb-1">
+                            {getUserName(user)}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-gray-600 truncate">
+                            ID: {user.id}
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <FiUser className="w-8 h-8 text-green-600 bg-green-100 rounded-full p-2" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2.5 mb-4">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-500 font-medium">Email:</span>
+                          <span className="font-medium text-gray-900 truncate ml-2 text-right">
+                            {getUserEmail(user)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-500 font-medium">Phone:</span>
+                          <span className="text-gray-900 font-medium">{getUserPhone(user)}</span>
+                        </div>
+                        {getUserCompany(user) !== 'N/A' && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-500 font-medium">Company:</span>
+                            <span className="text-gray-900 font-medium truncate ml-2 text-right">{getUserCompany(user)}</span>
+                          </div>
+                        )}
+                        {user.created_at ? (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-500 font-medium">Joined:</span>
+                            <span className="text-gray-900 font-medium">
+                              {new Date(user.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-500 font-medium">User ID:</span>
+                            <span className="text-gray-900 font-medium">
+                              #{user.id}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleViewUser(user)}
+                        className="w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 hover:scale-105 active:scale-95"
+                      >
+                        <FiEye className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                        <span>View Details</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4 sm:space-y-5">
+                {filteredUsers.map((user) => (
+                  <div key={user.id} className="group bg-gray-50 border border-gray-200 rounded-xl p-4 sm:p-5 lg:p-6 hover:shadow-lg hover:border-green-300 hover:bg-white transition-all duration-300">
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
+                          <div className="flex-1 mb-3 sm:mb-0">
+                            <h3 className="font-bold text-gray-900 text-lg sm:text-xl mb-2 group-hover:text-green-700 transition-colors duration-200">
+                              {getUserName(user)}
+                            </h3>
+                            <p className="text-sm sm:text-base text-gray-600 mb-3">
+                              <span className="font-medium">ID: {user.id}</span> • {user.created_at ? `Joined ${new Date(user.created_at).toLocaleDateString()}` : 'Member'}
+                            </p>
+                          </div>
+                          <div className="sm:ml-6 sm:text-right">
+                            <FiUser className="w-12 h-12 text-green-600 bg-green-100 rounded-full p-3 mx-auto sm:mx-0" />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 mb-4">
+                          <div className="bg-white rounded-lg p-3 border border-gray-100">
+                            <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1">
+                              <FiMail className="w-3 h-3" />
+                              Email
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 truncate">{getUserEmail(user)}</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-3 border border-gray-100">
+                            <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1">
+                              <FiPhone className="w-3 h-3" />
+                              Phone
+                            </p>
+                            <p className="text-sm font-medium text-gray-900">{getUserPhone(user)}</p>
+                          </div>
+                          {getUserCompany(user) !== 'N/A' && (
+                            <div className="bg-white rounded-lg p-3 border border-gray-100">
+                              <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1">
+                                <FiHome className="w-3 h-3" />
+                                Company
+                              </p>
+                              <p className="text-sm font-medium text-gray-900 truncate">{getUserCompany(user)}</p>
+                            </div>
+                          )}
+                          {getUserAddress(user) !== 'N/A' && (
+                            <div className="bg-white rounded-lg p-3 border border-gray-100">
+                              <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1">
+                                <FiMapPin className="w-3 h-3" />
+                                Address
+                              </p>
+                              <p className="text-sm font-medium text-gray-900 truncate">{getUserAddress(user)}</p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <button
+                          onClick={() => handleViewUser(user)}
+                          className="w-full sm:w-auto px-6 py-3 rounded-xl text-sm sm:text-base font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 hover:scale-105 active:scale-95 min-w-[140px]"
+                        >
+                          <FiEye className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform duration-200" />
+                          <span>View Details</span>
+                        </button>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{customer.email}</div>
-                    <div className="text-sm text-gray-500">{customer.phone_number || customer.phone}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex items-center gap-1">
-                      <FiShoppingBag className="w-4 h-4 text-gray-400" />
-                      {customer.totalOrders}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    GH₵{Number(customer?.totalSpent || 0).toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(customer.status)}`}>
-                      {getStatusIcon(customer.status)}
-                      {customer.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex items-center gap-1">
-                      <FiActivity className="w-4 h-4 text-gray-400" />
-                      {calculateDaysSince(customer.lastActivity)} days ago
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => viewUserDetail(customer)}
-                        className="text-blue-600 hover:text-blue-900 p-1"
-                        title="View Details"
-                      >
-                        <FiEye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => openEmailModal([customer.email])}
-                        className="text-purple-600 hover:text-purple-900 p-1"
-                        title="Send Email"
-                      >
-                        <FiMail className="w-4 h-4" />
-                      </button>
-                      {customer.status === 'Active' && (
-                        <button
-                          onClick={() => suspendCustomer(customer.id)}
-                          className="text-yellow-600 hover:text-yellow-900 p-1"
-                          title="Suspend"
-                        >
-                          <FiUserX className="w-4 h-4" />
-                        </button>
-                      )}
-                      {customer.status === 'Active' && (
-                        <button
-                          onClick={() => banCustomer(customer.id)}
-                          className="text-red-600 hover:text-red-900 p-1"
-                          title="Ban"
-                        >
-                          <FiUserX className="w-4 h-4" />
-                        </button>
-                      )}
-                      {customer.status !== 'Active' && (
-                        <button
-                          onClick={() => activateCustomer(customer.id)}
-                          className="text-green-600 hover:text-green-900 p-1"
-                          title="Activate"
-                        >
-                          <FiUserCheck className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* User Detail Modal */}
-      {showUserDetail && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 pt-16 z-[60] overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[calc(100vh-8rem)] overflow-y-auto my-4">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold text-gray-900">
-                User Details - {selectedUser?.name || 'User'}
-              </h2>
-              <button
-                onClick={() => setShowUserDetail(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <FiX className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* Customer Info */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-3">Personal Information</h3>
-                  <div className="flex items-center gap-4 mb-4">
-                    <img
-                      src={selectedUser?.avatar || ''}
-                      alt={selectedUser?.name || 'user'}
-                      className="w-16 h-16 rounded-full object-cover"
-                    />
-                    <div>
-                      <h4 className="font-medium text-gray-900">{selectedUser?.name || ''}</h4>
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedUser?.status)}`}>
-                        {getStatusIcon(selectedUser?.status)}
-                        {selectedUser?.status || ''}
-                      </span>
-                    </div>
                   </div>
-                  <div className="space-y-2 text-sm">
-                    <p className="flex items-center gap-2">
-                      <FiMail className="w-4 h-4 text-gray-400" />
-                      <ClickableEmail email={selectedUser.email} className="text-gray-900 hover:text-green-600" />
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <FiPhone className="w-4 h-4 text-gray-400" />
-                      <ClickablePhone phone={selectedUser.phone_number || selectedUser.phone} className="text-gray-900 hover:text-green-600" />
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <FiMapPin className="w-4 h-4 text-gray-400" />
-                      {selectedUser?.address || ''}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-3">Account Statistics</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Registration Date:</span>
-                      <span className="text-sm font-medium">{selectedUser?.registrationDate ? new Date(selectedUser.registrationDate).toLocaleDateString() : ''}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Last Activity:</span>
-                      <span className="text-sm font-medium">{selectedUser?.lastActivity ? `${calculateDaysSince(selectedUser.lastActivity)} days ago` : ''}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Total Orders:</span>
-                      <span className="text-sm font-medium">{selectedUser?.totalOrders ?? 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Total Spent:</span>
-                      <span className="text-sm font-medium">GH₵{Number(selectedUser?.totalSpent || 0).toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Average Order:</span>
-                      <span className="text-sm font-medium">
-                        GH₵{(selectedUser?.totalOrders > 0) ? (Number(selectedUser.totalSpent || 0) / Number(selectedUser.totalOrders)).toFixed(2) : '0.00'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
-
-              {/* Order History */}
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Order History</h3>
-                <div className="bg-gray-50 rounded-lg overflow-hidden">
-                  <table className="min-w-full">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Order ID</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Date</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Amount</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-            {(selectedUser?.orderHistory || []).map((order, index) => (
-                        <tr key={index}>
-                          <td className="px-4 py-3 text-sm font-medium">{order.id}</td>
-              <td className="px-4 py-3 text-sm">{order?.date ? new Date(order.date).toLocaleDateString() : ''}</td>
-              <td className="px-4 py-3 text-sm">GH₵{Number(order?.amount || 0).toFixed(2)}</td>
-                          <td className="px-4 py-3 text-sm">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
-                              {order.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-3">Customer Actions</h3>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => selectedUser?.email && openEmailModal([selectedUser.email])}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-                  >
-                    Send Email
-                  </button>
-                  {selectedUser.status === 'Active' && (
-                    <>
-                      <button
-                        onClick={() => selectedUser?.id && suspendCustomer(selectedUser.id)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-                      >
-                        Suspend Customer
-                      </button>
-                      <button
-                        onClick={() => selectedUser?.id && banCustomer(selectedUser.id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-                      >
-                        Ban Customer
-                      </button>
-                    </>
-                  )}
-                  {selectedUser.status !== 'Active' && (
-                    <button
-                      onClick={() => selectedUser?.id && activateCustomer(selectedUser.id)}
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-                    >
-                      Activate Customer
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Email Modal */}
-      {showEmailModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-start justify-center p-4 pt-16 z-[60] overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full my-4">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold text-gray-900">Send Promotional Email</h2>
-              <button 
-                onClick={() => setShowEmailModal(false)} 
-                className="text-gray-400 hover:text-gray-600"
+      {/* User Detail Modal */}
+      {showDetailModal && selectedUser && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 lg:p-6 z-50">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-4xl max-h-[98vh] sm:max-h-[96vh] lg:max-h-[90vh] overflow-hidden border border-gray-100">
+            <div className="flex items-center justify-between p-4 sm:p-5 lg:p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50 sticky top-0 z-10">
+              <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-bold text-gray-900 truncate pr-4 leading-tight">
+                User Details - {getUserName(selectedUser)}
+              </h2>
+              <button
+                onClick={closeModal}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200 touch-manipulation flex-shrink-0 active:scale-90"
               >
-                <FiX className="w-6 h-6" />
+                <FiX className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Recipients ({emailData.recipients.length})
-                </label>
-                <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                  {emailData.recipients.length > 3 
-                    ? `${emailData.recipients.slice(0, 3).join(', ')} and ${emailData.recipients.length - 3} more...`
-                    : emailData.recipients.join(', ')
-                  }
+            <div className="p-3 sm:p-4 lg:p-6 overflow-y-auto max-h-[calc(98vh-4rem)] sm:max-h-[calc(96vh-5rem)] lg:max-h-[calc(90vh-6rem)]">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 xl:gap-8">
+                {/* Personal Information */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-5 border border-blue-100">
+                  <h3 className="font-bold text-blue-900 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base lg:text-lg">
+                    <FiUser className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Personal Information
+                  </h3>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div>
+                      <p className="text-xs text-blue-700 mb-1 font-medium">Full Name</p>
+                      <p className="font-semibold text-blue-900 text-sm sm:text-base">{getUserName(selectedUser)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-blue-700 mb-1 font-medium">Email Address</p>
+                      <p className="font-semibold text-blue-900 text-sm sm:text-base break-words">{getUserEmail(selectedUser)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-blue-700 mb-1 font-medium">Phone Number</p>
+                      <p className="font-semibold text-blue-900 text-sm sm:text-base">{getUserPhone(selectedUser)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-blue-700 mb-1 font-medium">User ID</p>
+                      <p className="font-semibold text-blue-900 text-sm sm:text-base">{selectedUser.id}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Business Information */}
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 sm:p-5 border border-green-100">
+                  <h3 className="font-bold text-green-900 mb-4 flex items-center gap-2 text-base sm:text-lg">
+                    <FiHome className="w-5 h-5" />
+                    Business Information
+                  </h3>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div>
+                      <p className="text-xs text-green-700 mb-1 font-medium">Company Name</p>
+                      <p className="font-semibold text-green-900 text-sm sm:text-base">{getUserCompany(selectedUser)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-green-700 mb-1 font-medium">Address</p>
+                      <p className="font-semibold text-green-900 text-sm sm:text-base break-words">{getUserAddress(selectedUser)}</p>
+                    </div>
+                    {selectedUser.created_at ? (
+                      <div>
+                        <p className="text-xs text-green-700 mb-1 font-medium">Registration Date</p>
+                        <p className="font-semibold text-green-900 text-sm sm:text-base">
+                          {new Date(selectedUser.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-xs text-green-700 mb-1 font-medium">User Status</p>
+                        <p className="font-semibold text-green-900 text-sm sm:text-base">
+                          Active Member
+                        </p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs text-green-700 mb-1 font-medium">Account Role</p>
+                      <p className="font-semibold text-green-900 text-sm sm:text-base capitalize">
+                        {selectedUser.role || 'Customer'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  value={emailData.subject}
-                  onChange={(e) => setEmailData(prev => ({ ...prev, subject: e.target.value }))}
-                  placeholder="Enter email subject"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message
-                </label>
-                <textarea
-                  value={emailData.message}
-                  onChange={(e) => setEmailData(prev => ({ ...prev, message: e.target.value }))}
-                  placeholder="Enter your promotional message"
-                  rows="6"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={sendEmail}
-                  disabled={!emailData.subject || !emailData.message}
-                  className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-6 py-2 rounded-lg font-medium transition"
-                >
-                  Send Email
-                </button>
-                <button
-                  onClick={() => setShowEmailModal(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-lg font-medium transition"
-                >
-                  Cancel
-                </button>
+              {/* Action Buttons */}
+              <div className="mt-6 bg-gray-50 rounded-xl p-4 sm:p-5">
+                <h3 className="font-semibold text-gray-900 mb-3 text-base sm:text-lg">Quick Actions</h3>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <button
+                    onClick={() => window.open(`mailto:${getUserEmail(selectedUser)}`, '_blank')}
+                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <FiMail className="w-4 h-4" />
+                    Send Email
+                  </button>
+                  <button
+                    onClick={() => window.open(`tel:${getUserPhone(selectedUser)}`, '_blank')}
+                    className="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <FiPhone className="w-4 h-4" />
+                    Call User
+                  </button>
+                </div>
               </div>
             </div>
           </div>
