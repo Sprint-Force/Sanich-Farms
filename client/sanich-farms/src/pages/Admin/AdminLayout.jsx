@@ -38,9 +38,6 @@ const AdminLayout = () => {
     { name: 'Bookings', href: '/admin/bookings', icon: FiBook },
     { name: 'Q&A Management', href: '/admin/qa', icon: FiMessageSquare },
     { name: 'Users', href: '/admin/users', icon: FiUsers },
-    { name: 'Analytics', href: '/admin/analytics', icon: FiBarChart },
-    { name: 'Search Analytics', href: '/admin/search-analytics', icon: FiSearch },
-    { name: 'Settings', href: '/admin/settings', icon: FiSettings },
   ];
 
   // Get admin user info from localStorage or API

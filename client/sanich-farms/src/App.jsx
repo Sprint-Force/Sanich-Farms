@@ -56,16 +56,13 @@ import AdminLayout from './pages/Admin/AdminLayout'; // NEW: Import AdminLayout
 import AdminLogout from './pages/Admin/AdminLogout';
 import AdminProfile from './pages/Admin/AdminProfile';
 import AdminProtectedRoute from './pages/Admin/AdminProtectedRoute';
-import Analytic from './pages/Admin/Analytic';
 import BookingMgmt from './pages/Admin/BookingMgmt';
 import Dashboard from './pages/Admin/Dashboard';
 import OrderMgmt from './pages/Admin/OrderMgmt';
 import ProductMgmt from './pages/Admin/ProductMgmt';
 import ServiceMgmt from './pages/Admin/ServiceMgmt'; // ADMIN SERVICES FIX: Import ServiceMgmt
-import Settings from './pages/Admin/Settings';
 import UserMgmt from './pages/Admin/UserMgmt';
 import QAManagement from './pages/Admin/QAManagement';
-import SimpleAnalytics from './pages/Admin/SimpleAnalytics';
 import Notifications from './pages/Admin/Notifications';
 
 
@@ -171,8 +168,6 @@ function App() {
                 </AdminProtectedRoute>
               }>
                 <Route index element={<Dashboard />} />
-                <Route path='analytics' element={<Analytic />} />
-                <Route path='search-analytics' element={<SimpleAnalytics />} />
                 <Route path='notifications' element={<Notifications />} />
                 <Route path='orders' element={<OrderMgmt />} />
                 <Route path='bookings' element={<BookingMgmt />} />
@@ -180,7 +175,6 @@ function App() {
                 <Route path='services' element={<ServiceMgmt />} /> {/* ADMIN SERVICES FIX: Add services route */}
                 <Route path='qa' element={<QAManagement />} />
                 <Route path='users' element={<UserMgmt />} />
-                <Route path='settings' element={<Settings />} />
                 <Route path='profile' element={<AdminProfile />} />
               </Route>
 

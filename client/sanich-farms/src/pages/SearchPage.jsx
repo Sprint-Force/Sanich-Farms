@@ -5,7 +5,6 @@ import axios from 'axios';
 import ProductCard from '../components/UI/ProductCard';
 import ServiceCard from '../components/UI/ServiceCard';
 import SimpleFilter from '../components/UI/SimpleFilter';
-import searchAnalytics from '../utils/searchAnalytics';
 
 const SearchPage = () => {
   const location = useLocation();
@@ -69,8 +68,8 @@ const SearchPage = () => {
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
     
-    // Track filter usage
-    searchAnalytics.trackSearch(searchQuery, filteredProducts.length, newFilters);
+    // Track filter usage - TODO: Re-enable when analytics is implemented
+    // searchAnalytics.trackSearch(searchQuery, filteredProducts.length, newFilters);
   };
 
   useEffect(() => {
@@ -88,8 +87,8 @@ const SearchPage = () => {
           setProductResults(products);
           setServiceResults(services);
           
-          // Track search with analytics
-          searchAnalytics.trackSearch(searchQuery, products.length + services.length, filters);
+          // Track search with analytics - TODO: Re-enable when analytics is implemented
+          // searchAnalytics.trackSearch(searchQuery, products.length + services.length, filters);
         } catch (err) {
           console.error("Failed to fetch search results:", err);
           setError("Failed to load search results. Please try again.");

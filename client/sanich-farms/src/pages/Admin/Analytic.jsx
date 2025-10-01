@@ -1,87 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
-  FiTrendingUp, 
-  FiDollarSign, 
-  FiShoppingCart,
-  FiRefreshCw,
-  FiCalendar,
-  FiDownload,
-  FiClock,
-  FiCheckCircle,
-  FiPackage,
-  FiAlertCircle,
-  FiBarChart3,
-  FiActivity
+  FiBarChart2,
+  FiActivity,
+  FiClock
 } from 'react-icons/fi';
-import { analyticsAPI } from '../../services/api';
 
 const Analytic = () => {
-  const [timeRange, setTimeRange] = useState('7days');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [dashboardStats, setDashboardStats] = useState(null);
-  const [revenueData, setRevenueData] = useState(null);
-  const [topProducts, setTopProducts] = useState([]);
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Coming Soon Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 sm:p-12 text-center">
+          <div className="mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-100 to-blue-100 rounded-full mb-4">
+              <FiBarChart2 className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
+              Analytics Dashboard
+            </h1>
+            <p className="text-gray-600 text-lg">Coming Soon</p>
+          </div>
+          
+          <div className="space-y-4 max-w-2xl mx-auto">
+            <p className="text-gray-700">
+              We're working hard to bring you comprehensive analytics and insights for your Sanich Farms operations.
+            </p>
+            
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 border border-green-100">
+              <h3 className="font-semibold text-gray-900 mb-3 flex items-center justify-center">
+                <FiActivity className="w-5 h-5 mr-2 text-green-600" />
+                What's Coming
+              </h3>
+              <ul className="text-left space-y-2 text-gray-700">
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  Real-time sales and revenue tracking
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  Product performance insights
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  Customer behavior analytics
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                  Order and booking trends
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  Interactive charts and reports
+                </li>
+              </ul>
+            </div>
+            
+            <div className="flex items-center justify-center text-sm text-gray-500 mt-6">
+              <FiClock className="w-4 h-4 mr-2" />
+              Expected launch: Q4 2024
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-  // Load analytics data
-  const loadAnalytics = React.useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const [statsData, revenueData, productsData] = await Promise.all([
-        analyticsAPI.getDashboardStats(),
-        analyticsAPI.getRevenueData(),
-        analyticsAPI.getTopProducts()
-      ]);
-
-      setDashboardStats(statsData);
-      setRevenueData(revenueData);
-      setTopProducts(productsData);
-    } catch (err) {
-      console.error('Failed to load analytics:', err);
-      setError('Failed to load analytics data');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadAnalytics();
-  }, [loadAnalytics]);
-
-  // Export analytics data
-  const exportData = () => {
-    const data = {
-      dashboardStats,
-      revenueData,
-      topProducts,
-      exportDate: new Date().toISOString(),
-      timeRange
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `analytics-${timeRange}-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  // Stat Card Component
-  const StatCard = ({ icon, title, value, subtitle, color }) => {
-    const IconComponent = icon;
-    return (
-      <div className="bg-white rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-200 group">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 sm:gap-3 mb-3">
-              <div className={`p-2 sm:p-2.5 lg:p-3 rounded-lg ${color} group-hover:scale-105 transition-transform duration-200`}>
-                <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
-              </div>
-              <p className="text-xs sm:text-sm lg:text-base text-gray-600 font-medium leading-tight">{title}</p>
+export default Analytic;
             </div>
             <p className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 mb-1 sm:mb-2 leading-tight">
               {value}
@@ -102,7 +87,7 @@ const Analytic = () => {
     return (
       <div className="bg-white rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
         <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-4 sm:mb-5 lg:mb-6 flex items-center gap-2">
-          <FiBarChart3 className="w-5 h-5 lg:w-6 lg:h-6 text-green-600" />
+          <FiBarChart2 className="w-5 h-5 lg:w-6 lg:h-6 text-green-600" />
           {title}
         </h3>
         <div className="space-y-3 sm:space-y-4">
