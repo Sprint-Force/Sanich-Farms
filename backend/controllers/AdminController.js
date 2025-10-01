@@ -407,6 +407,34 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
+// Mark order as paid for cash on delivery order
+export const markOrderAsPaid = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const order = await Order.findByPk(id);
+    if(!order) {
+      res.status(404).json({ error: "Order not found"})
+    }
+    
+    if (order.payment_method !== "cash") {
+      return res.status(400).json({ 
+        error: "Only cash-on-delivery orders can be manually marked as paid" 
+      });
+    }
+    order.payment_status = 'paid';
+    await order.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Order marked as paid',
+      order
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Failed to mark order as paid"})
+  }
+}
+
 
 // USER MANAGEMENT APIs
 // Get all users
