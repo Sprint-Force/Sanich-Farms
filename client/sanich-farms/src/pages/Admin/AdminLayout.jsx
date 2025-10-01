@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   FiHome, 
   FiPackage, 
@@ -16,7 +16,8 @@ import {
   FiMessageSquare,
   FiSearch,
   FiBell,
-  FiChevronDown
+  FiChevronDown,
+  FiAlertTriangle
 } from 'react-icons/fi';
 import { logo } from '../../assets';
 import { ordersAPI, bookingsAPI, userAPI } from '../../services/api';
@@ -27,7 +28,9 @@ const AdminLayout = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [adminUser, setAdminUser] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: FiHome },
@@ -166,6 +169,41 @@ const AdminLayout = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showNotifications]);
 
+  // Handle ESC key to close logout modal
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && showLogoutModal) {
+        setShowLogoutModal(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => document.removeEventListener('keydown', handleEscKey);
+  }, [showLogoutModal]);
+
+  // Handle logout functionality
+  const handleLogout = () => {
+    setShowLogoutModal(false);
+    // Clear admin authentication data
+    localStorage.removeItem('adminAuth');
+    localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
+    
+    // Navigate to login page
+    navigate('/login', { 
+      replace: true, 
+      state: { fromAdminLogout: true } 
+    });
+  };
+
+  const openLogoutModal = () => {
+    setShowLogoutModal(true);
+  };
+
+  const closeLogoutModal = () => {
+    setShowLogoutModal(false);
+  };
+
   const markAsRead = (notificationId) => {
     setNotifications(prev => 
       prev.map(n => n.id === notificationId ? { ...n, unread: false } : n)
@@ -302,13 +340,13 @@ const AdminLayout = () => {
             <FiUser className="w-5 h-5 mr-3" />
             Profile
           </Link>
-          <Link
-            to="/admin/logout"
-            className="flex items-center px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50"
+          <button
+            onClick={openLogoutModal}
+            className="w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
           >
             <FiLogOut className="w-5 h-5 mr-3" />
             Logout
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -464,6 +502,57 @@ const AdminLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop with blur effect */}
+          <div 
+            className="fixed inset-0 backdrop-blur-md transition-all duration-300"
+            onClick={closeLogoutModal}
+          ></div>
+          
+          {/* Modal */}
+          <div className="flex items-center justify-center min-h-screen px-4 py-6">
+            <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto transform transition-all duration-300 scale-100">
+              {/* Header */}
+              <div className="flex items-center justify-center p-6 border-b border-gray-100">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4">
+                  <FiAlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Confirm Logout</h3>
+                  <p className="text-sm text-gray-500 mt-1">Are you sure you want to sign out?</p>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="p-6">
+                <p className="text-gray-600 text-center">
+                  You will be signed out of your admin account and redirected to the login page.
+                </p>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+                <button
+                  onClick={closeLogoutModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                >
+                  <FiLogOut className="w-4 h-4 mr-2 inline" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
