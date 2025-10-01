@@ -332,7 +332,7 @@ export const completeBooking = async (req, res) => {
 
     booking.status = "completed";
     booking.note = note;
-    booking.completedAt = new Date();
+    booking.completed_at = new Date();
 
     await booking.save();
 
@@ -415,7 +415,7 @@ export const markOrderAsPaid = async (req, res) => {
     if(!order) {
       res.status(404).json({ error: "Order not found"})
     }
-    
+
     if (order.payment_method !== "cash") {
       return res.status(400).json({ 
         error: "Only cash-on-delivery orders can be manually marked as paid" 
