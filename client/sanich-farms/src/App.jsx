@@ -66,6 +66,7 @@ import Settings from './pages/Admin/Settings';
 import UserMgmt from './pages/Admin/UserMgmt';
 import QAManagement from './pages/Admin/QAManagement';
 import SimpleAnalytics from './pages/Admin/SimpleAnalytics';
+import Notifications from './pages/Admin/Notifications';
 
 
 function App() {
@@ -172,6 +173,7 @@ function App() {
                 <Route index element={<Dashboard />} />
                 <Route path='analytics' element={<Analytic />} />
                 <Route path='search-analytics' element={<SimpleAnalytics />} />
+                <Route path='notifications' element={<Notifications />} />
                 <Route path='orders' element={<OrderMgmt />} />
                 <Route path='bookings' element={<BookingMgmt />} />
                 <Route path='products' element={<ProductMgmt />} />

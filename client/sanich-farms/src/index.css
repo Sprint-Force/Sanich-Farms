@@ -2,6 +2,7 @@
 
 /* Import admin responsive utilities */
 @import "./styles/admin-responsive.css";
+@import "./styles/admin.css";
 
 /* Global /* Enhanced Animation delay utilities for staggered animations */
 .animation-delay-50 { animation-delay: 50ms; }
