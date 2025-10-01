@@ -52,11 +52,6 @@ export const getAllProducts = async (req, res) => {
             break;
         }
 
-        // If admin remove the "is_available" restriction
-        if (req.user.role === "admin") {
-            delete whereClause.is_available;
-        }
-
         // Query products
         const { count, rows: products } = await Product.findAndCountAll({
             where: whereClause,
@@ -130,3 +125,71 @@ export const getRelatedProducts = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch related products' });
     }
 }
+
+// Get ALL products (admin only)
+export const getAllProductsAdmin = async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 12,
+            category,
+            minPrice,
+            maxPrice,
+            rating,
+            sortBy = 'created_at',
+        } = req.query;
+
+        const offset = (page - 1) * limit;
+
+        // Admin sees all products, no is_available filter
+        let whereClause = {};
+
+        if (category) {
+            whereClause.category = category;
+        }
+
+        if (minPrice && maxPrice) {
+            whereClause.price = { [Op.between]: [parseFloat(minPrice), parseFloat(maxPrice)] };
+        }
+
+        if (rating) {
+            whereClause.rating = { [Op.gte]: parseFloat(rating) };
+        }
+
+        // Sorting
+        let order = [["created_at", "DESC"]];
+        switch (sortBy) {
+            case "latest":
+                order = [["created_at", "DESC"]];
+                break;
+            case "name_asc":
+                order = [["name", "ASC"]];
+                break;
+            case "price_asc":
+                order = [["price", "ASC"]];
+                break;
+            case "price_desc":
+                order = [["price", "DESC"]];
+                break;
+        }
+
+        const { count, rows: products } = await Product.findAndCountAll({
+            where: whereClause,
+            order,
+            limit: parseInt(limit),
+            offset
+        });
+
+        res.status(200).json({
+            status: 'success',
+            currentPage: parseInt(page),
+            totalPages: Math.ceil(count / limit),
+            totalCount: count,
+            count: products.length,
+            products,
+        });
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: 'Failed to retrieve products' });
+    }
+};
