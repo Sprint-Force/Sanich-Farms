@@ -270,18 +270,18 @@ export const bookingsAPI = {
   },
 
   // Admin booking management endpoints
-  approve: async (id) => {
-    const response = await apiClient.patch(`/bookings/${id}/approve`);
+  approve: async (id, data = {}) => {
+    const response = await apiClient.patch(`/bookings/${id}/approve`, data);
     return response.data;
   },
 
-  reject: async (id) => {
-    const response = await apiClient.patch(`/bookings/${id}/reject`);
+  reject: async (id, data = {}) => {
+    const response = await apiClient.patch(`/bookings/${id}/reject`, data);
     return response.data;
   },
 
-  complete: async (id) => {
-    const response = await apiClient.patch(`/bookings/${id}/complete`);
+  complete: async (id, data = {}) => {
+    const response = await apiClient.patch(`/bookings/${id}/complete`, data);
     return response.data;
   },
 
