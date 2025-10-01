@@ -45,9 +45,6 @@ const Dashboard = () => {
       case 'manage-bookings':
         navigate('/admin/bookings');
         break;
-      case 'view-analytics':
-        navigate('/admin/analytics');
-        break;
       default:
         break;
     }
@@ -555,13 +552,6 @@ const Dashboard = () => {
             >
               <FiShoppingBag className="w-5 h-5 mr-2" />
               <span className="font-medium">Manage Orders</span>
-            </button>
-            <button 
-              onClick={() => handleQuickAction('view-analytics')}
-              className="group flex items-center justify-center p-4 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              <FiTrendingUp className="w-5 h-5 mr-2" />
-              <span className="font-medium">View Analytics</span>
             </button>
           </div>
         </div>
