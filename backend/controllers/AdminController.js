@@ -4,6 +4,7 @@ import { Booking } from "../models/Booking.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 import { Order } from "../models/Order.js";
 import { Payment } from "../models/Payment.js";
+import { User } from "../models/User.js"
 import axios from "axios";
 
 // PRODUCT MANAGEMENT API
@@ -406,5 +407,27 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
+
+// USER MANAGEMENT APIs
+// Get all users
+export const getUsers = async (req, res) => {
+  try {
+    // Query users
+    const users = await User.findAll({
+      where: { role: 'customer'},
+      attributes: ['id', 'name', 'email', 'phone_number', 'address', 'company_name'],
+      order: [['created_at', 'DESC']]
+    });
+
+    res.status(200).json({
+      status: 'success',
+      count: users.length,
+      users,
+    })
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ error: "Failed to retrieve users"})
+  }
+}
 
 
