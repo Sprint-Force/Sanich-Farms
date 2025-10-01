@@ -209,6 +209,36 @@ export const ordersAPI = {
     const response = await apiClient.patch(`/orders/${id}/status`, { status });
     return response.data;
   },
+
+  // Update payment status
+  updatePaymentStatus: async (id, payment_status) => {
+    const response = await apiClient.patch(`/orders/${id}/status`, { payment_status });
+    return response.data;
+  },
+
+  // Update delivery status
+  updateDeliveryStatus: async (id, delivery_status) => {
+    const response = await apiClient.patch(`/orders/${id}/status`, { delivery_status });
+    return response.data;
+  },
+
+  // Admin: Cancel an order (with refund for paid orders) - uses same endpoint as regular cancel
+  adminCancel: async (id) => {
+    const response = await apiClient.patch(`/orders/${id}/cancel`);
+    return response.data;
+  },
+
+  // Admin: Mark cash-on-delivery order as paid
+  markAsPaid: async (id) => {
+    const response = await apiClient.patch(`/orders/${id}/paid`);
+    return response.data;
+  },
+
+  // Admin: Update order status and delivery status (combined endpoint)
+  adminUpdateStatus: async (id, statusData) => {
+    const response = await apiClient.patch(`/orders/${id}/status`, statusData);
+    return response.data;
+  },
 };
 
 // Bookings API methods
