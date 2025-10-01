@@ -203,6 +203,12 @@ export const ordersAPI = {
     const response = await apiClient.patch(`/orders/${id}/cancel`);
     return response.data;
   },
+
+  // Admin order management endpoints
+  updateStatus: async (id, status) => {
+    const response = await apiClient.patch(`/orders/${id}/status`, { status });
+    return response.data;
+  },
 };
 
 // Bookings API methods
@@ -230,6 +236,27 @@ export const bookingsAPI = {
 
   cancel: async (id) => {
     const response = await apiClient.patch(`/bookings/${id}/cancel`);
+    return response.data;
+  },
+
+  // Admin booking management endpoints
+  approve: async (id) => {
+    const response = await apiClient.patch(`/bookings/${id}/approve`);
+    return response.data;
+  },
+
+  reject: async (id) => {
+    const response = await apiClient.patch(`/bookings/${id}/reject`);
+    return response.data;
+  },
+
+  complete: async (id) => {
+    const response = await apiClient.patch(`/bookings/${id}/complete`);
+    return response.data;
+  },
+
+  markPaid: async (id) => {
+    const response = await apiClient.patch(`/bookings/${id}/paid`);
     return response.data;
   },
 };
@@ -352,6 +379,46 @@ export const paymentsAPI = {
     const response = await apiClient.post('/user/wallet/add-funds', { amount });
     return response.data;
   }
+};
+
+// Search API methods
+export const searchAPI = {
+  search: async (query, filters = {}) => {
+    const response = await apiClient.get('/search', { 
+      params: { q: query, ...filters } 
+    });
+    return response.data;
+  },
+
+  autocomplete: async (query) => {
+    const response = await apiClient.get('/search/autocomplete', { 
+      params: { q: query } 
+    });
+    return response.data;
+  },
+};
+
+// Admin Users API methods
+export const adminUsersAPI = {
+  getAll: async (params = {}) => {
+    const response = await apiClient.get('/admin/users', { params });
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await apiClient.get(`/admin/users/${id}`);
+    return response.data;
+  },
+
+  updateUser: async (id, userData) => {
+    const response = await apiClient.patch(`/admin/users/${id}`, userData);
+    return response.data;
+  },
+
+  deleteUser: async (id) => {
+    const response = await apiClient.delete(`/admin/users/${id}`);
+    return response.data;
+  },
 };
 
 export default apiClient;
