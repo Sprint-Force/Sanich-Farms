@@ -431,22 +431,22 @@ export const searchAPI = {
 // Admin Users API methods
 export const adminUsersAPI = {
   getAll: async (params = {}) => {
-    const response = await apiClient.get('/admin/users', { params });
+    const response = await apiClient.get('/users', { params });
     return response.data;
   },
 
   getById: async (id) => {
-    const response = await apiClient.get(`/admin/users/${id}`);
+    const response = await apiClient.get(`/users/${id}`);
     return response.data;
   },
 
   updateUser: async (id, userData) => {
-    const response = await apiClient.patch(`/admin/users/${id}`, userData);
+    const response = await apiClient.patch(`/users/${id}`, userData);
     return response.data;
   },
 
   deleteUser: async (id) => {
-    const response = await apiClient.delete(`/admin/users/${id}`);
+    const response = await apiClient.delete(`/users/${id}`);
     return response.data;
   },
 };
