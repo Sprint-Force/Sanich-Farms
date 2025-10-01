@@ -4,6 +4,7 @@ import { Booking } from "../models/Booking.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 import { Order } from "../models/Order.js";
 import { Payment } from "../models/Payment.js";
+import { User } from "../models/User.js"
 import axios from "axios";
 
 // PRODUCT MANAGEMENT API
@@ -331,7 +332,7 @@ export const completeBooking = async (req, res) => {
 
     booking.status = "completed";
     booking.note = note;
-    booking.completedAt = new Date();
+    booking.completed_at = new Date();
 
     await booking.save();
 
@@ -406,5 +407,73 @@ export const cancelOrder = async (req, res) => {
   }
 };
 
+// Mark order as paid (for Cash on Delivery)
+export const markOrderAsPaid = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = await Order.findByPk(id, {
+      include: [{ model: Payment}],
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Update order payment status
+    order.payment_status = "paid";
+    await order.save();
+
+    // If no payment record exists for this order, create one for cash
+    if (!order.payment) {
+      await Payment.create({
+        order_id: order.id,
+        user_id: order.user_id, 
+        amount: order.total_amount, 
+        payment_method: "cash",
+        status: "paid",
+        transaction_reference: `CASH-${order.id}-${Date.now()}`,
+        paid_at: new Date(),
+      });
+    } else {
+      // Ensure existing payment record is updated
+      order.payment.status = "paid";
+      order.payment.paid_at = new Date();
+      await order.payment.save();
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Order marked as paid (cash)",
+      order,
+    });
+  } catch (error) {
+    console.error("Error marking cash payment:", error);
+    res.status(500).json({ error: "Failed to mark order as paid" });
+  }
+};
+
+
+// USER MANAGEMENT APIs
+// Get all users
+export const getUsers = async (req, res) => {
+  try {
+    // Query users
+    const users = await User.findAll({
+      where: { role: 'customer'},
+      attributes: ['id', 'name', 'email', 'phone_number', 'address', 'company_name'],
+      order: [['created_at', 'DESC']]
+    });
+
+    res.status(200).json({
+      status: 'success',
+      count: users.length,
+      users,
+    })
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ error: "Failed to retrieve users"})
+  }
+}
 
 

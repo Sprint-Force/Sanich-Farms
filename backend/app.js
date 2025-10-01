@@ -13,6 +13,7 @@ import { serviceRoutes } from "./routes/serviceRoutes.js";
 import { paymentRoutes } from "./routes/paymentRoutes.js";
 import { searchRoutes } from "./routes/searchRoutes.js";
 import { contactRoute } from "./utils/contact.js";
+import { adminRoutes } from "./routes/adminRoutes.js";
 
 
 
@@ -50,6 +51,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/payments',paymentRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/users', adminRoutes)
 app.use(contactRoute);
 
 // Error handler

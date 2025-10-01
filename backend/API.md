@@ -38,7 +38,7 @@
 | POST   | `/api/orders`                   | Place a new order                    |
 | PATCH  | `/api/orders/:id/cancel`        | Cancel an order (**Admin only**)     |
 | PATCH  | `/api/orders/:id/status`        | Update order status (**Admin only**) |
-
+| PATCH  | `/api/orders/:id/paid`          | Mark cash payment as paid  (**Admin only**) |
 ---
 
 ## 📅 Booking APIs

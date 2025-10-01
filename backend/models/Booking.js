@@ -83,7 +83,14 @@ export const Booking = sequelize.define('Booking', {
     validate: {
       len: [0, 1000]
     }
-  }
+  },
+  completed_at: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    validate: {
+      isDate: true,
+    }
+  },
 }, {
   tableName: 'bookings',
   timestamps: true,

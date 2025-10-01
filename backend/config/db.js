@@ -39,6 +39,8 @@ Booking.belongsTo(Service, { foreignKey: 'service_id' });
 
 Payment.belongsTo(Order, { foreignKey: "order_id" });
 Payment.belongsTo(User, { foreignKey: "user_id" });
+Order.hasOne(Payment, { foreignKey: "order_id" });
+
 
 
 
@@ -49,7 +51,7 @@ export const connectDB = async () => {
     await sequelize.authenticate();
     console.log('✅ PostgreSQL (Neon) connected successfully.');
     await sequelize.sync({ alter: true });
-    console.log("✅ Models synchronized with DB");
+    console.log("✅ Models synchronized with DB"); 
   } catch (error) {
     console.error('❌ Unable to connect to Neon database:', error.message);
     process.exit(1); 
