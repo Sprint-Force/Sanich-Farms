@@ -94,6 +94,11 @@ export const productsAPI = {
     return response.data;
   },
 
+  getRelated: async (id) => {
+    const response = await apiClient.get(`/products/${id}/related`);
+    return response.data;
+  },
+
   create: async (productData) => {
   const response = await apiClient.post('/products', productData);
     return response.data;

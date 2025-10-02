@@ -41,7 +41,6 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import FAQPage from './pages/FAQPage';
 import TrackOrderPage from './pages/TrackOrderPage';
-import RecentlyViewedPage from './pages/RecentlyViewedPage';
 
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -133,7 +132,6 @@ function App() {
                   <Route path='bookings' element={<MyBookings />} />
                   <Route path='profile' element={<MyProfile />} />
                   <Route path='wishlist' element={<WishlistPage />} />
-                  <Route path='recently-viewed' element={<RecentlyViewedPage />} />
                   <Route path='orders/:orderId' element={<OrderDetailPage />} />
                   <Route path='bookings/:bookingId' element={<BookingDetailPage />} />
                 </Route>
