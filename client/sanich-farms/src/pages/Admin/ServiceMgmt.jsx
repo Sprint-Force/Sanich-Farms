@@ -29,6 +29,7 @@ const ServiceMgmt = () => {
     name: '',
     description: '',
     price: '',
+    is_available: true, // Fixed: Add is_available field to initial state
     images: []
   });
 
@@ -84,6 +85,7 @@ const ServiceMgmt = () => {
         name: service.name || '',
         description: service.description || '',
         price: service.price != null ? String(service.price) : '',
+        is_available: service.is_available !== false, // Fixed: Properly initialize is_available from service data
         images: uniqueImages
       });
     } else {
@@ -92,6 +94,7 @@ const ServiceMgmt = () => {
         name: '',
         description: '',
         price: '',
+        is_available: true, // Fixed: Include is_available in reset
         images: []
       });
     }
@@ -126,6 +129,7 @@ const ServiceMgmt = () => {
       submitData.append('name', formData.name.trim());
       submitData.append('description', formData.description || '');
       submitData.append('price', parseFloat(formData.price));
+      submitData.append('is_available', formData.is_available ? 'true' : 'false'); // Fixed: Include is_available in submission
       
       // Handle image - for now, use the first image as the main image
       const imageFiles = formData.images.filter(img => img && img.file);

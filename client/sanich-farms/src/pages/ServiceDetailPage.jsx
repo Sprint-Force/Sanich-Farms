@@ -196,12 +196,31 @@ const ServiceDetailPage = () => {
                 </div>
               </div>
 
+              {/* Service Availability Status */}
+              <div className="mb-4 xs:mb-6">
+                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs xs:text-sm font-medium ${
+                  service.is_available !== false 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  <div className={`w-2 h-2 rounded-full ${
+                    service.is_available !== false ? 'bg-green-500' : 'bg-red-500'
+                  }`}></div>
+                  {service.is_available !== false ? 'Available Now' : 'Currently Unavailable'}
+                </div>
+              </div>
+
               {/* Book Service Button - Enhanced Mobile Touch Target */}
               <button
                 onClick={handleBookService}
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 xs:py-4 sm:py-4 rounded-lg xs:rounded-xl font-semibold text-sm xs:text-base transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-green-300 min-h-[44px] touch-manipulation"
+                disabled={service.is_available === false}
+                className={`w-full py-3 xs:py-4 sm:py-4 rounded-lg xs:rounded-xl font-semibold text-sm xs:text-base transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 min-h-[44px] touch-manipulation ${
+                  service.is_available === false
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed transform-none hover:shadow-lg'
+                    : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white focus:ring-green-300'
+                }`}
               >
-                Book This Service Now
+                {service.is_available === false ? 'Service Currently Unavailable' : 'Book This Service Now'}
               </button>
             </div>
           </div>
