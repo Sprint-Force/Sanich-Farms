@@ -439,6 +439,35 @@ export const searchAPI = {
   },
 };
 
+// Notifications API methods
+export const notificationsAPI = {
+  getAll: async (params = {}) => {
+    const response = await apiClient.get('/notifications', { params });
+    return response.data;
+  },
+
+  markAsRead: async (id) => {
+    const response = await apiClient.patch(`/notifications/${id}/read`);
+    return response.data;
+  },
+
+  markAllAsRead: async () => {
+    const response = await apiClient.patch('/notifications/read-all');
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await apiClient.delete(`/notifications/${id}`);
+    return response.data;
+  },
+
+  // Helper method to create notifications (if backend supports it)
+  create: async (notificationData) => {
+    const response = await apiClient.post('/notifications', notificationData);
+    return response.data;
+  },
+};
+
 // Admin Users API methods
 export const adminUsersAPI = {
   getAll: async (params = {}) => {
