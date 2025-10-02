@@ -371,14 +371,15 @@ const AdminLayout = () => {
             {/* Simple admin info and notifications */}
             <div className="flex items-center space-x-3">
               {/* Notifications */}
-              <div className="relative notifications-dropdown">
+              <div className="relative notifications-dropdown" style={{ zIndex: 50000, isolation: 'isolate' }}>
                 <button 
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="relative p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  style={{ zIndex: 50000 }}
                 >
                   <FiBell className="w-5 h-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium" style={{ zIndex: 50001 }}>
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -388,9 +389,9 @@ const AdminLayout = () => {
                 {showNotifications && (
                   <>
                     {/* Backdrop for mobile */}
-                    <div className="fixed inset-0 z-[9998] bg-black/20 lg:hidden" onClick={() => setShowNotifications(false)} />
+                    <div className="fixed inset-0 bg-black/20 lg:hidden" onClick={() => setShowNotifications(false)} style={{ zIndex: 49998 }} />
                     
-                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999] max-h-96 overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-hidden backdrop-filter-none" style={{ zIndex: 50002 }}>
                       <div className="p-4 border-b border-gray-200 bg-gray-50">
                         <div className="flex items-center justify-between">
                           <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
