@@ -5,12 +5,11 @@ import { userAPI } from '../../services/api';
 const MyProfile = () => {
   const { user, updateUser } = useAuthContext();
   const [userData, setUserData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
-    phone: '',
+    phone_number: '',
     address: '',
-    company: '',
+    company_name: '',
   });
   const [originalData, setOriginalData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -28,12 +27,11 @@ const MyProfile = () => {
         // Use data from context if available, otherwise fetch from API
         if (user) {
           const profileData = {
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
+            name: user.name || '',
             email: user.email || '',
-            phone: user.phone || '',
+            phone_number: user.phone_number || '',
             address: user.address || '',
-            company: user.company || '',
+            company_name: user.company_name || '',
           };
           setUserData(profileData);
           setOriginalData(profileData);
@@ -41,13 +39,14 @@ const MyProfile = () => {
           // Fetch fresh profile data from backend
           const response = await userAPI.getProfile();
           const profileData = {
-            firstName: response.firstName || '',
-            lastName: response.lastName || '',
-            email: response.email || '',
-            phone: response.phone || '',
-            address: response.address || '',
-            company: response.company || '',
+            name: response.user?.name || response.name || '',
+            email: response.user?.email || response.email || '',
+            phone_number: response.user?.phone_number || response.phone_number || '',
+            address: response.user?.address || response.address || '',
+            company_name: response.user?.company_name || response.company_name || '',
           };
+          setUserData(profileData);
+          setOriginalData(profileData);
           setUserData(profileData);
           setOriginalData(profileData);
         }
@@ -140,33 +139,20 @@ const MyProfile = () => {
         </h2>
         <form onSubmit={handleSave}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={userData.firstName}
-                onChange={handleChange}
-                disabled={!isEditing}
-                placeholder={isEditing ? "Enter your first name" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
-              />
-            </div>
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={userData.lastName}
-                onChange={handleChange}
-                disabled={!isEditing}
-                placeholder={isEditing ? "Enter your last name" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
-              />
-            </div>
             <div className="md:col-span-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={userData.name}
+                onChange={handleChange}
+                disabled={!isEditing}
+                placeholder={isEditing ? "Enter your full name" : ""}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+              />
+            </div>
+            <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <input
                 type="email"
@@ -179,13 +165,13 @@ const MyProfile = () => {
                 className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
-            <div className="md:col-span-2">
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+            <div>
+              <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
               <input
                 type="tel"
-                id="phone"
-                name="phone"
-                value={userData.phone}
+                id="phone_number"
+                name="phone_number"
+                value={userData.phone_number}
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your phone number" : ""}
@@ -206,16 +192,16 @@ const MyProfile = () => {
               ></textarea>
             </div>
             <div className="md:col-span-2">
-              <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">Company (Optional)</label>
+              <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">Company Name (Optional)</label>
               <input
                 type="text"
-                id="company"
-                name="company"
-                value={userData.company}
+                id="company_name"
+                name="company_name"
+                value={userData.company_name}
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your company name (optional)" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-4 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
             </div>
           </div>

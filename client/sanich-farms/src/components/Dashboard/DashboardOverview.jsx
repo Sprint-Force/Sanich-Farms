@@ -52,11 +52,11 @@ const DashboardOverview = () => {
   // Process data for display
   const recentOrders = orders.slice(0, 3);
   
-  // Fix upcoming bookings filter - include future bookings only
+  // Filter upcoming bookings using backend status enum values
   const upcomingBookings = bookings.filter(b => {
-    // Check if booking is confirmed or pending - expanded status check
+    // Check if booking has valid status using backend enum values
     const status = (b.status || '').toLowerCase();
-    const isValidStatus = ['confirmed', 'pending', 'active', 'scheduled', 'booked'].includes(status);
+    const isValidStatus = ['pending', 'scheduled'].includes(status);
     
     // Check if booking date is in the future
     const bookingDate = b.appointment_date || b.date || b.booking_date || b.scheduled_date;
@@ -72,7 +72,7 @@ const DashboardOverview = () => {
     return isValidStatus && isFuture;
   }).slice(0, 2);
 
-  const userName = user?.name?.split(' ')[0] || 'User';
+  const userName = user?.name ? user.name.split(' ')[0] : 'User';
 
   // DASHBOARD API INTEGRATION: Calculate real statistics
   const totalSpent = orders.reduce((sum, order) => {
@@ -127,18 +127,18 @@ const DashboardOverview = () => {
         <div className="flex flex-row flex-nowrap items-center gap-2">
           <Link to="/shop" className="inline-flex items-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition duration-200 flex-shrink-0">
             <FiShoppingCart size={16} />
-            <span className="inline text-sm">Shop Now</span>
+            <span className="text-sm">Shop Now</span>
           </Link>
           <Link to="/services" className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition duration-200 flex-shrink-0">
             <FiCalendar size={16} />
-            <span className="inline text-sm">Book Service</span>
+            <span className="text-sm">Book Service</span>
           </Link>
         </div>
       </div>
 
       {/* DASHBOARD AUDIT FIX: Enhanced Quick Stats like Jumia/Amazon with real calculations */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-2 sm:p-3 lg:p-4 shadow-sm border border-green-200 min-h-[80px] sm:min-h-[120px] xl:min-h-[140px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4 shadow-sm border border-green-200">
           <div className="flex flex-col space-y-3">
             <div className="flex items-center gap-3">
               <div className="bg-green-600 text-white p-2 rounded-full flex-shrink-0">
@@ -149,13 +149,13 @@ const DashboardOverview = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-lg lg:text-xl xl:text-2xl font-bold text-green-800">{orders.length}</p>
+              <p className="text-xl font-bold text-green-800">{orders.length}</p>
               <p className="text-xs text-green-600">{activeOrders} active</p>
             </div>
           </div>
         </div>
         
-  <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-2 sm:p-3 lg:p-4 shadow-sm border border-blue-200 min-h-[80px] sm:min-h-[120px] xl:min-h-[140px]">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 shadow-sm border border-blue-200">
           <div className="flex flex-col space-y-3">
             <div className="flex items-center gap-3">
               <div className="bg-blue-600 text-white p-2 rounded-full flex-shrink-0">
@@ -166,13 +166,13 @@ const DashboardOverview = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-lg lg:text-xl xl:text-2xl font-bold text-blue-800">{bookings.length}</p>
+              <p className="text-xl font-bold text-blue-800">{bookings.length}</p>
               <p className="text-xs text-blue-600">{upcomingBookings.length} upcoming</p>
             </div>
           </div>
         </div>
         
-  <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-2 sm:p-3 lg:p-4 shadow-sm border border-purple-200 min-h-[80px] sm:min-h-[120px] xl:min-h-[140px]">
+        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-4 shadow-sm border border-purple-200">
           <div className="flex flex-col space-y-3">
             <div className="flex items-center gap-3">
               <div className="bg-purple-600 text-white p-2 rounded-full flex-shrink-0">
@@ -183,13 +183,13 @@ const DashboardOverview = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-base lg:text-lg xl:text-xl font-bold text-purple-800 break-words">GH₵{totalSpent.toFixed(2)}</p>
+              <p className="text-lg font-bold text-purple-800">GH₵{totalSpent.toFixed(2)}</p>
               <p className="text-xs text-purple-600">All time</p>
             </div>
           </div>
         </div>
         
-  <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-2 sm:p-3 lg:p-4 shadow-sm border border-orange-200 min-h-[80px] sm:min-h-[120px] xl:min-h-[140px]">
+        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4 shadow-sm border border-orange-200">
           <div className="flex flex-col space-y-3">
             <div className="flex items-center gap-3">
               <div className="bg-orange-600 text-white p-2 rounded-full flex-shrink-0">
@@ -200,7 +200,7 @@ const DashboardOverview = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-lg lg:text-xl xl:text-2xl font-bold text-orange-800">{orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0}%</p>
+              <p className="text-xl font-bold text-orange-800">{orders.length > 0 ? Math.round((completedOrders / orders.length) * 100) : 0}%</p>
               <p className="text-xs text-orange-600">{completedOrders} delivered</p>
             </div>
           </div>
@@ -208,32 +208,32 @@ const DashboardOverview = () => {
       </div>
 
       {/* DASHBOARD AUDIT FIX: Quick Actions Section like Amazon "Your Account" shortcuts */}
-      <div className="bg-white rounded-xl shadow-md p-4 lg:p-6 border border-gray-100">
-        <h2 className="text-lg lg:text-xl font-bold text-gray-800 mb-4 lg:mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 sm:gap-2 lg:gap-4">
-          <Link to="/dashboard/orders" className="flex flex-col items-center p-2 sm:p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-green-600 mb-1 sm:mb-2" />
-            <span className="text-xs lg:text-sm font-medium text-gray-700">Track Orders</span>
+      <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+          <Link to="/dashboard/orders" className="flex flex-col items-center p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiShoppingBag className="w-6 h-6 sm:w-7 sm:h-7 text-green-600 mb-2" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Track Orders</span>
           </Link>
-          <Link to="/shop" className="flex flex-col items-center p-2 sm:p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiRepeat className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-blue-600 mb-1 sm:mb-2" />
-            <span className="text-xs lg:text-sm font-medium text-gray-700">Reorder</span>
+          <Link to="/shop" className="flex flex-col items-center p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiRepeat className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600 mb-2" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Reorder</span>
           </Link>
-          <Link to="/dashboard/bookings" className="flex flex-col items-center p-2 sm:p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiCalendar className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-purple-600 mb-1 sm:mb-2" />
-            <span className="text-xs lg:text-sm font-medium text-gray-700">Manage Bookings</span>
+          <Link to="/dashboard/bookings" className="flex flex-col items-center p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiCalendar className="w-6 h-6 sm:w-7 sm:h-7 text-purple-600 mb-2" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Manage Bookings</span>
           </Link>
-          <Link to="/wishlist" className="flex flex-col items-center p-2 sm:p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiHeart className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-red-600 mb-1 sm:mb-2" />
-            <span className="text-xs lg:text-sm font-medium text-gray-700">Wishlist</span>
+          <Link to="/wishlist" className="flex flex-col items-center p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiHeart className="w-6 h-6 sm:w-7 sm:h-7 text-red-600 mb-2" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Wishlist</span>
           </Link>
-          <Link to="/dashboard/profile" className="flex flex-col items-center p-2 sm:p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiUser className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-yellow-600 mb-1 sm:mb-2" />
-            <span className="text-xs lg:text-sm font-medium text-gray-700">Account Settings</span>
+          <Link to="/dashboard/profile" className="flex flex-col items-center p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiUser className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-600 mb-2" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Account Settings</span>
           </Link>
-          <Link to="/services" className="flex flex-col items-center p-2 sm:p-3 lg:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
-            <FiShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-indigo-600 mb-1 sm:mb-2" />
-            <span className="text-xs lg:text-sm font-medium text-gray-700">Book Again</span>
+          <Link to="/services" className="flex flex-col items-center p-3 sm:p-4 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+            <FiShoppingCart className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-600 mb-2" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">Book Again</span>
           </Link>
         </div>
       </div>
@@ -289,9 +289,9 @@ const DashboardOverview = () => {
                 </div>
                 <div className="flex sm:justify-end">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${
-                    booking.status?.toLowerCase() === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                    booking.status?.toLowerCase() === 'scheduled' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {booking.status}
+                    {booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Pending'}
                   </span>
                 </div>
               </li>
