@@ -16,7 +16,8 @@ import {
   FiSearch,
   FiBell,
   FiChevronDown,
-  FiAlertTriangle
+  FiAlertTriangle,
+  FiExternalLink
 } from 'react-icons/fi';
 import { logo } from '../../assets';
 import { ordersAPI, bookingsAPI, userAPI } from '../../services/api';
@@ -39,6 +40,7 @@ const AdminLayout = () => {
     { name: 'Orders', href: '/admin/orders', icon: FiShoppingBag },
     { name: 'Bookings', href: '/admin/bookings', icon: FiBook },
     { name: 'Users', href: '/admin/users', icon: FiUsers },
+    { name: 'View Store', href: 'https://sanich-farms.vercel.app', icon: FiExternalLink, external: true },
   ];
 
   // Get admin user info from localStorage or API
@@ -303,7 +305,25 @@ const AdminLayout = () => {
         <nav className="flex-1 px-4 py-6 space-y-2">
           {navigation.map((item) => {
             const Icon = item.icon;
-            const active = isActive(item.href);
+            const active = !item.external && isActive(item.href);
+            
+            if (item.external) {
+              return (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
+                >
+                  <div className="flex items-center">
+                    <Icon className="w-5 h-5 mr-3" />
+                    <span>{item.name}</span>
+                  </div>
+                </a>
+              );
+            }
+
             return (
               <Link
                 key={item.name}
