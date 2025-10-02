@@ -14,10 +14,12 @@ import {
   FiBell,
   FiChevronDown,
   FiAlertTriangle,
-  FiExternalLink
+  FiExternalLink,
+  FiCreditCard,
+  FiSettings
 } from 'react-icons/fi';
 import { logo } from '../../assets';
-import { ordersAPI, bookingsAPI, userAPI } from '../../services/api';
+import { notificationsAPI, userAPI } from '../../services/api';
 
 /**
  * AdminLayout - Main layout wrapper for admin dashboard
@@ -86,77 +88,57 @@ const AdminLayout = () => {
     getAdminUser();
   }, []);
 
-  // Fetch notifications from recent orders and bookings
+  // Fetch notifications from backend API
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        // Get recent orders and bookings
-        const [ordersRes, bookingsRes] = await Promise.allSettled([
-          ordersAPI.getAll(),
-          bookingsAPI.getAll()
-        ]);
-
-        const newNotifications = [];
-
-        // Process recent orders (last 24 hours)
-        if (ordersRes.status === 'fulfilled') {
-          const orders = Array.isArray(ordersRes.value) ? ordersRes.value : ordersRes.value?.orders || [];
-          const recentOrders = orders
-            .filter(order => {
-              const orderDate = new Date(order.createdAt || order.date);
-              const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-              return orderDate >= dayAgo;
-            })
-            .slice(0, 5)
-            .map(order => ({
-              id: `order-${order.id || order._id}`,
-              type: 'order',
-              title: 'New Order Placed',
-              message: `Order from ${order.first_name && order.last_name ? `${order.first_name} ${order.last_name}` : order.email || 'Customer'}`,
-              time: order.createdAt || order.date,
-              amount: order.total || order.amount || 0,
-              unread: true
-            }));
-          newNotifications.push(...recentOrders);
-        }
-
-        // Add recent bookings to notifications
-        if (bookingsRes.status === 'fulfilled') {
-          const bookings = Array.isArray(bookingsRes.value) ? bookingsRes.value : bookingsRes.value?.bookings || [];
-          const recentBookings = bookings
-            .filter(booking => {
-              const bookingDate = new Date(booking.createdAt || booking.date);
-              const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-              return bookingDate >= dayAgo;
-            })
-            .slice(0, 5)
-            .map(booking => ({
-              id: `booking-${booking.id || booking._id}`,
-              type: 'booking',
-              title: 'New Service Booked',
-              message: `${booking.service || 'Service'} booked by ${booking.name || booking.customerName || 'Customer'}`,
-              time: booking.createdAt || booking.date,
-              unread: true
-            }));
-          newNotifications.push(...recentBookings);
-        }
-
-        // Sort by time (most recent first)
-        newNotifications.sort((a, b) => new Date(b.time) - new Date(a.time));
+        // Use the real notifications API
+        const response = await notificationsAPI.getAll({ unread: 'true' });
+        const notificationsData = Array.isArray(response.data) ? response.data : response.data?.notifications || [];
         
-        setNotifications(newNotifications);
-        setUnreadCount(newNotifications.filter(n => n.unread).length);
-      } catch {
-        // Silently handle notification fetch errors
+        // Sort by created_at (most recent first) and take latest 10
+        const sortedNotifications = notificationsData
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 10)
+          .map(notification => ({
+            id: notification.id,
+            type: notification.type,
+            title: notification.title,
+            message: notification.message,
+            time: notification.created_at,
+            unread: !notification.is_read
+          }));
+        
+        setNotifications(sortedNotifications);
+        setUnreadCount(sortedNotifications.filter(n => n.unread).length);
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+        // Fallback to empty state on error
+        setNotifications([]);
+        setUnreadCount(0);
       }
     };
 
     fetchNotifications();
     
-    // Refresh notifications every 5 minutes
-    const interval = setInterval(fetchNotifications, 5 * 60 * 1000);
+    // Refresh notifications every 2 minutes
+    const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Update browser tab title with notification count
+  useEffect(() => {
+    const baseTitle = 'Admin Dashboard - Sanich Farms';
+    if (unreadCount > 0) {
+      document.title = `(${unreadCount}) ${baseTitle}`;
+    } else {
+      document.title = baseTitle;
+    }
+    
+    return () => {
+      document.title = baseTitle; // Reset on unmount
+    };
+  }, [unreadCount]);
 
   // Close notifications when clicking outside
   useEffect(() => {
@@ -205,16 +187,32 @@ const AdminLayout = () => {
     setShowLogoutModal(false);
   };
 
-  const markAsRead = (notificationId) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, unread: false } : n)
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
+  const markAsRead = async (notificationId) => {
+    try {
+      // Call backend API to mark as read
+      await notificationsAPI.markAsRead(notificationId);
+      
+      // Update local state
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, unread: false } : n)
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
-    setUnreadCount(0);
+  const markAllAsRead = async () => {
+    try {
+      // Call backend API to mark all as read
+      await notificationsAPI.markAllAsRead();
+      
+      // Update local state
+      setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
   };
 
   const formatTime = (time) => {
@@ -258,6 +256,40 @@ const AdminLayout = () => {
       return (words[0][0] + words[1][0]).toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
+  };
+
+  const handleNotificationClick = async (notification) => {
+    // Mark as read when clicked
+    if (notification.unread) {
+      await markAsRead(notification.id);
+    }
+    
+    // Close the notification dropdown
+    setShowNotifications(false);
+    
+    // Navigate based on notification type
+    switch (notification.type) {
+      case 'order':
+        // Navigate to orders page
+        navigate('/admin/orders');
+        break;
+      case 'booking':
+        // Navigate to bookings page
+        navigate('/admin/bookings');
+        break;
+      case 'payment':
+        // Navigate to a payments/transactions page if exists, otherwise orders
+        navigate('/admin/orders');
+        break;
+      case 'system':
+        // Navigate to notifications page for system messages
+        navigate('/admin/notifications');
+        break;
+      default:
+        // Default to notifications page
+        navigate('/admin/notifications');
+        break;
+    }
   };
 
   const isActive = (path) => {
@@ -410,15 +442,15 @@ const AdminLayout = () => {
                     {/* Backdrop for mobile */}
                     <div className="fixed inset-0 bg-black/20 lg:hidden" onClick={() => setShowNotifications(false)} style={{ zIndex: 49998 }} />
                     
-                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-hidden backdrop-filter-none" style={{ zIndex: 50002 }}>
-                      <div className="p-4 border-b border-gray-200 bg-gray-50">
+                    <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 md:w-96 bg-white rounded-lg shadow-xl border border-gray-200 max-h-96 overflow-hidden backdrop-filter-none" style={{ zIndex: 50002 }}>
+                      <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900">Notifications</h3>
                           <div className="flex items-center space-x-2">
                             {unreadCount > 0 && (
                               <button 
                                 onClick={markAllAsRead}
-                                className="text-sm text-green-600 hover:text-green-700 font-medium"
+                                className="text-xs sm:text-sm text-green-600 hover:text-green-700 font-medium"
                               >
                                 Mark all read
                               </button>
@@ -438,28 +470,36 @@ const AdminLayout = () => {
                         notifications.map((notification) => (
                           <div 
                             key={notification.id}
-                            className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
+                            className={`p-3 sm:p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
                               notification.unread ? 'bg-blue-50' : ''
                             }`}
-                            onClick={() => markAsRead(notification.id)}
+                            onClick={() => handleNotificationClick(notification)}
                           >
-                            <div className="flex items-start space-x-3">
-                              <div className={`p-2 rounded-lg ${
+                            <div className="flex items-start space-x-2 sm:space-x-3">
+                              <div className={`p-1.5 sm:p-2 rounded-lg ${
                                 notification.type === 'order' 
                                   ? 'bg-green-100 text-green-600' 
-                                  : 'bg-blue-100 text-blue-600'
+                                  : notification.type === 'booking'
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : notification.type === 'payment'
+                                  ? 'bg-yellow-100 text-yellow-600'
+                                  : 'bg-purple-100 text-purple-600'
                               }`}>
                                 {notification.type === 'order' ? (
-                                  <FiShoppingBag className="w-4 h-4" />
+                                  <FiShoppingBag className="w-3 h-3 sm:w-4 sm:h-4" />
+                                ) : notification.type === 'booking' ? (
+                                  <FiBook className="w-3 h-3 sm:w-4 sm:h-4" />
+                                ) : notification.type === 'payment' ? (
+                                  <FiCreditCard className="w-3 h-3 sm:w-4 sm:h-4" />
                                 ) : (
-                                  <FiBook className="w-4 h-4" />
+                                  <FiSettings className="w-3 h-3 sm:w-4 sm:h-4" />
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900">
+                                <p className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-1">
                                   {notification.title}
                                 </p>
-                                <p className="text-sm text-gray-600 truncate">
+                                <p className="text-xs sm:text-sm text-gray-600 truncate">
                                   {notification.message}
                                 </p>
                                 <div className="flex items-center justify-between mt-1">

@@ -8,87 +8,117 @@ import {
   FiX,
   FiRefreshCw,
   FiFilter,
-  FiSearch
+  FiSearch,
+  FiCreditCard,
+  FiSettings,
+  FiPlus,
+  FiMail
 } from 'react-icons/fi';
-import { ordersAPI, bookingsAPI } from '../../services/api';
+import { notificationsAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState('all'); // all, orders, bookings, read, unread
+  const [filter, setFilter] = useState('all'); // all, order, booking, payment, system, read, unread
   const [searchTerm, setSearchTerm] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [formData, setFormData] = useState({
+    type: 'system',
+    title: '',
+    message: '',
+    user_id: null // null for system-wide notifications
+  });
+
+  const { addToast } = useToast();
 
   // Fetch notifications
   useEffect(() => {
     const fetchNotifications = async () => {
       setLoading(true);
       try {
-        const [ordersRes, bookingsRes] = await Promise.allSettled([
-          ordersAPI.getAll(),
-          bookingsAPI.getAll()
-        ]);
-
-        const allNotifications = [];
-
-        // Add orders to notifications
-        if (ordersRes.status === 'fulfilled') {
-          const orders = Array.isArray(ordersRes.value) ? ordersRes.value : ordersRes.value?.orders || [];
-          const orderNotifications = orders.map(order => ({
-            id: `order-${order.id || order._id}`,
-            type: 'order',
-            title: 'New Order Placed',
-            message: `Order from ${order.first_name && order.last_name ? `${order.first_name} ${order.last_name}` : order.email || 'Customer'}`,
-            time: order.createdAt || order.date || new Date().toISOString(),
-            amount: order.total || order.amount || 0,
-            status: order.status || 'pending',
-            unread: true,
-            details: order
-          }));
-          allNotifications.push(...orderNotifications);
-        }
-
-        // Add bookings to notifications
-        if (bookingsRes.status === 'fulfilled') {
-          const bookings = Array.isArray(bookingsRes.value) ? bookingsRes.value : bookingsRes.value?.bookings || [];
-          const bookingNotifications = bookings.map(booking => ({
-            id: `booking-${booking.id || booking._id}`,
-            type: 'booking',
-            title: 'New Service Booked',
-            message: `${booking.service || 'Service'} booked by ${booking.name || booking.customerName || 'Customer'}`,
-            time: booking.createdAt || booking.date || new Date().toISOString(),
-            status: booking.status || 'pending',
-            unread: true,
-            details: booking
-          }));
-          allNotifications.push(...bookingNotifications);
-        }
-
-        // Sort by time (most recent first)
-        allNotifications.sort((a, b) => new Date(b.time) - new Date(a.time));
+        // Use the real notifications API
+        const response = await notificationsAPI.getAll();
+        const notificationsData = Array.isArray(response.data) ? response.data : response.data?.notifications || [];
         
-        setNotifications(allNotifications);
+        // Sort by created_at (most recent first)
+        const sortedNotifications = notificationsData.sort((a, b) => 
+          new Date(b.created_at) - new Date(a.created_at)
+        );
+        
+        setNotifications(sortedNotifications);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
+        addToast('Failed to load notifications', 'error');
+        setNotifications([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchNotifications();
-  }, []);
+  }, [addToast]);
 
-  const markAsRead = (notificationId) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, unread: false } : n)
-    );
+  const markAsRead = async (notificationId) => {
+    try {
+      await notificationsAPI.markAsRead(notificationId);
+      setNotifications(prev => 
+        prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+      );
+      addToast('Notification marked as read', 'success');
+    } catch (error) {
+      console.error('Failed to mark as read:', error);
+      addToast('Failed to mark notification as read', 'error');
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  const markAllAsRead = async () => {
+    try {
+      await notificationsAPI.markAllAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      addToast('All notifications marked as read', 'success');
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+      addToast('Failed to mark all notifications as read', 'error');
+    }
   };
 
-  const deleteNotification = (notificationId) => {
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+  const deleteNotification = async (notificationId) => {
+    try {
+      await notificationsAPI.delete(notificationId);
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      addToast('Notification deleted', 'success');
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+      addToast('Failed to delete notification', 'error');
+    }
+  };
+
+  const createNotification = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim() || !formData.message.trim()) {
+      addToast('Please fill in all required fields', 'error');
+      return;
+    }
+
+    try {
+      const response = await notificationsAPI.create(formData);
+      const newNotification = Array.isArray(response.data) ? response.data[0] : response.data?.notification || response.data;
+      
+      setNotifications(prev => [newNotification, ...prev]);
+      setShowCreateModal(false);
+      setFormData({
+        type: 'system',
+        title: '',
+        message: '',
+        user_id: null
+      });
+      addToast('Notification created successfully', 'success');
+    } catch (error) {
+      console.error('Failed to create notification:', error);
+      addToast('Failed to create notification', 'error');
+    }
   };
 
   const formatTime = (time) => {
@@ -106,19 +136,23 @@ const Notifications = () => {
     return date.toLocaleDateString();
   };
 
-  const getStatusColor = (status) => {
-    const statusLower = status.toLowerCase();
-    switch (statusLower) {
-      case 'completed': case 'delivered': case 'fulfilled':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending': case 'processing':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'shipped': case 'in_transit':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'cancelled': case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+  const getTypeIcon = (type) => {
+    switch (type.toLowerCase()) {
+      case 'order': return <FiShoppingBag className="w-5 h-5" />;
+      case 'booking': return <FiBook className="w-5 h-5" />;
+      case 'payment': return <FiCreditCard className="w-5 h-5" />;
+      case 'system': return <FiSettings className="w-5 h-5" />;
+      default: return <FiBell className="w-5 h-5" />;
+    }
+  };
+
+  const getTypeColor = (type) => {
+    switch (type.toLowerCase()) {
+      case 'order': return 'bg-green-100 text-green-600';
+      case 'booking': return 'bg-blue-100 text-blue-600';
+      case 'payment': return 'bg-yellow-100 text-yellow-600';
+      case 'system': return 'bg-purple-100 text-purple-600';
+      default: return 'bg-gray-100 text-gray-600';
     }
   };
 
@@ -126,10 +160,12 @@ const Notifications = () => {
   const filteredNotifications = notifications.filter(notification => {
     const matchesFilter = 
       filter === 'all' ||
-      (filter === 'orders' && notification.type === 'order') ||
-      (filter === 'bookings' && notification.type === 'booking') ||
-      (filter === 'read' && !notification.unread) ||
-      (filter === 'unread' && notification.unread);
+      (filter === 'order' && notification.type === 'order') ||
+      (filter === 'booking' && notification.type === 'booking') ||
+      (filter === 'payment' && notification.type === 'payment') ||
+      (filter === 'system' && notification.type === 'system') ||
+      (filter === 'read' && notification.is_read) ||
+      (filter === 'unread' && !notification.is_read);
 
     const matchesSearch = 
       searchTerm === '' ||
@@ -139,7 +175,7 @@ const Notifications = () => {
     return matchesFilter && matchesSearch;
   });
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
@@ -162,13 +198,21 @@ const Notifications = () => {
           </div>
 
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <FiPlus className="w-4 h-4" />
+              <span className="text-sm font-medium hidden sm:block">Create</span>
+            </button>
+
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
                 className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 <FiCheck className="w-4 h-4" />
-                <span className="text-sm font-medium">Mark all read</span>
+                <span className="text-sm font-medium hidden sm:block">Mark all read</span>
               </button>
             )}
             
@@ -201,7 +245,7 @@ const Notifications = () => {
           {/* Filter Buttons */}
           <div className="flex items-center space-x-2">
             <FiFilter className="w-4 h-4 text-gray-400" />
-            {['all', 'orders', 'bookings', 'unread', 'read'].map((filterOption) => (
+            {['all', 'order', 'booking', 'payment', 'system', 'unread', 'read'].map((filterOption) => (
               <button
                 key={filterOption}
                 onClick={() => setFilter(filterOption)}
@@ -231,20 +275,12 @@ const Notifications = () => {
               <div 
                 key={notification.id}
                 className={`p-6 hover:bg-gray-50 transition-colors ${
-                  notification.unread ? 'bg-blue-50/50' : ''
+                  !notification.is_read ? 'bg-blue-50/50' : ''
                 }`}
               >
                 <div className="flex items-start space-x-4">
-                  <div className={`p-3 rounded-xl flex-shrink-0 ${
-                    notification.type === 'order' 
-                      ? 'bg-green-100 text-green-600' 
-                      : 'bg-blue-100 text-blue-600'
-                  }`}>
-                    {notification.type === 'order' ? (
-                      <FiShoppingBag className="w-5 h-5" />
-                    ) : (
-                      <FiBook className="w-5 h-5" />
-                    )}
+                  <div className={`p-3 rounded-xl flex-shrink-0 ${getTypeColor(notification.type)}`}>
+                    {getTypeIcon(notification.type)}
                   </div>
                   
                   <div className="flex-1 min-w-0">
@@ -260,23 +296,28 @@ const Notifications = () => {
                         <div className="flex items-center space-x-4 text-sm">
                           <div className="flex items-center text-gray-500">
                             <FiClock className="w-4 h-4 mr-1" />
-                            {formatTime(notification.time)}
+                            {formatTime(notification.created_at)}
                           </div>
                           
-                          {notification.amount && (
-                            <div className="font-medium text-green-600">
-                              GH₵{Number(notification.amount).toLocaleString()}
-                            </div>
-                          )}
-                          
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-lg border ${getStatusColor(notification.status)}`}>
-                            {notification.status}
+                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-lg ${
+                            notification.type === 'order' ? 'bg-green-100 text-green-800' :
+                            notification.type === 'booking' ? 'bg-blue-100 text-blue-800' :
+                            notification.type === 'payment' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-purple-100 text-purple-800'
+                          }`}>
+                            {notification.type}
                           </span>
+                          
+                          {notification.user_id && (
+                            <span className="text-xs text-gray-500">
+                              User: {notification.user_id}
+                            </span>
+                          )}
                         </div>
                       </div>
                       
                       <div className="flex items-center space-x-2 ml-4">
-                        {notification.unread && (
+                        {!notification.is_read && (
                           <button
                             onClick={() => markAsRead(notification.id)}
                             className="p-1 text-green-600 hover:bg-green-100 rounded transition-colors"
@@ -294,7 +335,7 @@ const Notifications = () => {
                           <FiX className="w-4 h-4" />
                         </button>
                         
-                        {notification.unread && (
+                        {!notification.is_read && (
                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         )}
                       </div>
@@ -317,6 +358,104 @@ const Notifications = () => {
           </div>
         )}
       </div>
+
+      {/* Create Notification Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/20 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 border border-white/20">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Create Notification</h2>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+                >
+                  <FiX className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={createNotification} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type *
+                  </label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="system">System</option>
+                    <option value="order">Order</option>
+                    <option value="booking">Booking</option>
+                    <option value="payment">Payment</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Enter notification title"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Message *
+                  </label>
+                  <textarea
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Enter notification message"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    User ID (optional)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.user_id || ''}
+                    onChange={(e) => setFormData({ ...formData, user_id: e.target.value ? parseInt(e.target.value) : null })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Leave empty for system-wide notification"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty to send to all users
+                  </p>
+                </div>
+
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-colors"
+                  >
+                    Create
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

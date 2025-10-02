@@ -20,6 +20,7 @@ import {
   FiDownload
 } from 'react-icons/fi';
 import { bookingsAPI } from '../../services/api';
+import notificationService from '../../services/notificationService';
 import { useToast } from '../../context/ToastContext';
 
 const BookingMgmt = () => {
@@ -182,6 +183,9 @@ const BookingMgmt = () => {
       
       await bookingsAPI.approve(actionBookingId, approvalData);
       
+      // Find the booking to get user details for notification
+      const booking = bookings.find(b => b.id === actionBookingId) || selectedBooking;
+      
       setBookings(prev => prev.map(booking => 
         booking.id === actionBookingId 
           ? { ...booking, status: 'scheduled', schedule_date: scheduleDate || booking.schedule_date, note: approvalNote || booking.note }
@@ -195,6 +199,23 @@ const BookingMgmt = () => {
           schedule_date: scheduleDate || prev.schedule_date,
           note: approvalNote || prev.note
         }));
+      }
+      
+      // Notify user about booking approval/scheduling
+      if (booking) {
+        try {
+          if (scheduleDate) {
+            await notificationService.notifyUserBookingScheduled({
+              ...booking,
+              scheduled_date: scheduleDate,
+              status: 'scheduled'
+            });
+          } else {
+            await notificationService.notifyUserBookingStatusUpdate(booking, 'confirmed');
+          }
+        } catch (notifError) {
+          console.error('Failed to send booking notification:', notifError);
+        }
       }
       
       addToast('Booking approved successfully!', 'success');
@@ -225,6 +246,9 @@ const BookingMgmt = () => {
       
       await bookingsAPI.reject(actionBookingId, rejectionData);
       
+      // Find the booking to get user details for notification
+      const booking = bookings.find(b => b.id === actionBookingId) || selectedBooking;
+      
       setBookings(prev => prev.map(booking => 
         booking.id === actionBookingId 
           ? { ...booking, status: 'rejected', note: rejectionNote || booking.note }
@@ -237,6 +261,15 @@ const BookingMgmt = () => {
           status: 'rejected',
           note: rejectionNote || prev.note
         }));
+      }
+      
+      // Notify user about booking rejection
+      if (booking) {
+        try {
+          await notificationService.notifyBookingCancellation(booking, 'admin');
+        } catch (notifError) {
+          console.error('Failed to send rejection notification:', notifError);
+        }
       }
       
       addToast('Booking rejected successfully!', 'success');
@@ -267,6 +300,9 @@ const BookingMgmt = () => {
       
       await bookingsAPI.complete(actionBookingId, completionData);
       
+      // Find the booking to get user details for notification
+      const booking = bookings.find(b => b.id === actionBookingId) || selectedBooking;
+      
       setBookings(prev => prev.map(booking => 
         booking.id === actionBookingId 
           ? { ...booking, status: 'completed', note: completionNote || booking.note }
@@ -279,6 +315,15 @@ const BookingMgmt = () => {
           status: 'completed',
           note: completionNote || prev.note
         }));
+      }
+      
+      // Notify user about booking completion
+      if (booking) {
+        try {
+          await notificationService.notifyUserBookingStatusUpdate(booking, 'completed');
+        } catch (notifError) {
+          console.error('Failed to send completion notification:', notifError);
+        }
       }
       
       addToast('Booking marked as completed!', 'success');

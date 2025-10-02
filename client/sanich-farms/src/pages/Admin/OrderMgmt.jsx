@@ -17,6 +17,7 @@ import {
   FiMapPin
 } from 'react-icons/fi';
 import { ordersAPI } from '../../services/api';
+import notificationService from '../../services/notificationService';
 import { useToast } from '../../context/ToastContext';
 
 const OrderMgmt = () => {
@@ -219,6 +220,9 @@ const OrderMgmt = () => {
         setUpdatingStatus(newStatus);
         await ordersAPI.updateStatus(orderId, newStatus);
         
+        // Find the order to get user details for notification
+        const order = orders.find(o => o.id === orderId) || selectedOrder;
+        
         setOrders(prev => prev.map(order => 
           order.id === orderId 
             ? { ...order, status: newStatus }
@@ -228,6 +232,15 @@ const OrderMgmt = () => {
         // Update selected order if it's the one being updated
         if (selectedOrder && selectedOrder.id === orderId) {
           setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+        }
+        
+        // Notify user about status update
+        if (order) {
+          try {
+            await notificationService.notifyUserOrderStatusUpdate(order, newStatus);
+          } catch (notifError) {
+            console.error('Failed to send user notification:', notifError);
+          }
         }
         
         addToast('Order status updated successfully!');
@@ -275,6 +288,15 @@ const OrderMgmt = () => {
             ? { ...order, payment_status: newPaymentStatus }
             : order
         ));
+        
+        // Notify user about payment confirmation
+        if (newPaymentStatus === 'paid' && selectedOrder) {
+          try {
+            await notificationService.notifyUserOrderPaymentConfirmed(selectedOrder);
+          } catch (notifError) {
+            console.error('Failed to send payment notification:', notifError);
+          }
+        }
         
         // Update selected order if it's the one being updated
         if (selectedOrder && selectedOrder.id === orderId) {
@@ -369,12 +391,24 @@ const OrderMgmt = () => {
         // Make API call to cancel order
         await ordersAPI.adminCancel(orderId);
         
+        // Find the order to get user details for notification
+        const order = orders.find(o => o.id === orderId) || selectedOrder;
+        
         // Update local state to reflect the change
         setOrders(prev => prev.map(order => 
           order.id === orderId 
             ? { ...order, status: 'cancelled', payment_status: order.payment_status === 'paid' ? 'refunded' : order.payment_status }
             : order
         ));
+        
+        // Notify user about order cancellation
+        if (order) {
+          try {
+            await notificationService.notifyOrderCancellation(order, 'admin');
+          } catch (notifError) {
+            console.error('Failed to send cancellation notification:', notifError);
+          }
+        }
         
         // Update selected order if it's the one being updated
         if (selectedOrder && selectedOrder.id === orderId) {

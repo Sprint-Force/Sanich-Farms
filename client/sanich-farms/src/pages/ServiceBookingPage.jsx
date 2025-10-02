@@ -4,6 +4,7 @@ import { FiHome, FiChevronRight, FiCalendar, FiUser, FiMail, FiPhone, FiMapPin, 
 import { useToast } from '../context/ToastContext';
 import { servicesAPI, bookingsAPI } from '../services/api';
 import { useAuthContext } from '../hooks/useAuthContext';
+import notificationService from '../services/notificationService';
 
 const ServiceBookingPage = () => {
   const navigate = useNavigate();
@@ -126,6 +127,20 @@ const ServiceBookingPage = () => {
       const response = await bookingsAPI.create(bookingDetails);
 
       const bookingId = response.booking?.id || response.id; // Handle different response formats
+      
+      // Notify admin about new booking
+      try {
+        await notificationService.notifyAdminNewBooking({
+          ...bookingDetails,
+          id: bookingId,
+          service_name: selectedService?.name || formData.serviceType || 'Service',
+          customer_name: `${formData.customerName}`,
+          scheduled_date: formData.preferredDateTime
+        });
+      } catch (notifError) {
+        console.error('Failed to send admin notification:', notifError);
+      }
+      
       addToast("Your service booking has been submitted! We will contact you shortly.", 'success');
       
       // Navigate to booking confirmation page with the booking data

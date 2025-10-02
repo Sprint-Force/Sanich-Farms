@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useAuthContext } from '../hooks/useAuthContext';
 import { ordersAPI } from '../services/api';
+import notificationService from '../services/notificationService';
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -80,6 +81,17 @@ const CheckoutPage = () => {
         });
         
         if (response && (response.success || response.id || response.order)) {
+          // Notify admin about new order
+          try {
+            await notificationService.notifyAdminNewOrder({
+              id: response.order?.id || response.id,
+              customer_name: `${billingInfo.firstName} ${billingInfo.lastName}`,
+              total_amount: subtotal
+            });
+          } catch (notifError) {
+            console.error('Failed to send admin notification:', notifError);
+          }
+          
           // Don't clear cart yet for mobile money - clear it after payment
           navigate('/order-confirmation', { 
             state: { 
@@ -111,6 +123,17 @@ const CheckoutPage = () => {
           const response = await ordersAPI.create(orderDetails);
           
           if (response && (response.success || response.id || response.order)) {
+            // Notify admin about new order
+            try {
+              await notificationService.notifyAdminNewOrder({
+                id: response.order?.id || response.id,
+                customer_name: `${billingInfo.firstName} ${billingInfo.lastName}`,
+                total_amount: subtotal
+              });
+            } catch (notifError) {
+              console.error('Failed to send admin notification:', notifError);
+            }
+            
             // Clear cart after successful order creation
             await clearCart();
             navigate('/order-confirmation', { 

@@ -31,6 +31,7 @@ import MyOrders from './components/Dashboard/MyOrders';
 import MyBookings from './components/Dashboard/MyBookings';
 import MyProfile from './components/Dashboard/MyProfile';
 import TrackOrders from './components/Dashboard/TrackOrders';
+import UserNotifications from './components/Dashboard/UserNotifications';
 // Imports for detail pages
 import OrderDetailPage from './components/Dashboard/OrderDetailPage';
 import BookingDetailPage from './components/Dashboard/BookingDetailPage';
@@ -130,6 +131,7 @@ function App() {
                   <Route path='orders' element={<MyOrders />} />
                   <Route path='track-orders' element={<TrackOrders />} />
                   <Route path='bookings' element={<MyBookings />} />
+                  <Route path='notifications' element={<UserNotifications />} />
                   <Route path='profile' element={<MyProfile />} />
                   <Route path='wishlist' element={<WishlistPage />} />
                   <Route path='orders/:orderId' element={<OrderDetailPage />} />
