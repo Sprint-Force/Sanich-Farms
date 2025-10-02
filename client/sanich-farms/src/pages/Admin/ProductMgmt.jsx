@@ -37,9 +37,11 @@ const ProductMgmt = () => {
     name: '',
     category: '',
     price: '',
-    stock: '',
+    stock_quantity: '', // Fixed: Use backend field name
     description: '',
-    active: true,
+    rating: '',
+    unit_of_measure: '',
+    is_available: true, // Fixed: Use backend field name
     images: []
   });
 
@@ -149,9 +151,11 @@ const ProductMgmt = () => {
         name: product.name || '',
         category: product.category || '',
         price: product.price != null ? String(product.price) : '',
-        stock: product.stock_quantity != null ? String(product.stock_quantity) : (product.stock != null ? String(product.stock) : ''),
+        stock_quantity: product.stock_quantity != null ? String(product.stock_quantity) : '',
         description: product.description || '',
-        active: product.is_available !== false,
+        rating: product.rating != null ? String(product.rating) : '',
+        unit_of_measure: product.unit_of_measure || '',
+        is_available: product.is_available !== false,
         images: uniqueImages
       });
     } else {
@@ -160,9 +164,11 @@ const ProductMgmt = () => {
         name: '',
         category: '',
         price: '',
-        stock: '',
+        stock_quantity: '',
         description: '',
-        active: true,
+        rating: '',
+        unit_of_measure: '',
+        is_available: true,
         images: []
       });
     }
@@ -178,7 +184,7 @@ const ProductMgmt = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.name.trim() || !formData.category || !formData.price || !formData.stock) {
+    if (!formData.name.trim() || !formData.category || !formData.price || !formData.stock_quantity) {
       setError('Please fill in all required fields: name, category, price, and stock quantity.');
       return;
     }
@@ -188,8 +194,14 @@ const ProductMgmt = () => {
       return;
     }
 
-    if (isNaN(parseInt(formData.stock)) || parseInt(formData.stock) < 0) {
+    if (isNaN(parseInt(formData.stock_quantity)) || parseInt(formData.stock_quantity) < 0) {
       setError('Please enter a valid stock quantity (0 or greater).');
+      return;
+    }
+
+    // Validate rating if provided
+    if (formData.rating && (isNaN(parseFloat(formData.rating)) || parseFloat(formData.rating) < 0 || parseFloat(formData.rating) > 5)) {
+      setError('Please enter a valid rating between 0 and 5.');
       return;
     }
 
@@ -203,9 +215,10 @@ const ProductMgmt = () => {
       submitData.append('description', formData.description || '');
       submitData.append('category', formData.category);
       submitData.append('price', parseFloat(formData.price));
-      submitData.append('stock_quantity', parseInt(formData.stock));
-      submitData.append('rating', 0);
-      submitData.append('is_available', formData.active ? 'true' : 'false');
+      submitData.append('stock_quantity', parseInt(formData.stock_quantity));
+      submitData.append('rating', formData.rating ? parseFloat(formData.rating) : 0);
+      submitData.append('unit_of_measure', formData.unit_of_measure || '');
+      submitData.append('is_available', formData.is_available ? 'true' : 'false');
       
       // Handle multiple images - for now, use the first image as the main image
       const imageFiles = formData.images.filter(img => img && img.file);
@@ -948,7 +961,7 @@ const ProductMgmt = () => {
                     Pricing & Inventory
                   </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
                         Price (GH₵) *
@@ -970,18 +983,32 @@ const ProductMgmt = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="stock_quantity" className="block text-sm font-medium text-gray-700 mb-2">
                         Stock Quantity *
                       </label>
                       <input
                         type="number"
-                        id="stock"
+                        id="stock_quantity"
                         min="0"
-                        value={formData.stock}
-                        onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                        value={formData.stock_quantity}
+                        onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                         placeholder="Enter stock quantity"
                         required
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="unit_of_measure" className="block text-sm font-medium text-gray-700 mb-2">
+                        Unit of Measure
+                      </label>
+                      <input
+                        type="text"
+                        id="unit_of_measure"
+                        value={formData.unit_of_measure}
+                        onChange={(e) => setFormData({ ...formData, unit_of_measure: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                        placeholder="e.g., kg, piece, box"
                       />
                     </div>
                   </div>
@@ -997,15 +1024,32 @@ const ProductMgmt = () => {
                   </h3>
                   
                   <div className="space-y-4">
+                    <div>
+                      <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-2">
+                        Product Rating (0-5)
+                      </label>
+                      <input
+                        type="number"
+                        id="rating"
+                        min="0"
+                        max="5"
+                        step="0.1"
+                        value={formData.rating}
+                        onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                        placeholder="e.g., 4.5"
+                      />
+                    </div>
+                    
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
-                        id="active"
-                        checked={formData.active}
-                        onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                        id="is_available"
+                        checked={formData.is_available}
+                        onChange={(e) => setFormData({ ...formData, is_available: e.target.checked })}
                         className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                       />
-                      <label htmlFor="active" className="text-sm font-medium text-gray-700">
+                      <label htmlFor="is_available" className="text-sm font-medium text-gray-700">
                         Product Available for Sale
                       </label>
                     </div>
