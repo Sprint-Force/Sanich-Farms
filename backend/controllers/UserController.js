@@ -239,7 +239,7 @@ export const getProfile = async (req, res) => {
 // Edit user's profile
 export const updateProfile = async (req, res) => {
   const userId = req.user.id;
-  const { firstName, lastName, email, phone_number, address, company_name } = req.body;
+  const { name, email, phone_number, address, company_name } = req.body;
 
   try {
     const user = await User.findByPk(userId);
@@ -248,9 +248,8 @@ export const updateProfile = async (req, res) => {
     }
 
     // Update only provided fields
-    if (firstName || lastName) {
-      const fullName = `${firstName || ''} ${lastName || ''}`.trim();
-      user.name = fullName;
+    if (name) {
+      user.name = name;
     }
     if (email) { user.email = email; }
     if (phone_number) { user.phone_number = phone_number; }
@@ -258,17 +257,10 @@ export const updateProfile = async (req, res) => {
     if (company_name) { user.company_name = company_name; }
 
     await user.save();
-
-    // Split name into first + last for frontend
-    const [first, ...lastParts] = user.name.split(" ");
-    const last = lastParts.join(" ");
-
     res.json({
       message: 'Profile updated successfully',
       user: {
         id: user.id,
-        firstName: first,
-        lastName: last,
         name: user.name, 
         email: user.email,
         phone_number: user.phone_number,
