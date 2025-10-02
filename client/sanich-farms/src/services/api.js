@@ -124,7 +124,7 @@ export const productsAPI = {
   // Admin endpoints (multipart/form-data where image upload is supported)
   getAllAdmin: async (params = {}) => {
     // Use admin endpoint that returns all products including inactive ones
-    const response = await apiClient.get('/admin/products', { params });
+    const response = await apiClient.get('/products/all', { params });
     return response.data;
   },
 
@@ -161,6 +161,12 @@ export const servicesAPI = {
   },
 
   // ADMIN SERVICES FIX: Admin endpoints for service management
+  getAllAdmin: async (params = {}) => {
+    // Use regular endpoint since there's no admin-specific service endpoint
+    const response = await apiClient.get('/services', { params });
+    return response.data;
+  },
+
   createAdmin: async (formData) => {
     const response = await apiClient.post('/services/add', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }

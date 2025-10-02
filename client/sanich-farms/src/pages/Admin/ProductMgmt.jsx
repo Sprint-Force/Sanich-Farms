@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   FiPlus, FiEdit, FiTrash2, FiEye, FiEyeOff, 
   FiSearch, FiFilter, FiChevronDown, FiGrid, FiList,
-  FiImage, FiPackage, FiBarChart, FiTrendingUp
+  FiImage, FiPackage, FiBarChart, FiTrendingUp, FiPause
 } from 'react-icons/fi';
 import { productsAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -392,7 +392,7 @@ const ProductMgmt = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-4 sm:mt-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mt-4 sm:mt-6">
           <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div className="min-w-0 flex-1">
@@ -415,6 +415,20 @@ const ProductMgmt = () => {
               </div>
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <FiTrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div className="min-w-0 flex-1">
+                <p className="text-gray-600 text-xs sm:text-sm font-medium truncate">Inactive Products</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">
+                  {products.filter(p => p.status === 'Inactive').length}
+                </p>
+              </div>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <FiPause className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
               </div>
             </div>
           </div>
@@ -543,10 +557,10 @@ const ProductMgmt = () => {
         style={{ scrollPaddingBottom: '2rem' }}>
           {filteredProducts.map((product) => (
             viewMode === 'grid' ? (
-              // Grid Card View - Mobile-First Responsive Design
-              <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:border-gray-300 w-full scroll-mt-4 sm:scroll-mt-6">
+              // Grid Card View - Mobile-First Responsive Design with Consistent Height
+              <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:border-gray-300 w-full scroll-mt-4 sm:scroll-mt-6 flex flex-col h-full">
                 {/* Product Image */}
-                <div className="relative h-32 sm:h-36 md:h-40 bg-gray-100 w-full">
+                <div className="relative h-32 sm:h-36 md:h-40 bg-gray-100 w-full flex-shrink-0">
                   {(product.image_url || product.image || product.images?.[0]) ? (
                     <img
                       src={product.image_url || product.image || product.images?.[0]}
@@ -572,10 +586,10 @@ const ProductMgmt = () => {
                   </div>
                 </div>
 
-                {/* Product Info */}
-                <div className="p-3 sm:p-4">
-                  <div className="mb-3">
-                    <h3 className="font-medium text-gray-900 text-sm sm:text-base mb-1 line-clamp-2">
+                {/* Product Info - Flex grow to fill available space */}
+                <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                  <div className="mb-3 flex-grow">
+                    <h3 className="font-medium text-gray-900 text-sm sm:text-base mb-1 line-clamp-2 min-h-[2.5rem]">
                       {product.name}
                     </h3>
                     <p className="text-xs sm:text-sm text-gray-500 capitalize">
@@ -599,8 +613,8 @@ const ProductMgmt = () => {
                     </p>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
+                  {/* Action Buttons - Always at the bottom */}
+                  <div className="flex gap-2 mt-auto">
                     <button
                       onClick={() => openModal(product)}
                       className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
