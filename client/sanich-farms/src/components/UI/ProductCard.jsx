@@ -21,6 +21,10 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
   const cartQuantity = getItemQuantity(product?.id);
   const isInCartAlready = cartQuantity > 0;
 
+  // Check if product is new (created within last 7 days)
+  const isNewProduct = product?.created_at && 
+    new Date(product.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
   // Intersection Observer for lazy loading images
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -39,6 +43,11 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
 
     return () => observer.disconnect();
   }, []);
+
+  // Early return if product is null/undefined (after hooks)
+  if (!product && !skeleton) {
+    return null;
+  }
 
   // If showing skeleton
   if (skeleton) {
@@ -119,6 +128,20 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
       <div ref={imgRef} className={`relative w-full overflow-hidden bg-gray-100 ${
         compact ? 'aspect-[4/3] xs:aspect-square' : 'aspect-[4/3] xs:aspect-square'
       }`}>
+        {/* NEW Badge */}
+        {isNewProduct && !compact && (
+          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-md font-semibold z-20">
+            NEW
+          </div>
+        )}
+        
+        {/* Out of Stock Badge */}
+        {product.stock_quantity === 0 && (
+          <div className="absolute top-2 right-12 bg-gray-800 text-white text-xs px-2 py-1 rounded-md font-semibold z-20">
+            OUT OF STOCK
+          </div>
+        )}
+        
         <Link to={`/products/${product.id}`} className="absolute inset-0">
           {imageInView && (
             <>
@@ -192,9 +215,9 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
                 />
               ))}
             </div>
-            {!compact && (
+            {!compact && product.reviews !== undefined && (
               <span className="text-gray-500 ml-1 xs:ml-2 text-[10px] xs:text-xs">
-                ({product.reviews || 0})
+                ({product.reviews})
               </span>
             )}
           </div>
@@ -202,16 +225,39 @@ const ProductCard = ({ product, skeleton = false, compact = false }) => {
 
           {/* Price Section - Better mobile layout for long prices */}
           <div className="mt-auto">
+            {/* Stock and Availability Info */}
+            {!compact && (
+              <div className="mb-1 text-xs">
+                {product.stock_quantity !== undefined && (
+                  <span className={`${product.stock_quantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : 'Out of stock'}
+                  </span>
+                )}
+                {product.is_available === false && (
+                  <span className="text-red-500 ml-2">• Unavailable</span>
+                )}
+              </div>
+            )}
+            
             {/* Price Display - Full width since button is now below */}
             <div className={`mb-2 ${compact ? 'mb-1' : 'mb-2'}`}>
               <div className="flex flex-col">
-                <span className={`font-bold text-green-700 leading-tight ${
-                  compact 
-                    ? 'text-xs xs:text-sm' 
-                    : 'text-sm xs:text-base sm:text-lg'
-                }`}>
-                  GH₵{parseFloat(product.price || 0).toFixed(2)}
-                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className={`font-bold text-green-700 leading-tight ${
+                    compact 
+                      ? 'text-xs xs:text-sm' 
+                      : 'text-sm xs:text-base sm:text-lg'
+                  }`}>
+                    GH₵{parseFloat(product.price || 0).toFixed(2)}
+                  </span>
+                  {product.unit_of_measure && (
+                    <span className={`text-gray-500 font-normal ${
+                      compact ? 'text-xs' : 'text-xs'
+                    }`}>
+                      / {product.unit_of_measure}
+                    </span>
+                  )}
+                </div>
                 {product.oldPrice && !compact && (
                   <span className="text-xs text-gray-500 line-through mt-0.5">
                     GH₵{parseFloat(product.oldPrice || 0).toFixed(2)}
