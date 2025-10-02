@@ -33,7 +33,7 @@ const MyOrders = () => {
     fetchOrders();
   }, []);
 
-  // Filter orders based on status
+  // DASHBOARD API INTEGRATION: Filter orders based on status
   useEffect(() => {
     if (statusFilter === 'All') {
       setFilteredOrders(orders);
@@ -45,7 +45,6 @@ const MyOrders = () => {
   // DASHBOARD API INTEGRATION: Amazon-style order actions with API calls
   const handleReorder = async (orderId) => {
     try {
-      console.log(`Reordering items from order ${orderId}`);
       // In real app, add order items to cart via API
       alert(`Items from order ${orderId} added to cart!`);
     } catch (err) {
@@ -72,11 +71,10 @@ const MyOrders = () => {
   };
 
   const handleDownloadInvoice = (orderId) => {
-    console.log(`Downloading invoice for order ${orderId}`);
     alert(`Invoice for order ${orderId} downloaded!`);
   };
 
-  const statusOptions = ['All', 'Processing', 'Delivered', 'Cancelled'];
+  const statusOptions = ['All', 'pending', 'processing', 'completed', 'cancelled'];
 
   // DASHBOARD API INTEGRATION: Loading state
   if (loading) {
@@ -162,7 +160,7 @@ const MyOrders = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-xl sm:text-2xl font-extrabold text-gray-800">My Orders</h1>
         
-        {/* DASHBOARD AUDIT FIX: Order filtering like Amazon */}
+        {/* DASHBOARD AUDIT FIX: Order filtering */}
         <div className="flex items-center gap-2">
           <FiFilter className="text-gray-500" size={16} />
           <select 
@@ -171,7 +169,9 @@ const MyOrders = () => {
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           >
             {statusOptions.map(status => (
-              <option key={status} value={status}>{status} Orders</option>
+              <option key={status} value={status}>
+                {status === 'All' ? 'All Status' : `${status.charAt(0).toUpperCase()}${status.slice(1)}`}
+              </option>
             ))}
           </select>
         </div>
@@ -215,47 +215,68 @@ const MyOrders = () => {
                           (order.status === 'cancelled' || order.status === 'Cancelled') ? 'bg-red-100 text-red-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
+                          {order.status ? `${order.status.charAt(0).toUpperCase()}${order.status.slice(1)}` : 'Pending'}
                         </span>
                       </div>
 
-                      {/* Order Details - Fixed alignment and data mapping */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Date</span>
-                          <span className="text-sm text-gray-900">
-                            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 
-                             order.ordered_at ? new Date(order.ordered_at).toLocaleDateString() :
-                             order.date ? new Date(order.date).toLocaleDateString() :
-                             order.updatedAt ? new Date(order.updatedAt).toLocaleDateString() : 
-                             'N/A'}
-                          </span>
+                    {/* Optimized order details grid - Date and Total on same row for mobile */}
+                    <div className="space-y-2 text-sm text-gray-600 mb-3">
+                      {/* Date and Total on same row for mobile optimization */}
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="font-medium text-gray-800">Date:</span>
+                          <div>{order.ordered_at ? new Date(order.ordered_at).toLocaleDateString() : 
+                               order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</div>
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total Amount</span>
-                          <span className="text-sm font-semibold text-gray-900">₵{order.total_amount || order.total || '0.00'}</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Items</span>
-                          <span className="text-sm text-gray-900">
-                            {(() => {
-                              // Calculate total quantity from order items
-                              if (order.OrderItems && Array.isArray(order.OrderItems)) {
-                                return order.OrderItems.reduce((total, item) => total + (item.quantity || 1), 0);
-                              }
-                              if (order.items && Array.isArray(order.items)) {
-                                return order.items.reduce((total, item) => total + (item.quantity || 1), 0);
-                              }
-                              return order.quantity || 1;
-                            })()} item{(() => {
-                              const count = order.OrderItems ? order.OrderItems.reduce((total, item) => total + (item.quantity || 1), 0) :
-                                           order.items ? order.items.reduce((total, item) => total + (item.quantity || 1), 0) :
-                                           order.quantity || 1;
-                              return count !== 1 ? 's' : '';
-                            })()}
-                          </span>
+                        <div className="text-right">
+                          <span className="font-medium text-gray-800">Total:</span>
+                          <div className="font-semibold text-green-600">GH₵{order.total_amount || order.total || '0.00'}</div>
                         </div>
                       </div>
+                      
+                      {/* Additional info in a flexible grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {order.payment_method && (
+                          <div>
+                            <span className="font-medium text-gray-800">Payment:</span>
+                            <div>{order.payment_method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                          </div>
+                        )}
+                        {/* Add delivered date if it exists */}
+                        {order.delivered_at && (
+                          <div>
+                            <span className="font-medium text-gray-800">Delivered:</span>
+                            <div>{new Date(order.delivered_at).toLocaleDateString()}</div>
+                          </div>
+                        )}
+                        {(order.OrderItems || order.items) && (
+                          <div>
+                            <span className="font-medium text-gray-800">Items:</span>
+                            <div>
+                              {(() => {
+                                if (order.OrderItems) {
+                                  const count = order.OrderItems.reduce((total, item) => total + (item.quantity || 1), 0);
+                                  return `${count} item${count !== 1 ? 's' : ''}`;
+                                }
+                                if (order.items) {
+                                  const count = order.items.reduce((total, item) => total + (item.quantity || 1), 0);
+                                  return `${count} item${count !== 1 ? 's' : ''}`;
+                                }
+                                return 'Items available';
+                              })()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Order note if available - Keep this as it's useful */}
+                    {order.note && (
+                      <div className="mb-3 p-2 bg-gray-50 rounded">
+                        <span className="text-xs font-medium text-gray-500">Note:</span>
+                        <p className="text-sm text-gray-700">{order.note}</p>
+                      </div>
+                    )}
                     </div>
                   </div>
 

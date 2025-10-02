@@ -49,27 +49,36 @@ const OrderDetailPage = () => {
   }
 
   return (
-    <div className="space-y-4 lg:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 lg:mb-6 border-b pb-4 border-gray-200 gap-4 sm:gap-0">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-800">Order Details</h1>
-        <Link to="/dashboard/orders" className="flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors duration-200 self-start sm:self-center">
-          <FiArrowLeft /> Back to Orders
-        </Link>
-      </div>
+    <div className="min-h-screen bg-gray-50 px-2 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 flex-1">Order Details</h1>
+          <Link 
+            to="/dashboard/orders" 
+            className="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors duration-200 px-2 py-1 rounded-lg bg-green-50 w-fit"
+          >
+            <FiArrowLeft className="h-4 w-4 flex-shrink-0" /> 
+            <span className="text-sm sm:text-base">Back to Orders</span>
+          </Link>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5 mb-4 sm:mb-6">
         {/* Order Summary Card */}
         <div className="lg:col-span-1 bg-white rounded-xl shadow-md p-4 lg:p-6 border border-gray-100">
           <h2 className="text-lg lg:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
             <FiPackage className="text-green-600" /> Order Summary
           </h2>
-          <div className="space-y-2 text-gray-700 text-sm lg:text-base">
+          <div className="space-y-3 text-gray-700 text-sm lg:text-base">
             {/* USER SIDE FIX: Use real API response fields */}
-            <p><strong>Order ID:</strong> #{order.id}</p>
-            <p><strong>Date:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : order.ordered_at ? new Date(order.ordered_at).toLocaleDateString() : 'N/A'}</p>
-            <p><strong>Total:</strong> ₵{order.total_amount || order.total || '0.00'}</p>
-            <p className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"><strong>Status:</strong>
-              <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold w-fit ${
+            <div className="flex justify-between items-center gap-2">
+              <div className="space-y-1">
+                <p className="text-xs sm:text-sm"><strong>Order ID:</strong> #{order.id}</p>
+                <p className="text-xs sm:text-sm"><strong>Date:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : order.ordered_at ? new Date(order.ordered_at).toLocaleDateString() : 'N/A'}</p>
+                <p className="text-xs sm:text-sm"><strong>Total:</strong> GH₵{order.total_amount || order.total || '0.00'}</p>
+              </div>
+              {/* Status badge on the same row for mobile optimization */}
+              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
                 (order.status === 'delivered' || order.status === 'completed') ? 'bg-green-100 text-green-800' :
                 (order.status === 'processing' || order.status === 'pending') ? 'bg-yellow-100 text-yellow-800' :
                 order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
@@ -77,7 +86,21 @@ const OrderDetailPage = () => {
               }`}>
                 {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Pending'}
               </span>
-            </p>
+            </div>
+            {/* Compact delivered confirmation - single line, reduced padding and gap */}
+            {(order.delivered_at || order.delivery_status === 'delivered') && (
+              <div className="bg-green-50 border border-green-200 rounded-lg px-2 py-1 mt-2">
+                <div className="flex items-center gap-1">
+                  <FiCheckCircle className="text-green-600 flex-shrink-0" size={15} />
+                  <span className="text-xs font-semibold text-green-800">Delivered</span>
+                  {order.delivered_at && (
+                    <span className="text-xs text-green-700">
+                      - {new Date(order.delivered_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -122,14 +145,14 @@ const OrderDetailPage = () => {
         </div>
       </div>
 
-      {/* Order Items Table */}
-      <div className="bg-white rounded-xl shadow-md p-4 lg:p-6 border border-gray-100">
-        <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-4 border-b pb-3 border-gray-200">
+      {/* Order Items Table - Responsive Design */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 sm:p-4 lg:p-6">
+        <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-gray-200">
           Items in this Order
         </h2>
         
         {/* Desktop Table View */}
-        <div className="hidden md:block overflow-x-auto hide-scrollbar">
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full bg-white">
             <thead className="bg-gray-50">
               <tr>
@@ -153,9 +176,9 @@ const OrderDetailPage = () => {
                     <span className="truncate">{item.Product?.name || item.name || 'Unknown Product'}</span>
                   </td>
                   <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-600">{item.quantity}</td>
-                  <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-600">₵{item.price || '0.00'}</td>
+                  <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-600">GH₵{item.price || '0.00'}</td>
                   <td className="py-4 px-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
-                    ₵{((item.quantity || 0) * (parseFloat(item.price) || 0)).toFixed(2)}
+                    GH₵{((item.quantity || 0) * (parseFloat(item.price) || 0)).toFixed(2)}
                   </td>
                 </tr>
               ))}
@@ -163,40 +186,62 @@ const OrderDetailPage = () => {
           </table>
         </div>
 
-        {/* Mobile Card View */}
-        <div className="md:hidden space-y-4">
-          {(order.OrderItems || order.items || []).map((item, index) => (
-            <div key={item.id || index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-start gap-3 mb-3">
-                <img 
-                  src={item.Product?.image_url || item.image || "https://placehold.co/40x40/cccccc/333333?text=Item"} 
-                  alt={item.Product?.name || item.name || 'Product'} 
-                  className="h-12 w-12 object-cover rounded-md flex-shrink-0" 
-                  onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/40x40/cccccc/333333?text=Item"; }} 
-                />
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium text-gray-900 break-words">{item.Product?.name || item.name || 'Unknown Product'}</h3>
+        {/* Mobile Card View - Fully Responsive like MyBookings */}
+        <div className="md:hidden">
+          <div className="space-y-2">
+            {(order.OrderItems || order.items || []).map((item, index) => (
+              <div key={item.id || index} className="bg-gray-50 rounded-xl border border-gray-100 p-2 sm:p-3 hover:bg-white hover:shadow-sm transition duration-200">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <img 
+                    src={item.Product?.image_url || item.image || "https://placehold.co/40x40/cccccc/333333?text=Item"} 
+                    alt={item.Product?.name || item.name || 'Product'} 
+                    className="h-10 w-10 sm:h-12 sm:w-12 object-cover rounded-lg flex-shrink-0" 
+                    onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/40x40/cccccc/333333?text=Item"; }} 
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2 leading-tight">
+                      {item.Product?.name || item.name || 'Unknown Product'}
+                    </h3>
+                    {/* Mobile-optimized information grid */}
+                    <div className="space-y-0.5 text-xs sm:text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Qty:</span>
+                        <span className="font-medium text-gray-900">{item.quantity}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Unit:</span>
+                        <span className="font-medium text-gray-900">GH₵{item.price || '0.00'}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-1 border-t border-gray-200">
+                        <span className="font-semibold text-gray-800">Subtotal:</span>
+                        <span className="font-bold text-green-600">
+                          GH₵{((item.quantity || 0) * (parseFloat(item.price) || 0)).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-500">Quantity</p>
-                  <p className="font-medium text-gray-900">{item.quantity}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Price</p>
-                  <p className="font-medium text-gray-900">₵{item.price || '0.00'}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Subtotal</p>
-                  <p className="font-semibold text-gray-900">₵{((item.quantity || 0) * (parseFloat(item.price) || 0)).toFixed(2)}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Support Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-3 py-3 mt-3 sm:mt-5">
+        <div className="text-center">
+          <h3 className="text-base font-semibold text-gray-800 mb-1">Need Help?</h3>
+          <p className="text-xs text-gray-600 mb-2">Contact support for order assistance</p>
+          <a 
+            href="tel:0243826137" 
+            className="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors duration-200"
+          >
+            Call: 024 382 6137
+          </a>
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

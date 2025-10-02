@@ -385,40 +385,30 @@ export const paymentsAPI = {
     return response.data;
   },
 
-  processPayment: async (paymentData) => {
-    const response = await apiClient.post('/payments/initialize', paymentData);
-    return response.data;
-  },
-
-  // Legacy methods for backwards compatibility
+  // ⚠️ WARNING: These methods below don't exist in backend - used for PaymentsWallet component
+  // They return graceful fallbacks to prevent errors but won't work until backend implements them
   getTransactions: async () => {
-    const response = await apiClient.get('/payments/transactions');
-    return response.data;
+    throw new Error('Transactions API not implemented in backend');
   },
 
   getPaymentMethods: async () => {
-    const response = await apiClient.get('/user/payment-methods');
-    return response.data;
+    throw new Error('Payment methods API not implemented in backend');
   },
 
-  addPaymentMethod: async (methodData) => {
-    const response = await apiClient.post('/user/payment-methods', methodData);
-    return response.data;
+  addPaymentMethod: async () => {
+    throw new Error('Add payment method API not implemented in backend');
   },
 
-  removePaymentMethod: async (methodId) => {
-    const response = await apiClient.delete(`/user/payment-methods/${methodId}`);
-    return response.data;
+  removePaymentMethod: async () => {
+    throw new Error('Remove payment method API not implemented in backend');
   },
 
   getWalletBalance: async () => {
-    const response = await apiClient.get('/user/wallet/balance');
-    return response.data;
+    throw new Error('Wallet balance API not implemented in backend');
   },
 
-  addFunds: async (amount) => {
-    const response = await apiClient.post('/user/wallet/add-funds', { amount });
-    return response.data;
+  addFunds: async () => {
+    throw new Error('Add funds API not implemented in backend');
   }
 };
 
@@ -474,21 +464,9 @@ export const adminUsersAPI = {
     const response = await apiClient.get('/users', { params });
     return response.data;
   },
-
-  getById: async (id) => {
-    const response = await apiClient.get(`/users/${id}`);
-    return response.data;
-  },
-
-  updateUser: async (id, userData) => {
-    const response = await apiClient.patch(`/users/${id}`, userData);
-    return response.data;
-  },
-
-  deleteUser: async (id) => {
-    const response = await apiClient.delete(`/users/${id}`);
-    return response.data;
-  },
+  
+  // Note: Backend AdminController only exports getUsers function
+  // getById, updateUser, and deleteUser are not implemented in backend
 };
 
 
