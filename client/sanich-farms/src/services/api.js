@@ -426,14 +426,14 @@ export const paymentsAPI = {
 export const searchAPI = {
   search: async (query, filters = {}) => {
     const response = await apiClient.get('/search', { 
-      params: { q: query, ...filters } 
+      params: { keyword: query, ...filters } 
     });
     return response.data;
   },
 
   autocomplete: async (query) => {
     const response = await apiClient.get('/search/autocomplete', { 
-      params: { q: query } 
+      params: { keyword: query } 
     });
     return response.data;
   },

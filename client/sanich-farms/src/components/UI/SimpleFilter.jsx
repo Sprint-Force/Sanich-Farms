@@ -21,10 +21,10 @@ const SimpleFilter = ({
   
   // Predefined price ranges
   const priceRanges = [
-    { label: 'Under $25', min: 0, max: 25 },
-    { label: '$25 - $50', min: 25, max: 50 },
-    { label: '$50 - $100', min: 50, max: 100 },
-    { label: '$100+', min: 100, max: Infinity }
+    { label: 'Under GH₵25', min: 0, max: 25 },
+    { label: 'GH₵25 - GH₵50', min: 25, max: 50 },
+    { label: 'GH₵50 - GH₵100', min: 50, max: 100 },
+    { label: 'GH₵100+', min: 100, max: Infinity }
   ];
 
   const toggleSection = (section) => {
