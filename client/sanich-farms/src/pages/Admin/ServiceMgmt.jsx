@@ -35,27 +35,22 @@ const ServiceMgmt = () => {
   const { addToast } = useToast();
 
   // Fetch services from API
+  // Fetch services from API
   const fetchServices = useCallback(async () => {
     setLoading(true);
     setError(null);
-    console.log('Fetching services...');
     
     try {
       const response = await servicesAPI.getAllAdmin();
-      console.log('API Response:', response);
-      
       const servicesData = Array.isArray(response) ? response : response.services || [];
-      console.log('Services data:', servicesData);
       
       const processedServices = servicesData.map((service, index) => ({
         ...service,
         id: service.id || service._id || `temp-${index}`
       }));
       
-      console.log('Processed services:', processedServices);
       setServices(processedServices);
     } catch (error) {
-      console.error('Failed to fetch services:', error);
       setError(`Failed to load services: ${error.response?.data?.message || error.message}`);
       setServices([]);
     } finally {
@@ -156,7 +151,6 @@ const ServiceMgmt = () => {
       closeModal();
       
     } catch (error) {
-      console.error('Service save failed:', error);
       const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to save service';
       addToast(errorMessage, 'error');
     } finally {
@@ -181,8 +175,7 @@ const ServiceMgmt = () => {
       await servicesAPI.removeAdmin(idToUse);
       setServices(prev => prev.filter(s => s.id !== serviceId));
       addToast('Service deleted successfully!');
-    } catch (error) {
-      console.error('Failed to delete service:', error);
+    } catch {
       addToast('Failed to delete service', 'error');
     } finally {
       setLoadingAction(false);

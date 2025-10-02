@@ -75,17 +75,14 @@ const ProductMgmt = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch products from API with fallback support
   const fetchProducts = async () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching products...');
       
       const response = await productsAPI.getAllAdmin();
-      console.log('API Response:', response);
-      
       const productsData = Array.isArray(response) ? response : response.products || [];
-      console.log('Products data:', productsData);
       
       const processedProducts = productsData.map((product, index) => ({
         ...product,
@@ -93,23 +90,11 @@ const ProductMgmt = () => {
         status: getProductStatus(product)
       }));
       
-      console.log('Processed products:', processedProducts);
       setProducts(processedProducts);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
-      console.error('Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data
-      });
-      
       // Try fallback to regular products endpoint
       try {
-        console.log('Trying fallback products endpoint...');
         const fallbackResponse = await productsAPI.getAll();
-        console.log('Fallback API Response:', fallbackResponse);
-        
         const fallbackData = Array.isArray(fallbackResponse) ? fallbackResponse : fallbackResponse.products || [];
         const processedProducts = fallbackData.map((product, index) => ({
           ...product,
@@ -117,11 +102,9 @@ const ProductMgmt = () => {
           status: getProductStatus(product)
         }));
         
-        console.log('Fallback processed products:', processedProducts);
         setProducts(processedProducts);
         setError(null);
-      } catch (fallbackError) {
-        console.error('Fallback also failed:', fallbackError);
+      } catch {
         setError(`Failed to load products: ${error.response?.data?.message || error.message}`);
         setProducts([]);
       }
@@ -253,7 +236,6 @@ const ProductMgmt = () => {
       closeModal();
       
     } catch (error) {
-      console.error('Product save failed:', error);
       const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to save product';
       addToast(errorMessage, 'error');
     } finally {
@@ -278,8 +260,7 @@ const ProductMgmt = () => {
       await productsAPI.removeAdmin(idToUse);
       setProducts(prev => prev.filter(p => p.id !== productId));
       addToast('Product deleted successfully!');
-    } catch (error) {
-      console.error('Failed to delete product:', error);
+    } catch {
       addToast('Failed to delete product', 'error');
     } finally {
       setLoadingAction(false);
@@ -312,8 +293,7 @@ const ProductMgmt = () => {
       }));
       
       addToast(`Product ${newActive ? 'activated' : 'deactivated'}!`);
-    } catch (error) {
-      console.error('Failed to toggle active status:', error);
+    } catch {
       addToast('Failed to update active status', 'error');
     }
   };

@@ -37,7 +37,6 @@ const AdminProfile = () => {
       setLoading(true);
       try {
         const response = await userAPI.getProfile();
-        console.log('Profile API response:', response);
         
         if (!mounted) return;
         
@@ -54,12 +53,10 @@ const AdminProfile = () => {
           avatar: userData.avatar || null
         };
         
-        console.log('Processed profile data:', profile);
         setProfileData(profile);
         setEditedData(profile);
         setMessage({ type: 'success', text: 'Profile loaded successfully' });
-      } catch (error) {
-        console.error('Failed to load profile from API:', error);
+      } catch {
         setMessage({ type: 'error', text: 'Failed to load profile data' });
         
         // Fallback to localStorage data
@@ -78,9 +75,8 @@ const AdminProfile = () => {
             };
             setProfileData(profile);
             setEditedData(profile);
-            console.log('Loaded profile from localStorage:', profile);
-          } catch (e) {
-            console.error('Error loading admin data from localStorage:', e);
+          } catch {
+            // Silently handle localStorage errors
           }
         }
       } finally {
@@ -159,12 +155,11 @@ const AdminProfile = () => {
             address: editedData.address,
             company_name: editedData.company_name
           }));
-        } catch (e) {
-          console.warn('Failed to update adminAuth in localStorage', e);
+        } catch {
+          // Silently handle localStorage update errors
         }
       }
-    } catch (error) {
-      console.error('Profile update error:', error);
+    } catch {
       setMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
     } finally {
       setLoading(false);
