@@ -13,7 +13,6 @@ import {
   FiBook,
   FiUser,
   FiTool,
-  FiMessageSquare,
   FiSearch,
   FiBell,
   FiChevronDown,
@@ -39,7 +38,6 @@ const AdminLayout = () => {
     { name: 'Services', href: '/admin/services', icon: FiTool },
     { name: 'Orders', href: '/admin/orders', icon: FiShoppingBag },
     { name: 'Bookings', href: '/admin/bookings', icon: FiBook },
-    { name: 'Q&A Management', href: '/admin/qa', icon: FiMessageSquare },
     { name: 'Users', href: '/admin/users', icon: FiUsers },
   ];
 

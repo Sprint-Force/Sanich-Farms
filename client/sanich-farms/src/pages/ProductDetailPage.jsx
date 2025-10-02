@@ -7,7 +7,6 @@ import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import ProductCard from '../components/UI/ProductCard';
-import QuestionsAnswers from '../components/UI/QuestionsAnswers';
 import RecentlyViewed from '../components/UI/RecentlyViewed';
 // We will no longer need this import after we implement the API call
 // import { productsData } from '../data/productsData';
@@ -414,14 +413,6 @@ const ProductDetailPage = () => {
             >
               Customer Feedback
             </button>
-            <button
-              onClick={() => setActiveTab('questions')}
-              className={`flex-shrink-0 px-4 py-2 text-base font-semibold transition-colors duration-200 ${
-                activeTab === 'questions' ? 'text-green-700 border-b-2 border-green-700' : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Q&A
-            </button>
           </div>
 
           {activeTab === 'description' && (
@@ -520,13 +511,6 @@ const ProductDetailPage = () => {
                 </button>
               </div>
             </div>
-          )}
-
-          {activeTab === 'questions' && (
-            <QuestionsAnswers 
-              productId={product.id}
-              className="shadow-none border-0 p-0 bg-transparent"
-            />
           )}
         </div>
 

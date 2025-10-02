@@ -7,12 +7,9 @@ import {
   FiX, 
   FiPackage, 
   FiCheckCircle, 
-  FiXCircle, 
   FiDollarSign, 
   FiGrid, 
   FiList, 
-  FiEye, 
-  FiEyeOff,
   FiChevronDown 
 } from 'react-icons/fi';
 import { servicesAPI } from '../../services/api';
@@ -24,7 +21,6 @@ const ServiceMgmt = () => {
   const [loadingAction, setLoadingAction] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
@@ -33,7 +29,6 @@ const ServiceMgmt = () => {
     name: '',
     description: '',
     price: '',
-    is_available: true,
     images: []
   });
 
@@ -46,7 +41,7 @@ const ServiceMgmt = () => {
     console.log('Fetching services...');
     
     try {
-      const response = await servicesAPI.getAll();
+      const response = await servicesAPI.getAllAdmin();
       console.log('API Response:', response);
       
       const servicesData = Array.isArray(response) ? response : response.services || [];
@@ -54,8 +49,7 @@ const ServiceMgmt = () => {
       
       const processedServices = servicesData.map((service, index) => ({
         ...service,
-        id: service.id || service._id || `temp-${index}`,
-        status: getServiceStatus(service)
+        id: service.id || service._id || `temp-${index}`
       }));
       
       console.log('Processed services:', processedServices);
@@ -73,17 +67,11 @@ const ServiceMgmt = () => {
     fetchServices();
   }, [fetchServices]);
 
-  const getServiceStatus = (service) => {
-    if (service.is_available === false) return 'Inactive';
-    return 'Active';
-  };
-
   const filteredServices = services.filter(service => {
     const matchesSearch = service.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          service.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || service.status === filterStatus;
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const openModal = (service = null) => {
@@ -101,7 +89,6 @@ const ServiceMgmt = () => {
         name: service.name || '',
         description: service.description || '',
         price: service.price != null ? String(service.price) : '',
-        is_available: service.is_available !== false,
         images: uniqueImages
       });
     } else {
@@ -110,7 +97,6 @@ const ServiceMgmt = () => {
         name: '',
         description: '',
         price: '',
-        is_available: true,
         images: []
       });
     }
@@ -145,7 +131,6 @@ const ServiceMgmt = () => {
       submitData.append('name', formData.name.trim());
       submitData.append('description', formData.description || '');
       submitData.append('price', parseFloat(formData.price));
-      submitData.append('is_available', formData.is_available ? 'true' : 'false');
       
       // Handle image - for now, use the first image as the main image
       const imageFiles = formData.images.filter(img => img && img.file);
@@ -165,7 +150,7 @@ const ServiceMgmt = () => {
         addToast('Service added successfully!');
       }
 
-      const refreshedData = await servicesAPI.getAll();
+      const refreshedData = await servicesAPI.getAllAdmin();
       setServices(Array.isArray(refreshedData) ? refreshedData : refreshedData.services || []);
       
       closeModal();
@@ -205,36 +190,6 @@ const ServiceMgmt = () => {
     }
   };
 
-  const toggleActive = async (id) => {
-    try {
-      const service = services.find(s => s.id === id);
-      if (!service) return;
-
-      const newActive = !(service.is_available !== false);
-      const updateData = new FormData();
-      updateData.append('is_available', newActive);
-      
-      const idToUse = service._id || service.id;
-      await servicesAPI.updateAdmin(idToUse, updateData);
-      
-      setServices(prev => prev.map(s => {
-        if (s.id === id) {
-          return { 
-            ...s, 
-            is_available: newActive,
-            status: getServiceStatus({ ...s, is_available: newActive })
-          };
-        }
-        return s;
-      }));
-      
-      addToast(`Service ${newActive ? 'activated' : 'deactivated'}!`);
-    } catch (error) {
-      console.error('Failed to toggle active status:', error);
-      addToast('Failed to update active status', 'error');
-    }
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -271,8 +226,7 @@ const ServiceMgmt = () => {
 
   const getStatsData = () => {
     const totalServices = services.length;
-    const activeServices = services.filter(s => s.status === 'Active').length;
-    const inactiveServices = services.filter(s => s.status === 'Inactive').length;
+    const totalRevenue = services.reduce((sum, service) => sum + (parseFloat(service.price) || 0), 0);
 
     return [
       {
@@ -283,18 +237,18 @@ const ServiceMgmt = () => {
         trend: services.length > 0 ? 'up' : 'neutral'
       },
       {
-        title: 'Active Services',
-        value: activeServices.toString(),
+        title: 'Available Services',
+        value: totalServices.toString(),
         icon: FiCheckCircle,
         color: 'green',
-        trend: activeServices > inactiveServices ? 'up' : 'down'
+        trend: 'up'
       },
       {
-        title: 'Inactive Services',
-        value: inactiveServices.toString(),
-        icon: FiXCircle,
-        color: 'red',
-        trend: inactiveServices > activeServices ? 'up' : 'down'
+        title: 'Total Value',
+        value: `$${totalRevenue.toFixed(2)}`,
+        icon: FiDollarSign,
+        color: 'purple',
+        trend: totalRevenue > 0 ? 'up' : 'neutral'
       }
     ];
   };
@@ -397,7 +351,7 @@ const ServiceMgmt = () => {
       <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6">
         <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4">
           {/* Search and Status Filter Row */}
-          <div className="flex w-full gap-3 sm:gap-4">
+          <div className="flex w-full">
             <div className="relative flex-1 sm:max-w-md">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
               <input
@@ -407,18 +361,6 @@ const ServiceMgmt = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm sm:text-base"
               />
-            </div>
-            <div className="relative w-full sm:w-auto sm:min-w-[140px]">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="appearance-none bg-white border border-gray-300 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 pr-8 sm:pr-9 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm sm:text-base w-full"
-              >
-                <option value="all">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-              <FiChevronDown className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
           </div>
         </div>
@@ -443,11 +385,11 @@ const ServiceMgmt = () => {
             <FiPackage className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No Services Found</h3>
             <p className="text-gray-600 mb-6">
-              {searchTerm || filterStatus !== 'all' 
-                ? 'No services match your current filters.' 
+              {searchTerm 
+                ? 'No services match your search criteria.' 
                 : 'Get started by adding your first service.'}
             </p>
-            {(!searchTerm && filterStatus === 'all') && (
+            {!searchTerm && (
               <button
                 onClick={() => openModal()}
                 className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium transition-all duration-200 mx-auto hover:scale-105"
@@ -475,16 +417,6 @@ const ServiceMgmt = () => {
                           <FiPackage className="w-8 sm:w-10 lg:w-12 h-8 sm:h-10 lg:h-12 text-gray-400 group-hover:text-green-500 transition-colors duration-300" />
                         </div>
                       )}
-                      {/* Status Badge */}
-                      <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
-                        <span className={`px-2 sm:px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${
-                          service.status === 'Active' 
-                            ? 'bg-green-500 text-white' 
-                            : 'bg-red-500 text-white'
-                        }`}>
-                          {service.status}
-                        </span>
-                      </div>
                     </div>
                     <div className="p-3 sm:p-4 lg:p-5">
                       <div className="mb-3">
@@ -499,48 +431,25 @@ const ServiceMgmt = () => {
                         </p>
                       </div>
                       {/* Action Buttons */}
-                      <div className="flex flex-col gap-2 sm:gap-2">
+                      <div className="flex gap-2">
                         <button
                           onClick={() => openModal(service)}
-                          className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 group hover:scale-105"
+                          className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 px-3 sm:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 group hover:scale-105"
                           title="Edit service"
                         >
-                          <FiEdit className="w-3 sm:w-4 h-3 sm:h-4 group-hover:scale-110 transition-transform duration-200" />
-                          Edit Service
+                          <FiEdit className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                          <span className="hidden sm:inline">Edit Service</span>
+                          <span className="sm:hidden">Edit</span>
                         </button>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => toggleActive(service.id)}
-                            className={`flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 group hover:scale-105 ${
-                              service.status === 'Active'
-                                ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-700'
-                                : 'bg-green-50 hover:bg-green-100 text-green-600 hover:text-green-700'
-                            }`}
-                            title={service.status === 'Active' ? 'Deactivate' : 'Activate'}
-                          >
-                            {service.status === 'Active' ? 
-                              <>
-                                <FiEyeOff className="w-3 sm:w-4 h-3 sm:h-4 group-hover:scale-110 transition-transform duration-200" />
-                                <span className="hidden sm:inline">Deactivate</span>
-                                <span className="sm:hidden">Off</span>
-                              </> : 
-                              <>
-                                <FiEye className="w-3 sm:w-4 h-3 sm:h-4 group-hover:scale-110 transition-transform duration-200" />
-                                <span className="hidden sm:inline">Activate</span>
-                                <span className="sm:hidden">On</span>
-                              </>
-                            }
-                          </button>
-                          <button
-                            onClick={() => handleDelete(service.id)}
-                            className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 group hover:scale-105"
-                            title="Delete service"
-                          >
-                            <FiTrash2 className="w-3 sm:w-4 h-3 sm:h-4 group-hover:scale-110 transition-transform duration-200" />
-                            <span className="hidden sm:inline">Delete</span>
-                            <span className="sm:hidden">Del</span>
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => handleDelete(service.id)}
+                          className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-3 sm:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 group hover:scale-105"
+                          title="Delete service"
+                        >
+                          <FiTrash2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                          <span className="hidden xs:inline">Delete</span>
+                          <span className="xs:hidden">Del</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -563,16 +472,6 @@ const ServiceMgmt = () => {
                             <FiPackage className="w-6 sm:w-8 h-6 sm:h-8 text-gray-400 group-hover:text-green-500 transition-colors duration-300" />
                           </div>
                         )}
-                        {/* Status Badge */}
-                        <div className="absolute top-2 right-2 sm:-top-1 sm:-right-1">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full shadow-sm ${
-                            service.status === 'Active' 
-                              ? 'bg-green-500 text-white' 
-                              : 'bg-red-500 text-white'
-                          }`}>
-                            {service.status}
-                          </span>
-                        </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3">
@@ -598,39 +497,15 @@ const ServiceMgmt = () => {
                             <FiEdit className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                             Edit Service
                           </button>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => toggleActive(service.id)}
-                              className={`flex-1 px-3 sm:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 group hover:scale-105 ${
-                                service.status === 'Active'
-                                  ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 hover:text-orange-700'
-                                  : 'bg-green-50 hover:bg-green-100 text-green-600 hover:text-green-700'
-                              }`}
-                              title={service.status === 'Active' ? 'Deactivate' : 'Activate'}
-                            >
-                              {service.status === 'Active' ? 
-                                <>
-                                  <FiEyeOff className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-                                  <span className="hidden xs:inline">Deactivate</span>
-                                  <span className="xs:hidden">Off</span>
-                                </> : 
-                                <>
-                                  <FiEye className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-                                  <span className="hidden xs:inline">Activate</span>
-                                  <span className="xs:hidden">On</span>
-                                </>
-                              }
-                            </button>
-                            <button
-                              onClick={() => handleDelete(service.id)}
-                              className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-3 sm:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 group hover:scale-105"
-                              title="Delete service"
-                            >
-                              <FiTrash2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-                              <span className="hidden xs:inline">Delete</span>
-                              <span className="xs:hidden">Del</span>
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => handleDelete(service.id)}
+                            className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-3 sm:px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 group hover:scale-105"
+                            title="Delete service"
+                          >
+                            <FiTrash2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                            <span className="hidden xs:inline">Delete</span>
+                            <span className="xs:hidden">Del</span>
+                          </button>
                         </div>
                       </div>
                     </div>
