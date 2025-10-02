@@ -108,3 +108,17 @@
 |--------|---------------------------|--------------------------------------|
 | GET    | `/api/search`             | Search a product or service          |
 | GET    | `/api/search/autocomplete`| Auto-complete and suggestions        |
+
+---
+
+
+## Notification APIs
+
+| Method | Endpoint                       | Description                          |
+|--------|--------------------------------|--------------------------------------|
+| GET    | `/api/notifications`           | Get all notifications                |
+| PATCH  | `/api/notifications/:id/read`  | Mark a notification as read          |
+| PATCH  | `/api/notifications/read-all`  | Mark all notifications as read       |
+| DELETE | `/api/notifications/:id`       | Delete a notification                |
+
+---

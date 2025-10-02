@@ -248,9 +248,7 @@ export const updateProfile = async (req, res) => {
     }
 
     // Update only provided fields
-    if (name) {
-      user.name = name;
-    }
+    if (name) { user.name = name; }
     if (email) { user.email = email; }
     if (phone_number) { user.phone_number = phone_number; }
     if (address) { user.address = address; }
