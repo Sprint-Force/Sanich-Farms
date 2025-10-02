@@ -4,6 +4,7 @@ import { OrderItem } from '../models/OrderItem.js';
 import { Product } from '../models/Product.js';
 import { CartItem } from '../models/CartItem.js';
 import { User } from '../models/User.js';
+import { Notification } from '../models/Notification.js';
 import axios from 'axios';
 
 
@@ -84,6 +85,13 @@ export const createOrder = async (req, res) => {
       await CartItem.destroy({ where: { user_id: userId }, transaction: t });
 
       createdOrder = order;
+    });
+
+    // Trigger notification to admin
+    await Notification.create({
+      type: "order",
+      title: "New Order",
+      message: `Order #${createdOrder.id} placed by ${first_name} ${last_name}`
     });
 
     // If payment method is mobile money, initialize Paystack payment
