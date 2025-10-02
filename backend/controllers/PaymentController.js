@@ -1,5 +1,6 @@
 import { Order } from '../models/Order.js'
 import { Payment } from '../models/Payment.js';
+import { Notification } from '../models/Notification.js';
 import axios from 'axios';
 import crypto from 'crypto';
 
@@ -111,6 +112,22 @@ export const paystackWebhook = async (req, res) => {
       order.status = newPaymentStatus === "paid" ? "processing" : "pending";
       await order.save();
     }
+
+    // Trigger notification to admin
+    if (newPaymentStatus === "paid") {
+      await Notification.create({
+        type: "payment",
+        title: "Payment Successful",
+        message: `Payment of GHS ${payment.amount} received for Order #${order.id}`
+      });
+    } else if (newPaymentStatus === "failed") {
+      await Notification.create({
+        type: "payment",
+        title: "Payment Failed",
+        message: `Payment attempt for Order #${order.id} has failed`
+      });
+    }
+
 
     // Respond to Paystack
     return res.status(200).json({ message: "Webhook received successfully" });

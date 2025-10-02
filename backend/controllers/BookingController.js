@@ -1,4 +1,5 @@
 import { Booking } from '../models/Booking.js'; 
+import { Notification } from '../models/Notification.js';
 import { Service } from '../models/Service.js';
 import { User } from '../models/User.js';
 
@@ -24,6 +25,13 @@ export const createBooking = async (req, res) => {
       location,
       booking_date,
       note: note || null 
+    });
+
+    // Trigger notification to admin
+    await Notification.create({
+      type: "booking",
+      title: "New Booking",
+      message: `Booking #${newBooking.id} made by ${name}`
     });
 
     res.status(201).json({
