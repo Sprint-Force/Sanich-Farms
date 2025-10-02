@@ -42,8 +42,7 @@ const AdminLogout = () => {
           setLoggedOut(true);
         }, 200);
         
-      } catch (error) {
-        console.error('Error during logout:', error);
+      } catch {
         // Even if there's an error, still redirect to login
         setLoggingOut(false);
         setLoggedOut(true);

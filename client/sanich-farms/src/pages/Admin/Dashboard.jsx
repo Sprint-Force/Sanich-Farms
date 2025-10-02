@@ -6,20 +6,27 @@ import {
 import { ordersAPI, bookingsAPI, productsAPI, adminUsersAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Admin Dashboard - Main overview page with analytics and quick actions
+ * Features: Stats cards, recent orders/bookings, time range filtering
+ */
 const Dashboard = () => {
   const navigate = useNavigate();
-  // State variables
+  
+  // Data state management
   const [orders, setOrders] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [products, setProducts] = useState([]);
   const [users, setUsers] = useState([]);
   const [timeRange, setTimeRange] = useState('7days');
+  
+  // Loading states
   const [loadingDashboard, setLoadingDashboard] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [dashboardError, setDashboardError] = useState(null);
 
-  // Fetch data function
+  // Fetch all dashboard data
   const fetchDashboardData = async () => {
     setLoadingDashboard(true);
     setDashboardError(null);
@@ -54,8 +61,7 @@ const Dashboard = () => {
         setUsers(usersList);
       }
 
-    } catch (error) {
-      console.error('Dashboard fetch error:', error);
+    } catch {
       setDashboardError('Failed to load dashboard data. Please refresh to try again.');
     } finally {
       setLoadingDashboard(false);

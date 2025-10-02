@@ -5,15 +5,12 @@ import {
   FiPackage, 
   FiShoppingBag, 
   FiUsers, 
-  FiBarChart, 
-  FiSettings,
   FiMenu,
   FiX,
   FiLogOut,
   FiBook,
   FiUser,
   FiTool,
-  FiSearch,
   FiBell,
   FiChevronDown,
   FiAlertTriangle,
@@ -22,7 +19,12 @@ import {
 import { logo } from '../../assets';
 import { ordersAPI, bookingsAPI, userAPI } from '../../services/api';
 
+/**
+ * AdminLayout - Main layout wrapper for admin dashboard
+ * Features: Responsive sidebar, notifications, user profile management
+ */
 const AdminLayout = () => {
+  // UI state management
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -32,6 +34,7 @@ const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Navigation configuration with external store link
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: FiHome },
     { name: 'Notifications', href: '/admin/notifications', icon: FiBell, badge: unreadCount },
@@ -43,11 +46,11 @@ const AdminLayout = () => {
     { name: 'View Store', href: 'https://sanich-farms.vercel.app', icon: FiExternalLink, external: true },
   ];
 
-  // Get admin user info from localStorage or API
+  // Fetch admin user data on component mount
   useEffect(() => {
     const getAdminUser = async () => {
       try {
-        // First check localStorage for user data
+        // Check localStorage for user data
         const storedUser = localStorage.getItem('user');
         const adminAuth = localStorage.getItem('adminAuth');
         
@@ -62,9 +65,8 @@ const AdminLayout = () => {
           try {
             const userData = await userAPI.getProfile();
             setAdminUser(userData);
-          } catch (error) {
-            console.log('Could not fetch user profile:', error);
-            // Set default admin data
+          } catch {
+            // Set default admin data if API fails
             setAdminUser({ 
               name: 'Administrator', 
               email: 'admin@sanichfarms.com',
@@ -72,8 +74,7 @@ const AdminLayout = () => {
             });
           }
         }
-      } catch (error) {
-        console.error('Error getting admin user:', error);
+      } catch {
         setAdminUser({ 
           name: 'Administrator', 
           email: 'admin@sanichfarms.com',
@@ -85,7 +86,7 @@ const AdminLayout = () => {
     getAdminUser();
   }, []);
 
-  // Fetch notifications on component mount
+  // Fetch notifications from recent orders and bookings
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -97,7 +98,7 @@ const AdminLayout = () => {
 
         const newNotifications = [];
 
-        // Add recent orders to notifications
+        // Process recent orders (last 24 hours)
         if (ordersRes.status === 'fulfilled') {
           const orders = Array.isArray(ordersRes.value) ? ordersRes.value : ordersRes.value?.orders || [];
           const recentOrders = orders
@@ -145,8 +146,8 @@ const AdminLayout = () => {
         
         setNotifications(newNotifications);
         setUnreadCount(newNotifications.filter(n => n.unread).length);
-      } catch (error) {
-        console.error('Failed to fetch notifications:', error);
+      } catch {
+        // Silently handle notification fetch errors
       }
     };
 
