@@ -50,7 +50,7 @@ export const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ PostgreSQL (Neon) connected successfully.');
-    await sequelize.sync({ alter: true });
+    //await sequelize.sync({ alter: true });
     console.log("✅ Models synchronized with DB"); 
   } catch (error) {
     console.error('❌ Unable to connect to Neon database:', error.message);
