@@ -113,22 +113,6 @@ export const paystackWebhook = async (req, res) => {
       await order.save();
     }
 
-    // Trigger notification to admin
-    if (newPaymentStatus === "paid") {
-      await Notification.create({
-        type: "payment",
-        title: "Payment Successful",
-        message: `Payment of GHS ${payment.amount} received for Order #${order.id}`
-      });
-    } else if (newPaymentStatus === "failed") {
-      await Notification.create({
-        type: "payment",
-        title: "Payment Failed",
-        message: `Payment attempt for Order #${order.id} has failed`
-      });
-    }
-
-
     // Respond to Paystack
     return res.status(200).json({ message: "Webhook received successfully" });
 
@@ -183,6 +167,22 @@ export const verifyPayment = async (req, res) => {
       order.status = newPaymentStatus === "paid" ? "processing" : "pending";
       await order.save();
     }
+
+       // Trigger notification to admin
+    if (newPaymentStatus === "paid") {
+      await Notification.create({
+        type: "payment",
+        title: "Payment Successful",
+        message: `Payment of GHS ${payment.amount} received for Order #${order.id}`
+      });
+    } else if (newPaymentStatus === "failed") {
+      await Notification.create({
+        type: "payment",
+        title: "Payment Failed",
+        message: `Payment attempt for Order #${order.id} has failed`
+      });
+    }
+
 
     return res.status(200).json({
       message: newPaymentStatus === "paid" ? "Payment verified successfully" : "Payment verification failed",
