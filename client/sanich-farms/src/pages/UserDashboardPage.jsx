@@ -472,7 +472,7 @@ const UserDashboardPage = () => {
         {/* Overlay for mobile menu - covers main content when sidebar is open */}
         {isMobileMenuOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+            className="fixed inset-0 backdrop-blur-sm bg-white/20 z-30 lg:hidden"
             onClick={closeMobileMenu}
           ></div>
         )}
@@ -482,14 +482,14 @@ const UserDashboardPage = () => {
         {/* On mobile, it's always w-full. The mobile menu button is inside it. */}
         <main className={`flex-1 w-full lg:ml-8 bg-white rounded-xl shadow-md p-4 sm:p-6
                          ${isMobileMenuOpen ? 'hidden' : 'block'}`}> {/* Hide main content when mobile menu is open */}
-          {/* Mobile Menu Toggle Button - compact hamburger for small screens */}
+          {/* Mobile Menu Toggle Button - enhanced text button for small screens */}
           <div className="lg:hidden w-full mb-4 flex items-center justify-between">
             <button
               onClick={toggleMobileMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:bg-gray-100 transition duration-150 mobile-touch-target mobile-nav-button"
+              className="px-4 py-2.5 rounded-lg text-white bg-green-600 hover:bg-green-700 active:bg-green-800 transition-all duration-200 mobile-touch-target mobile-nav-button font-semibold text-sm shadow-md hover:shadow-lg transform hover:scale-105"
               aria-label={isMobileMenuOpen ? 'Close dashboard menu' : 'Open dashboard menu'}
             >
-              <FiMenu size={20} />
+              Menu
             </button>
             <div className="text-sm font-semibold text-gray-800">My Dashboard</div>
             
