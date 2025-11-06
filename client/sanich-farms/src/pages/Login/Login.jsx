@@ -146,162 +146,147 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
-      {/* Main Content */}
-      <div className="flex flex-col items-center justify-center min-h-screen py-4 sm:py-6 md:py-8 px-3 sm:px-4">
-        {/* Logo and Brand - Centered above card */}
-        <div className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 mb-4 sm:mb-6 md:mb-8">
-          <img 
-            src={logo} 
-            alt="Sanich Farms Logo" 
-            className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 object-contain"
-          />
-          <Link 
-            to="/" 
-            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 hover:text-green-600 transition-colors"
-          >
-            Sanich Farms
-          </Link>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-[320px] xs:max-w-sm sm:max-w-md">
+        {/* Login Card */}
+        <div className="bg-white rounded-lg sm:rounded-xl shadow-lg sm:shadow-xl border border-gray-100 overflow-hidden">
+          {/* Card Header with Logo */}
+          <div className="px-4 py-4 sm:px-6 sm:py-5 bg-gradient-to-r from-green-600 to-blue-600">
+            <div className="flex flex-col items-center space-y-1 sm:space-y-2">
+              <Link to="/" className="hover:opacity-80 transition-opacity">
+                <img 
+                  src={logo} 
+                  alt="Sanich Farms Logo" 
+                  className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+                />
+              </Link>
+              <div className="text-center">
+                <h1 className="text-base sm:text-lg font-bold text-white">Welcome Back</h1>
+                <p className="text-green-100 text-xs">Sign in to your account</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card Body */}
+          <div className="px-4 py-3 sm:px-5 sm:py-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Email Field */}
+              <div>
+                <label htmlFor="email" className="block text-xs font-medium text-gray-700 mb-1">
+                  Email address
+                </label>
+                <div className="relative">
+                  <FiMail className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm"
+                    placeholder="Enter your email"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label htmlFor="password" className="block text-xs font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <FiLock className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full pl-8 pr-9 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm"
+                    placeholder="Enter your password"
+                    required
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    disabled={loading}
+                  >
+                    {showPassword ? <FiEyeOff size={14} /> : <FiEye size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-3 w-3 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="remember-me" className="ml-1.5 block text-gray-700">
+                    Remember me
+                  </label>
+                </div>
+
+                <div>
+                  <Link
+                    to="/forgot-password"
+                    className="font-medium text-blue-600 hover:text-green-600 transition-colors"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
+
+              {/* Sign In Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-2.5 px-4 rounded-lg hover:from-green-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 font-medium text-sm min-h-[40px] sm:min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? <ButtonSpinner className="w-4 h-4" /> : 'Sign In'}
+              </button>
+            </form>
+
+            {/* Signup Link */}
+            <div className="text-center text-xs text-gray-600">
+              New to Sanich Farms?{' '}
+              <Link 
+                to="/signup" 
+                className="text-green-600 hover:text-blue-600 font-medium transition-colors"
+              >
+                Create account here
+              </Link>
+            </div>
+
+            {/* Terms and Privacy - More Compact */}
+            <div className="mt-3 text-xs text-gray-600 text-center leading-relaxed">
+              By signing in, you agree to our{' '}
+              <Link to="/terms" className="text-blue-600 hover:text-green-600 font-medium">
+                Terms
+              </Link>{' '}
+              and{' '}
+              <Link to="/privacy" className="text-blue-600 hover:text-green-600 font-medium">
+                Privacy Policy
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <div className="w-full max-w-[280px] xs:max-w-sm sm:max-w-md">
-          {/* Login Card */}
-          <div className="bg-white rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl border border-gray-100 overflow-hidden">
-            {/* Card Header */}
-            <div className="px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6 lg:py-8 bg-gradient-to-r from-green-600 to-blue-600">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white text-center">Welcome Back</h1>
-              <p className="text-green-100 text-center mt-1 text-xs sm:text-sm md:text-base">Sign in to your account</p>
-            </div>
-
-            {/* Card Body */}
-            <div className="px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6 lg:py-8">
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
-                {/* Email Field */}
-                <div>
-                  <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                    Email address
-                  </label>
-                  <div className="relative">
-                    <FiMail className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-xs sm:text-sm"
-                      placeholder="Enter your email"
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                {/* Password Field */}
-                <div>
-                  <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <FiLock className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="w-full pl-8 sm:pl-10 pr-9 sm:pr-12 py-2.5 sm:py-3 border border-gray-300 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-xs sm:text-sm"
-                      placeholder="Enter your password"
-                      required
-                      disabled={loading}
-                    />
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className="absolute right-2.5 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      disabled={loading}
-                    >
-                      {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="remember-me" className="ml-1.5 sm:ml-2 block text-gray-700">
-                      Remember me
-                    </label>
-                  </div>
-
-                  <div>
-                    <Link
-                      to="/forgot-password"
-                      className="font-medium text-blue-600 hover:text-green-600 transition-colors"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Sign In Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 text-white py-3 sm:py-4 px-4 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 min-h-[48px] touch-manipulation"
-                >
-                  {loading && <ButtonSpinner />}
-                  {loading ? 'Signing in...' : 'Sign in'}
-                </button>
-              </form>
-
-              {/* Divider */}
-              <div className="relative my-4 sm:my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-xs sm:text-sm">
-                  <span className="px-3 sm:px-4 bg-white text-gray-500">New to Sanich Farms?</span>
-                </div>
-              </div>
-
-              {/* Create Account Button */}
-              <Link
-                to="/signup"
-                className="w-full bg-white border-2 border-gray-300 hover:border-green-500 hover:bg-gray-50 active:bg-gray-100 text-gray-700 py-3 sm:py-4 px-4 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold text-center transition-all duration-200 min-h-[48px] flex items-center justify-center touch-manipulation"
-              >
-                Create your account
-              </Link>
-
-              {/* Terms */}
-              <div className="mt-4 sm:mt-6 text-xs text-gray-600 text-center leading-relaxed">
-                By signing in, you agree to our{' '}
-                <Link to="/terms" className="text-blue-600 hover:text-green-600 font-medium">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link to="/privacy" className="text-blue-600 hover:text-green-600 font-medium">
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Back to Home */}
-          <div className="text-center mt-4 sm:mt-6">
-            <Link 
-              to="/" 
-              className="text-xs sm:text-sm text-gray-600 hover:text-green-600 font-medium transition-colors"
-            >
-              ← Back to Sanich Farms
-            </Link>
-          </div>
+        {/* Back to Home - More Compact */}
+        <div className="text-center mt-3">
+          <Link 
+            to="/" 
+            className="text-xs text-gray-600 hover:text-green-600 font-medium transition-colors"
+          >
+            ← Back to Sanich Farms
+          </Link>
         </div>
       </div>
     </div>
