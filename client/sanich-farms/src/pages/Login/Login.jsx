@@ -254,7 +254,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-2.5 sm:py-3 px-4 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 text-white py-3 sm:py-4 px-4 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 min-h-[48px] touch-manipulation"
                 >
                   {loading && <ButtonSpinner />}
                   {loading ? 'Signing in...' : 'Sign in'}
@@ -274,7 +274,7 @@ const Login = () => {
               {/* Create Account Button */}
               <Link
                 to="/signup"
-                className="w-full bg-white border-2 border-gray-300 hover:border-blue-500 hover:bg-gray-50 text-gray-700 py-2.5 sm:py-3 px-4 rounded-md sm:rounded-lg text-xs sm:text-sm font-semibold text-center transition-all duration-200 block"
+                className="w-full bg-white border-2 border-gray-300 hover:border-green-500 hover:bg-gray-50 active:bg-gray-100 text-gray-700 py-3 sm:py-4 px-4 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold text-center transition-all duration-200 min-h-[48px] flex items-center justify-center touch-manipulation"
               >
                 Create your account
               </Link>
