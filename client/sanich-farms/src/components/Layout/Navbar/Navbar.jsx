@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, forwardRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Link } from 'react-router-dom';
-import { FiX, FiChevronRight, FiHeart, FiPhoneCall, FiSearch } from 'react-icons/fi';
+import { FiX, FiChevronRight, FiHeart, FiPhoneCall, FiSearch, FiLogOut } from 'react-icons/fi';
 import logo from '../../../assets/logo.png';
 import { useCart } from '../../../context/CartContext';
 import { useWishlist } from '../../../context/WishlistContext';
@@ -385,8 +385,9 @@ const Navbar = forwardRef((_, ref) => {
                           <button
                             key={`logout-${userData.id || Date.now()}`}
                             onClick={handleLogout}
-                            className="w-full bg-red-500 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-red-600 transition duration-200 text-sm"
+                            className="w-full bg-red-600 text-white px-4 py-3 sm:py-4 rounded-lg font-medium hover:bg-red-700 active:bg-red-800 transition-all duration-300 text-sm sm:text-base min-h-[48px] touch-manipulation flex items-center justify-center gap-2"
                           >
+                            <FiLogOut size={16} />
                             Logout
                           </button>
                         );
@@ -396,7 +397,7 @@ const Navbar = forwardRef((_, ref) => {
                             key={`login-${Date.now()}`}
                             to="/login"
                             onClick={closeMobileMenu}
-                            className="block w-full text-center bg-green-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-green-700 transition duration-200 text-sm"
+                            className="block w-full text-center bg-green-600 text-white px-4 py-3 sm:py-4 rounded-lg font-medium hover:bg-green-700 active:bg-green-800 transition-all duration-300 text-sm sm:text-base min-h-[48px] touch-manipulation"
                           >
                             Login / Signup
                           </Link>

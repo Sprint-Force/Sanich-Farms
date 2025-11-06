@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiX, FiChevronRight, FiPhoneCall } from 'react-icons/fi';
+import { FiX, FiChevronRight, FiPhoneCall, FiLogOut } from 'react-icons/fi';
 import logo from '../../../../assets/logo.png';
 import { getTypographyClasses, iconSizes } from '../config/typography';
 
@@ -105,22 +105,25 @@ const MobileMenu = ({
             {isAuthenticated ? (
               <>
                 <div className="px-4 py-3 mt-4 border-t border-gray-100">
-                  <span className={`${getTypographyClasses('userGreeting')} text-green-600`}>
+                  <span className={`${getTypographyClasses('userGreeting')} text-green-600 font-bold`}>
                     Hi! {user?.name?.split(' ')[0] || 'User'}
                   </span>
                 </div>
                 <button
                   onClick={onLogout}
-                  className="block w-full text-center bg-red-600 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-red-700 transition duration-300 mt-4 shadow-md mobile-touch-target"
+                  className="block w-full text-center bg-red-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-full text-base sm:text-lg font-semibold hover:bg-red-700 active:bg-red-800 transition-all duration-300 mt-4 shadow-md hover:shadow-lg min-h-[48px] touch-manipulation mobile-touch-target"
                 >
-                  Logout
+                  <span className="flex items-center justify-center gap-2">
+                    <FiLogOut size={18} />
+                    Logout
+                  </span>
                 </button>
               </>
             ) : (
               <Link
                 to="/login"
                 onClick={onClose}
-                className="block text-center bg-green-600 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-green-700 transition duration-300 mt-4 shadow-md"
+                className="block text-center bg-green-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-full text-base sm:text-lg font-semibold hover:bg-green-700 active:bg-green-800 transition-all duration-300 mt-4 shadow-md hover:shadow-lg min-h-[48px] touch-manipulation"
               >
                 Login / Signup
               </Link>
