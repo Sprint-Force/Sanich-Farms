@@ -50,8 +50,6 @@ const MyProfile = () => {
           };
           setUserData(profileData);
           setOriginalData(profileData);
-          setUserData(profileData);
-          setOriginalData(profileData);
         }
       } catch (err) {
         console.error('Error loading profile:', err);
@@ -116,6 +114,12 @@ const MyProfile = () => {
     try {
       setSaving(true);
       
+      // Check authentication
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
       // Prepare data for API - only send non-empty fields
       const updateData = {};
       Object.keys(userData).forEach(key => {
@@ -130,8 +134,23 @@ const MyProfile = () => {
         return;
       }
       
+      // Only send fields that have actually changed to avoid unnecessary constraint checks
+      const changedData = {};
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] !== originalData[key]) {
+          changedData[key] = updateData[key];
+        }
+      });
+      
+      // If no fields changed, don't make API call
+      if (Object.keys(changedData).length === 0) {
+        addToast('No changes detected', 'info');
+        setIsEditing(false);
+        return;
+      }
+
       // Update profile via API
-      const response = await userAPI.updateProfile(updateData);
+      const response = await userAPI.updateProfile(changedData);
       
       // Handle different response formats
       let updatedUserData;
@@ -139,6 +158,8 @@ const MyProfile = () => {
         updatedUserData = response.user;
       } else if (response?.data?.user) {
         updatedUserData = response.data.user;
+      } else if (response?.data) {
+        updatedUserData = response.data;
       } else if (response) {
         updatedUserData = response;
       } else {
@@ -150,8 +171,17 @@ const MyProfile = () => {
         updateUser(updatedUserData);
       }
       
-      // Update original data to reflect saved changes
-      setOriginalData(userData);
+      // Update the form data to reflect the actual saved data from the server
+      const savedData = {
+        name: updatedUserData?.name || userData.name,
+        email: updatedUserData?.email || userData.email,
+        phone_number: updatedUserData?.phone_number || userData.phone_number,
+        address: updatedUserData?.address || userData.address,
+        company_name: updatedUserData?.company_name || userData.company_name,
+      };
+      
+      setUserData(savedData);
+      setOriginalData(savedData);
       setIsEditing(false);
       setValidationErrors({});
       
@@ -162,10 +192,31 @@ const MyProfile = () => {
       // Handle different error formats
       let errorMessage = 'Failed to update profile. Please try again.';
       
-      if (err?.response?.data?.message) {
+      // Check for specific database constraint errors
+      if (err?.response?.status === 500) {
+        // This is likely a database constraint error
+        const attemptedEmail = userData.email !== originalData.email;
+        const attemptedPhone = userData.phone_number !== originalData.phone_number;
+        
+        if (attemptedEmail) {
+          errorMessage = 'This email address is already in use by another account.';
+        } else if (attemptedPhone) {
+          errorMessage = 'This phone number is already in use by another account.';
+        } else {
+          errorMessage = 'A database error occurred. Please contact support if this persists.';
+        }
+      } else if (err?.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err?.response?.data?.error) {
         errorMessage = err.response.data.error;
+      } else if (err?.response?.data?.errors) {
+        // Handle validation errors array
+        const errors = err.response.data.errors;
+        if (Array.isArray(errors) && errors.length > 0) {
+          errorMessage = errors.map(e => e.msg || e.message || e).join(', ');
+        } else if (typeof errors === 'object') {
+          errorMessage = Object.values(errors).flat().join(', ');
+        }
       } else if (err?.message) {
         errorMessage = err.message;
       }
