@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiEye, FiRepeat, FiDownload, FiX, FiTruck, FiFilter, FiShoppingBag, FiShoppingCart } from 'react-icons/fi';
 import { ordersAPI } from '../../services/api'; // DASHBOARD API INTEGRATION: Import real orders API
+import { useToast } from '../../context/ToastContext';
 
 const MyOrders = () => {
   // DASHBOARD API INTEGRATION: State for real API data
@@ -10,6 +11,7 @@ const MyOrders = () => {
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
   const [filteredOrders, setFilteredOrders] = useState([]);
+  const { addToast } = useToast();
 
   // DASHBOARD API INTEGRATION: Fetch orders from API
   useEffect(() => {
@@ -46,10 +48,10 @@ const MyOrders = () => {
   const handleReorder = async (orderId) => {
     try {
       // In real app, add order items to cart via API
-      alert(`Items from order ${orderId} added to cart!`);
+      addToast(`Items from order ${orderId} added to cart!`, 'success');
     } catch (err) {
       console.error('Failed to reorder:', err);
-      alert('Failed to reorder items. Please try again.');
+      addToast('Failed to reorder items. Please try again.', 'error');
     }
   };
 
@@ -62,16 +64,16 @@ const MyOrders = () => {
         const ordersData = Array.isArray(response) ? response : 
                           Array.isArray(response?.orders) ? response.orders : [];
         setOrders(ordersData);
-        alert(`Order ${orderId} has been cancelled.`);
+        addToast(`Order ${orderId} has been cancelled.`, 'success');
       } catch (err) {
         console.error('Failed to cancel order:', err);
-        alert('Failed to cancel order. Please try again.');
+        addToast('Failed to cancel order. Please try again.', 'error');
       }
     }
   };
 
   const handleDownloadInvoice = (orderId) => {
-    alert(`Invoice for order ${orderId} downloaded!`);
+    addToast(`Invoice for order ${orderId} downloaded!`, 'info');
   };
 
   const statusOptions = ['All', 'pending', 'processing', 'completed', 'cancelled'];

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { userAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 const MyProfile = () => {
   const { user, updateUser } = useAuthContext();
+  const { addToast } = useToast();
   const [userData, setUserData] = useState({
     name: '',
     email: '',
@@ -16,6 +18,7 @@ const MyProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
   // PROFILE API INTEGRATION: Load user profile data
   useEffect(() => {
@@ -47,8 +50,6 @@ const MyProfile = () => {
           };
           setUserData(profileData);
           setOriginalData(profileData);
-          setUserData(profileData);
-          setOriginalData(profileData);
         }
       } catch (err) {
         console.error('Error loading profile:', err);
@@ -64,32 +65,164 @@ const MyProfile = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUserData(prev => ({ ...prev, [name]: value }));
+    // Clear validation error for this field when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  // Validation function
+  const validateForm = () => {
+    const errors = {};
+    
+    // Name validation
+    if (!userData.name?.trim()) {
+      errors.name = 'Name is required';
+    } else if (userData.name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters long';
+    }
+    
+    // Email validation
+    if (!userData.email?.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    // Phone validation (optional but if provided should be valid)
+    if (userData.phone_number && !/^[+]?[\d\s\-()]{10,}$/.test(userData.phone_number.replace(/\s/g, ''))) {
+      errors.phone_number = 'Please enter a valid phone number';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   // PROFILE API INTEGRATION: Save profile changes to backend
   const handleSave = async (e) => {
     e.preventDefault();
+    
+    // Clear previous errors
+    setError(null);
+    
+    // Validate form
+    if (!validateForm()) {
+      addToast('Please fix the validation errors before saving', 'error');
+      return;
+    }
+
     try {
       setSaving(true);
-      setError(null);
       
-      // Update profile via API
-      const response = await userAPI.updateProfile(userData);
-      
-      // Update local context with new user data
-      if (updateUser && response) {
-        updateUser(response);
+      // Check authentication
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
       }
       
-      // Update original data to reflect saved changes
-      setOriginalData(userData);
-      setIsEditing(false);
+      // Prepare data for API - only send non-empty fields
+      const updateData = {};
+      Object.keys(userData).forEach(key => {
+        if (userData[key]?.trim()) {
+          updateData[key] = userData[key].trim();
+        }
+      });
       
-      alert("Profile updated successfully!");
+      // Ensure required fields are present
+      if (!updateData.name || !updateData.email) {
+        addToast('Name and email are required fields', 'error');
+        return;
+      }
+      
+      // Only send fields that have actually changed to avoid unnecessary constraint checks
+      const changedData = {};
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] !== originalData[key]) {
+          changedData[key] = updateData[key];
+        }
+      });
+      
+      // If no fields changed, don't make API call
+      if (Object.keys(changedData).length === 0) {
+        addToast('No changes detected', 'info');
+        setIsEditing(false);
+        return;
+      }
+
+      // Update profile via API
+      const response = await userAPI.updateProfile(changedData);
+      
+      // Handle different response formats
+      let updatedUserData;
+      if (response?.user) {
+        updatedUserData = response.user;
+      } else if (response?.data?.user) {
+        updatedUserData = response.data.user;
+      } else if (response?.data) {
+        updatedUserData = response.data;
+      } else if (response) {
+        updatedUserData = response;
+      } else {
+        throw new Error('Invalid response format');
+      }
+      
+      // Update local context with new user data
+      if (updateUser && updatedUserData) {
+        updateUser(updatedUserData);
+      }
+      
+      // Update the form data to reflect the actual saved data from the server
+      const savedData = {
+        name: updatedUserData?.name || userData.name,
+        email: updatedUserData?.email || userData.email,
+        phone_number: updatedUserData?.phone_number || userData.phone_number,
+        address: updatedUserData?.address || userData.address,
+        company_name: updatedUserData?.company_name || userData.company_name,
+      };
+      
+      setUserData(savedData);
+      setOriginalData(savedData);
+      setIsEditing(false);
+      setValidationErrors({});
+      
+      addToast('Profile updated successfully!', 'success');
     } catch (err) {
       console.error('Error updating profile:', err);
-      setError('Failed to update profile. Please try again.');
-      alert('Failed to update profile. Please try again.');
+      
+      // Handle different error formats
+      let errorMessage = 'Failed to update profile. Please try again.';
+      
+      // Check for specific database constraint errors
+      if (err?.response?.status === 500) {
+        // This is likely a database constraint error
+        const attemptedEmail = userData.email !== originalData.email;
+        const attemptedPhone = userData.phone_number !== originalData.phone_number;
+        
+        if (attemptedEmail) {
+          errorMessage = 'This email address is already in use by another account.';
+        } else if (attemptedPhone) {
+          errorMessage = 'This phone number is already in use by another account.';
+        } else {
+          errorMessage = 'A database error occurred. Please contact support if this persists.';
+        }
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err?.response?.data?.errors) {
+        // Handle validation errors array
+        const errors = err.response.data.errors;
+        if (Array.isArray(errors) && errors.length > 0) {
+          errorMessage = errors.map(e => e.msg || e.message || e).join(', ');
+        } else if (typeof errors === 'object') {
+          errorMessage = Object.values(errors).flat().join(', ');
+        }
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+      addToast(errorMessage, 'error');
     } finally {
       setSaving(false);
     }
@@ -100,6 +233,7 @@ const MyProfile = () => {
     setUserData(originalData);
     setIsEditing(false);
     setError(null);
+    setValidationErrors({});
   };
 
   // PROFILE API INTEGRATION: Loading state
@@ -149,8 +283,11 @@ const MyProfile = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your full name" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+                className={`w-full border ${validationErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
+              {validationErrors.name && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>
+              )}
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
@@ -162,8 +299,11 @@ const MyProfile = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your email address" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+                className={`w-full border ${validationErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
+              {validationErrors.email && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>
+              )}
             </div>
             <div>
               <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
@@ -175,8 +315,11 @@ const MyProfile = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
                 placeholder={isEditing ? "Enter your phone number" : ""}
-                className={`w-full border border-gray-300 rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
+                className={`w-full border ${validationErrors.phone_number ? 'border-red-500' : 'border-gray-300'} rounded-lg px-3 py-2 ${isEditing ? 'focus:outline-none focus:ring-2 focus:ring-green-500' : 'bg-gray-100 cursor-not-allowed'} transition duration-200`}
               />
+              {validationErrors.phone_number && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.phone_number}</p>
+              )}
             </div>
             <div className="md:col-span-2">
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>

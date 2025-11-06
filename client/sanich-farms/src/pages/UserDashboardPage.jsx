@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { FiHome, FiChevronRight, FiUser, FiShoppingBag, FiCalendar, FiMenu, FiLogOut, FiX, FiTruck } from 'react-icons/fi';
 import { useAuthContext } from '../hooks/useAuthContext';
+import { useToast } from '../context/ToastContext';
 
 const UserDashboardPage = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { logout } = useAuthContext();
+  const { addToast } = useToast();
 
   const getActiveSection = () => {
     if (location.pathname.includes('/dashboard/orders')) return 'orders';
@@ -56,7 +58,7 @@ const UserDashboardPage = () => {
       window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
-      alert('There was an error logging out. Please try again.');
+      addToast('There was an error logging out. Please try again.', 'error');
     }
   };
 

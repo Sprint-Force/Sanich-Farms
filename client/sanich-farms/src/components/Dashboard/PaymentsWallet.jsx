@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiCreditCard, FiSmartphone, FiPlus, FiTrash2, FiDollarSign, FiEye, FiEyeOff } from 'react-icons/fi';
 import { paymentsAPI } from '../../services/api'; // API integration
+import { useToast } from '../../context/ToastContext';
 
 const PaymentsWallet = () => {
   // DASHBOARD API INTEGRATION: State management
@@ -10,6 +11,7 @@ const PaymentsWallet = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { addToast } = useToast();
 
   // DASHBOARD API INTEGRATION: Fetch all payment data
   const fetchPaymentData = async () => {
@@ -64,10 +66,10 @@ const PaymentsWallet = () => {
       try {
         await paymentsAPI.addFunds(parseFloat(amount));
         fetchPaymentData(); // Refresh data
-        alert('Funds added successfully!');
+        addToast('Funds added successfully!', 'success');
       } catch (error) {
         console.error('Error adding funds:', error);
-        alert('Failed to add funds. Please try again.');
+        addToast('Failed to add funds. Please try again.', 'error');
       }
     }
   };
@@ -78,10 +80,10 @@ const PaymentsWallet = () => {
       try {
         await paymentsAPI.removePaymentMethod(methodId);
         fetchPaymentData(); // Refresh data
-        alert('Payment method removed successfully');
+        addToast('Payment method removed successfully', 'success');
       } catch (error) {
         console.error('Error removing payment method:', error);
-        alert('Failed to remove payment method. Please try again.');
+        addToast('Failed to remove payment method. Please try again.', 'error');
       }
     }
   };
